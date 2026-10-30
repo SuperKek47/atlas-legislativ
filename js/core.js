@@ -56,7 +56,7 @@ A.defaultState = () => ({
   chaptersDone: {},  // "CF:n7": date
   conq: {},          // raioane cucerite: unit -> date
   last: null,
-  settings: { goal: 60, sound: true, theme: 'auto' },
+  settings: { goal: 60, sound: true, theme: 'dark' },
   eco: null,
 });
 A.store = {
@@ -86,6 +86,7 @@ A.rev = 0;   // crește la fiecare salvare; invalidează calculele memorate
 /* migrare: progresul vechi (v2) trece în structura v3, cu copie de siguranță */
 A.migrate = d => {
   d.perks = d.perks || {};
+  if (!d.ui2) { d.ui2 = 1; if (d.settings && d.settings.theme === 'auto') d.settings.theme = 'dark'; }   // interfața de arenă e gândită pe fundal închis
   if (d.study) { d.study.prep = d.study.prep || {}; d.study.chapters = d.study.chapters || {}; }
   if ((d.v || 1) >= A.STATE_V) return d;
   try { localStorage.setItem('atlas-state-backup-v' + (d.v || 1), JSON.stringify(d)); } catch (e) { }
@@ -453,6 +454,26 @@ A.render = async () => {
 };
 A.every = (ms, fn) => { const t = setInterval(fn, ms); A.timers.push(t); return t; };
 window.addEventListener('hashchange', () => A.render());
+
+/* ---------------- înălțimea reală a ecranului ----------------
+   Pe iPhone, aplicația instalată raportează 100vh mai mic decât ecranul (fără bara de stare),
+   iar dedesubt rămânea o fâșie goală. În modul instalat folosim înălțimea ecranului. */
+A.fitHeight = () => {
+  const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+  const h = standalone && innerWidth < 700 && innerHeight > innerWidth ? Math.max(innerHeight, screen.height) : innerHeight;
+  document.documentElement.style.setProperty('--apph', h + 'px');
+};
+A.fitHeight(); addEventListener('resize', A.fitHeight); addEventListener('orientationchange', () => setTimeout(A.fitHeight, 250));
+
+/* insignele roșii de pe file: ce așteaptă să fie luat */
+A.navBadges = () => {
+  const E = A.eco, s = E && E.s && E.s(); const n = Date.now();
+  const set = (k, c) => { const a = A.$(`.rail a[data-nav="${k}"]`); if (!a) return; let b = a.querySelector('.nb'); if (!c) { b && b.remove(); return; } if (!b) { b = document.createElement('b'); b.className = 'nb'; a.appendChild(b); } b.textContent = c > 9 ? '9+' : c; };
+  if (!s || !s.started) { set('harta', 0); set('firma', 0); return; }
+  const chests = E.chestsLocked() ? 0 : s.slots.filter(c => c && c.unlockEnd && c.unlockEnd <= n).length + (s.freeStock > 0 ? 1 : 0);
+  const office = s.consults.filter(c => c.end <= n).length + s.procs.filter(p => p.end <= n).length;
+  set('harta', chests); set('firma', office);
+};
 
 /* ---------------- tema ---------------- */
 A.applyTheme = () => {

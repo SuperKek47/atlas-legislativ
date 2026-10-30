@@ -450,6 +450,41 @@ E.openChest = (i, free) => {
   if (type === 'aur') E.goldenBonus(reveal); else reveal(1);
 };
 
+/* ---------------- rândul de dosare de pe hartă (ca sloturile din Clash) ---------------- */
+E.shortDur = ms => { ms = Math.max(0, ms); const h = Math.floor(ms / 3600e3), m = Math.floor(ms % 3600e3 / 60e3), sec = Math.floor(ms % 60e3 / 1000);
+  return h ? `${h}h ${String(m).padStart(2, '0')}m` : m ? `${m}m ${String(sec).padStart(2, '0')}s` : `${sec}s`; };
+E.dockHTML = () => {
+  const s = E.s();
+  if (!s || !s.started) return `<a class="cs found" href="#/firma"><b>Înființează biroul</b><small>ca să primești dosare</small></a>`;
+  const n = Date.now(), lock = E.chestsLocked(), busy = E.unlocking();
+  return s.slots.slice(0, 4).map((c, i) => {
+    if (!c) return `<button type="button" class="cs empty" data-cs="${i}" aria-label="Slot liber"><span class="ph"></span><small>Slot liber</small></button>`;
+    const C = E.CHESTS[c.type], img = `<span class="ci">${E.chestSVG(c.type)}</span>`;
+    if (lock) return `<button type="button" class="cs locked" data-cs="${i}" style="--c:${C.color}">${img}<small>🔒 încă ${lock} art.</small></button>`;
+    if (c.unlockEnd && c.unlockEnd <= n) return `<button type="button" class="cs ready" data-cs="${i}" style="--c:${C.color}">${img}<b>DESCHIDE!</b></button>`;
+    if (c.unlockEnd) return `<button type="button" class="cs run" data-cs="${i}" style="--c:${C.color}">${img}<b class="num" data-t="${c.unlockEnd}">${E.shortDur(c.unlockEnd - n)}</b><small>se deblochează</small></button>`;
+    return `<button type="button" class="cs idle ${busy ? '' : 'go'}" data-cs="${i}" style="--c:${C.color}">${img}<b>${busy ? E.shortDur(E.unlockMs(c.type)) : 'Deblochează'}</b><small>${busy ? 'în așteptare' : E.shortDur(E.unlockMs(c.type))}</small></button>`;
+  }).join('');
+};
+/* semnătura stării: dacă nu s-a schimbat, actualizăm doar cronometrele (butoanele rămân pe loc sub deget) */
+E.dockKey = () => { const s = E.s(); if (!s || !s.started) return '-'; const n = Date.now();
+  return [E.chestsLocked(), !!E.unlocking(), s.freeStock, ...s.slots.slice(0, 4).map(c => !c ? 0 : c.type + (c.unlockEnd ? (c.unlockEnd <= n ? 'R' : 'U') : 'I'))].join('|'); };
+E.dockTimers = root => A.$$('[data-t]', root).forEach(el => { el.textContent = E.shortDur(+el.dataset.t - Date.now()); });
+E.dockTap = i => {
+  const s = E.s(), c = s && s.slots[i]; if (!s) return;
+  if (!c) { A.toast('Slot liber. Dosarele vin din jocul rapid, micro-secțiuni, procese, misiuni și mini-boși.'); return; }
+  const lock = E.chestsLocked(); if (lock) { A.toast(`Dosarele se deschid după etapa de începător: mai citește ${lock} ${lock === 1 ? 'articol' : 'articole'}.`); A.sound('warn'); return; }
+  if (c.unlockEnd && c.unlockEnd <= Date.now()) return E.openChest(i);
+  if (c.unlockEnd) return A.go('#/firma');
+  if (E.unlocking()) { A.toast('Se deblochează deja alt dosar. Câte unul pe rând.'); A.sound('warn'); return; }
+  E.startUnlock(i); A.sound('chest');
+};
+E.freeHTML = () => {
+  const s = E.s(); if (!s || !s.started) return '';
+  const ready = s.freeStock > 0 && !E.chestsLocked();
+  return `<button type="button" class="fab free ${ready ? 'hot' : ''}" data-free aria-label="${E.FREE_NAME}"><span class="ci">${E.chestSVG('simplu')}</span>${ready ? `<b class="nb">${s.freeStock}</b>` : `<small class="num" data-t="${s.freeAt}">${E.shortDur(s.freeAt - Date.now())}</small>`}</button>`;
+};
+
 /* ---------------- misiunile zilei ---------------- */
 E.ensureDaily = () => {
   const s = E.s(), d = A.today();

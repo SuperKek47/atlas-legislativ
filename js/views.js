@@ -51,6 +51,8 @@ A.route('harta', async view => {
   const today = s.days[A.today()] || 0;
   const ready = A.raioane.filter(r => A.bossReady(r.unit));
   const nConq = A.raioane.filter(r => A.conquered(r.unit)).length;
+  const raionList = `        ${A.study.order.map(u => A.raion(u)).filter(Boolean).map(r => { const lock = A.locked(r.unit), won = A.conquered(r.unit), b = A.study.beatenCount(r.unit); return `<a href="#/raion/${r.unit}" class="${lock ? 'lockd' : ''}"><span class="dot" style="background:${A.disc[r.disc].color}"></span><span><b>${A.esc(r.name)}</b>${won ? ' <span class="conq-tag">cucerit</span>' : ''}<br><small class="muted">${A.esc(r.short)} · ${lock ? 'după raionul curent' : won ? 'cucerit' : `capitolul ${Math.min(9, b + 1)} din 9`}</small></span><span class="num">${lock ? '—' : won ? '✓' : b + '/9'}</span></a>`; }).join('')}`;
+  const E = A.eco, hasEco = !!(E && E.s && E.s() && E.s().started);
   view.innerHTML = `
   <div class="mappage">
     <div class="mapwrap">
@@ -70,9 +72,19 @@ A.route('harta', async view => {
         <div class="credit">${A.esc(MD_MAP.credit)}</div>
       </details>
       <div class="ticker"><span id="tick"></span></div>
+      <div class="mapfabs">
+        ${hasEco ? E.freeHTML() : ''}
+        <a class="fab" href="#/antrenament" aria-label="Antrenament"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.5 5.5L20 9.3l-4 4 1 5.7-5-2.8-5 2.8 1-5.7-4-4 5.5-.8z"/></svg><small>Antrenament</small></a>
+        <a class="fab" href="#/antrenament/repetare/citite" aria-label="Repetare"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3M18 3v4h-4M6 21v-4h4"/></svg>${due ? `<b class="nb">${due > 9 ? '9+' : due}</b>` : ''}<small>Repetă</small></a>
+        <button type="button" class="fab" data-raioane aria-label="Raioanele"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg><small>Raioane</small></button>
+        <a class="fab" href="#/profil" aria-label="Ștampile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.5"/></svg><small>Ștampile</small></a>
+      </div>
     </div>
     <aside class="side">
-      <a class="playbig" href="#/joc"><span class="pl">▶</span><span><b>Joacă</b><small>3 grile de examen + 1 speță · bani, XP, puncte și un dosar</small></span></a>
+      <div class="dock">
+        <a class="playbig" href="#/joc"><span class="pl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg></span><span class="pt"><b>JOACĂ</b><small>${(() => { const cu = A.study.current(), r = cu && A.raion(cu); return r ? A.esc(r.name) + ' · 3 grile + 1 speță' : '3 grile + 1 speță'; })()}</small></span></a>
+        <div class="dockslots">${hasEco ? E.dockHTML() : `<a class="cs found" href="#/firma"><b>Înființează biroul</b><small>ca să primești dosare</small></a>`}</div>
+      </div>
       <div class="quicklinks">
         <a href="#/antrenament"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.5 5.5L20 9.3l-4 4 1 5.7-5-2.8-5 2.8 1-5.7-4-4 5.5-.8z"/></svg><b>Antrenament</b><small>sesiuni pe teme, termene, definiții</small></a>
         <a href="#/profil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.5"/><path d="M12 4v2M12 18v2M4 12h2M18 12h2"/></svg><b>Ștampile</b><small>rangul, seria și activitatea ta</small></a>
@@ -89,12 +101,25 @@ A.route('harta', async view => {
       <section><h3>Repetare</h3>
         ${due ? `<a class="btn primary" href="#/antrenament/repetare/citite">Repetă ${due} ${due === 1 ? 'articol' : 'articole'} scadente</a>` : `<span class="muted" style="font-size:14px">Nicio repetare scadentă azi.</span>`}
       </section>
-      <section><h3>Raioane · ${nConq}/${A.raioane.length} cucerite</h3><div class="list">
-        ${A.study.order.map(u => A.raion(u)).filter(Boolean).map(r => { const lock = A.locked(r.unit), won = A.conquered(r.unit), b = A.study.beatenCount(r.unit); return `<a href="#/raion/${r.unit}" class="${lock ? 'lockd' : ''}"><span class="dot" style="background:${A.disc[r.disc].color}"></span><span><b>${A.esc(r.name)}</b>${won ? ' <span class="conq-tag">cucerit</span>' : ''}<br><small class="muted">${A.esc(r.short)} · ${lock ? 'după raionul curent' : won ? 'cucerit' : `capitolul ${Math.min(9, b + 1)} din 9`}</small></span><span class="num">${lock ? '—' : won ? '✓' : b + '/9'}</span></a>`; }).join('')}
-      </div></section>
+      <section><h3>Raioane · ${nConq}/${A.raioane.length} cucerite</h3><div class="list">${raionList}</div></section>
     </aside>
   </div>`;
   const tip = document.createElement('div'); tip.className = 'maptip'; tip.hidden = true; view.appendChild(tip);
+  /* rândul de dosare și butoanele rotunde de pe hartă */
+  const dock = A.$('.dockslots', view);
+  if (hasEco) {
+    dock.onclick = e => { const b = e.target.closest('[data-cs]'); if (!b) return; const i = +b.dataset.cs; E.dockTap(i); key = E.dockKey(); dock.innerHTML = E.dockHTML(); const nb = A.$(`[data-cs="${i}"]`, dock); nb && nb.classList.add('pop'); A.hud(); };
+    let key = E.dockKey();
+    A.every(1000, () => {
+      const k = E.dockKey();
+      if (k !== key) { key = k; dock.innerHTML = E.dockHTML(); const f = A.$('.mapfabs [data-free]', view); if (f) f.outerHTML = E.freeHTML(); }
+      else E.dockTimers(view);
+    });
+  }
+  A.$('.mapfabs', view).onclick = e => {
+    if (e.target.closest('[data-free]')) { const st = E.s(); const lk = E.chestsLocked(); if (lk) { A.toast(`Dosarele se deschid după etapa de începător: mai citește ${lk} ${lk === 1 ? 'articol' : 'articole'}.`); A.sound('warn'); return; } if (st.freeStock > 0) E.openChest(0, true); else A.toast(`${E.FREE_NAME}: următorul peste ${A.dur(st.freeAt - Date.now())}.`); return; }
+    if (e.target.closest('[data-raioane]')) { const m = A.modal(`<h2>Raioane · ${nConq}/${A.raioane.length} cucerite</h2><div class="list sheetlist">${raionList}</div><div class="mbtns"><button class="btn" data-close>Închide</button></div>`); A.$$('a', m.el).forEach(a => a.addEventListener('click', () => m.close && m.close())); }
+  };
   const describe = u => {
     const r = raionByUnit[u], res = resByUnit[u], name = A.unitById[u].name;
     if (r) {

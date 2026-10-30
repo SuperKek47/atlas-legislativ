@@ -256,6 +256,13 @@ A.hud = () => {
      ${A.fmt(today)}/${goal}</span>
    <span class="spacer"></span>
    ${eco}`;
+  /* telefon: scutul de nivel cu inelul de experiență */
+  const lv = document.createElement('a'); lv.className = 'lvl'; lv.href = '#/profil'; lv.title = `${li.rank} · nivelul ${li.L}`;
+  lv.style.setProperty('--p', (li.pct * 100).toFixed(1) + '%');
+  lv.innerHTML = `<span>${li.L}</span>`;
+  el.prepend(lv);
+  const xb = el.querySelector('.xpbar .track'); if (xb) xb.dataset.t = `${A.fmt(li.xp - li.lo)}/${A.fmt(li.hi - li.lo)}`;
+  A.navBadges && A.navBadges();
 };
 
 G.init = () => { G.checkStamps(); };

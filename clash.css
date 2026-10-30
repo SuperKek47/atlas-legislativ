@@ -1,0 +1,240 @@
+/* Atlasul legislativ — „arena”: aspectul de joc inspirat din Clash Royale.
+   Se încarcă ultimul. Culori saturate pe albastru-închis, butoane groase cu contur și strat de jos,
+   pastile pentru resurse, sloturi de dosare, animații scurte. */
+
+:root {
+  --display: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Bahnschrift", system-ui, sans-serif;
+  --gold-1: #FFE27A; --gold-2: #FFB923; --gold-3: #C77A00;
+  --blue-1: #6FC3FF; --blue-2: #2A86E0; --blue-3: #135299;
+  --red-1: #FF8A73; --red-2: #E2423A; --red-3: #8F1D1D;
+  --green-1: #8BEA7B; --green-2: #3DB74A; --green-3: #1C6E2A;
+  --outline: #0B1424;
+  --spring: cubic-bezier(.34, 1.56, .64, 1);
+  --stroke: 0 1px 0 var(--outline), 0 -1px 0 var(--outline), 1px 0 0 var(--outline), -1px 0 0 var(--outline), 0 2px 0 var(--outline);
+}
+:root[data-theme="dark"] {
+  --paper: #0E1A2E;
+  --paper-2: #14243D;
+  --paper-3: #1B2F4E;
+  --ink: #EEF4FF;
+  --ink-2: #B3C4DE;
+  --ink-3: #7F93B3;
+  --rule: #2D4670;
+  --rule-2: #223858;
+  --survey: #6FC3FF;
+  --survey-bg: #173659;
+  --stamp: #C59BFF;
+  --stamp-bg: #2E2352;
+  --seal: #FF6B5E;
+  --seal-bg: #44201F;
+  --wheat: #FFC83A;
+  --wheat-bg: #3F3212;
+  --forest: #6EDB86;
+  --forest-bg: #173C26;
+  --shadow: 0 2px 0 rgba(0,0,0,.35), 0 12px 28px -12px rgba(0,0,0,.7);
+}
+:root[data-theme="dark"] body { background: radial-gradient(120% 80% at 50% 0%, #1A3157 0%, #0E1A2E 60%) fixed, #0E1A2E; }
+
+/* ---------- butoanele groase ---------- */
+.btn {
+  font-family: var(--display); font-weight: 700; letter-spacing: .01em;
+  border: 2px solid var(--outline); border-radius: 12px;
+  background: linear-gradient(180deg, #3C6496 0%, #284A78 100%); color: #fff; text-shadow: var(--stroke);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.22), inset 0 -3px 0 rgba(0,0,0,.25), 0 3px 0 var(--outline);
+  transition: transform .08s, box-shadow .08s, filter .15s;
+  position: relative; top: 0;
+}
+.btn:hover { border-color: var(--outline); filter: brightness(1.08); }
+.btn:active:not([disabled]) { transform: translateY(2px); box-shadow: inset 0 2px 0 rgba(255,255,255,.18), inset 0 -2px 0 rgba(0,0,0,.25), 0 1px 0 var(--outline); }
+.btn.primary, :root[data-theme="dark"] .btn.primary { background: linear-gradient(180deg, var(--gold-1) 0%, var(--gold-2) 55%, #F2A100 100%); color: #3A2300; text-shadow: 0 1px 0 rgba(255,255,255,.45); border-color: var(--outline); }
+.btn.primary:hover { background: linear-gradient(180deg, var(--gold-1) 0%, var(--gold-2) 55%, #F2A100 100%); }
+.btn.ghost { background: transparent; border-color: transparent; box-shadow: none; text-shadow: none; color: var(--ink); }
+.btn.boss, .btn.danger { background: linear-gradient(180deg, var(--red-1) 0%, var(--red-2) 60%, #B8282A 100%); color: #fff; border-color: var(--outline); }
+.btn.ok, .btn.go { background: linear-gradient(180deg, var(--green-1), var(--green-2)); }
+.btn[disabled] { filter: grayscale(.7); opacity: .55; }
+.btn svg { stroke: currentColor; }
+
+/* ---------- câmpuri ---------- */
+:root[data-theme="dark"] select, :root[data-theme="dark"] input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]), :root[data-theme="dark"] textarea {
+  background: #0A1528; color: var(--ink); border: 2px solid var(--outline); border-radius: 12px; box-shadow: inset 0 2px 0 rgba(0,0,0,.35); }
+:root[data-theme="dark"] select { padding: 8px 12px; font-family: var(--display); font-weight: 700; }
+
+/* ---------- ferestrele: ies cu un mic rebound ---------- */
+.modal { border: 3px solid var(--outline); border-radius: 22px; background: linear-gradient(180deg, var(--paper-3), var(--paper-2)); box-shadow: 0 6px 0 var(--outline), 0 24px 60px rgba(0,0,0,.55); animation: pop .26s var(--spring); }
+.modal h2 { font-family: var(--display); font-weight: 800; }
+:root[data-theme="dark"] .modal h2 { text-shadow: var(--stroke); }
+#overlay { background: rgba(5,10,20,.66); }
+@keyframes pop { from { transform: scale(.86); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ---------- insigna roșie de notificare ---------- */
+.nb { position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px;
+  background: linear-gradient(180deg, #FF6B5E, #D3261D); color: #fff; font: 800 12px/16px var(--display); text-align: center;
+  border: 2px solid var(--outline); text-shadow: 0 1px 0 rgba(0,0,0,.4); animation: nbIn .3s var(--spring); pointer-events: none; z-index: 2; }
+@keyframes nbIn { from { transform: scale(0); } to { transform: scale(1); } }
+.rail a { position: relative; }
+.rail a .nb { top: 4px; right: calc(50% - 26px); }
+
+/* ---------- butonul JOACĂ ---------- */
+.playbig { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin: 0; border-radius: 18px; text-decoration: none;
+  background: linear-gradient(180deg, var(--gold-1) 0%, var(--gold-2) 50%, #F29A00 100%); color: #3A2300;
+  border: 3px solid var(--outline); box-shadow: inset 0 3px 0 rgba(255,255,255,.5), inset 0 -5px 0 rgba(160,80,0,.45), 0 5px 0 var(--outline), 0 12px 24px rgba(255,170,0,.25);
+  transition: transform .08s, box-shadow .08s; animation: none; }
+.playbig:hover { transform: none; filter: brightness(1.05); }
+.playbig:active { transform: translateY(3px); box-shadow: inset 0 3px 0 rgba(255,255,255,.5), inset 0 -3px 0 rgba(160,80,0,.45), 0 2px 0 var(--outline); }
+.playbig .pl { width: 44px; height: 44px; border-radius: 50%; flex: none; display: grid; place-items: center; background: rgba(255,255,255,.35); border: 2px solid rgba(58,35,0,.35); animation: breathe 1.8s ease-in-out infinite; }
+.playbig .pl svg { width: 22px; height: 22px; fill: #3A2300; margin-left: 3px; }
+.playbig .pt { display: flex; flex-direction: column; min-width: 0; }
+.playbig b { font: 900 30px/1 var(--display); letter-spacing: .04em; color: #fff; text-shadow: 0 2px 0 var(--outline), 0 -1px 0 var(--outline), 2px 0 0 var(--outline), -2px 0 0 var(--outline), 0 3px 0 var(--outline); }
+.playbig small { font: 700 13px/1.25 var(--display); color: #4A2E00; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@keyframes breathe { 50% { transform: scale(1.08); } }
+
+/* ---------- dock: Joacă + sloturile de dosare ---------- */
+.dock { display: flex; flex-direction: column; gap: 10px; }
+.dockslots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.cs { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 1px;
+  min-height: 92px; padding: 6px 4px 7px; border-radius: 14px; cursor: pointer; text-decoration: none; color: #fff;
+  border: 2px solid var(--outline); background: linear-gradient(180deg, #24406A, #172C4C);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.12), 0 3px 0 var(--outline); font-family: var(--display); transition: transform .08s; }
+.cs:active { transform: translateY(2px); box-shadow: inset 0 2px 0 rgba(255,255,255,.12), 0 1px 0 var(--outline); }
+.cs .ci { display: block; width: 62px; height: 50px; margin-bottom: 2px; }
+.cs .ci svg { width: 100%; height: 100%; filter: drop-shadow(0 3px 0 rgba(0,0,0,.35)); }
+.cs b { font-weight: 800; font-size: 13px; line-height: 1.1; text-shadow: var(--stroke); white-space: nowrap; }
+.cs small { font-size: 10.5px; line-height: 1.15; color: #C6D6EE; font-weight: 600; text-align: center; }
+.cs.empty { background: rgba(10,20,36,.55); border-style: dashed; border-color: #34507C; box-shadow: none; }
+.cs.empty .ph { width: 40px; height: 32px; margin-bottom: 8px; border-radius: 8px; border: 2px dashed #3C5A88; }
+.cs.empty small { color: #7F93B3; }
+.cs.locked .ci { filter: grayscale(.8) brightness(.7); }
+.cs.idle.go { background: linear-gradient(180deg, #2C5C98, #1C3F6E); }
+.cs.idle.go b { color: #fff; }
+.cs.run { background: linear-gradient(180deg, #1F3A60, #142843); }
+.cs.run b { color: var(--gold-1); font-size: 14px; font-variant-numeric: tabular-nums; }
+.cs.ready { background: linear-gradient(180deg, #FFD54A, #F2A100); border-color: var(--outline); animation: readyGlow 1.2s ease-in-out infinite; }
+.cs.ready b { color: #fff; font-size: 13px; }
+.cs.ready .ci { animation: wiggle 1.6s ease-in-out infinite; }
+.cs.found { grid-column: 1 / -1; min-height: 64px; justify-content: center; background: linear-gradient(180deg, #2C5C98, #1C3F6E); }
+.cs.pop { animation: tapPop .25s var(--spring); }
+@keyframes readyGlow { 50% { box-shadow: inset 0 2px 0 rgba(255,255,255,.4), 0 3px 0 var(--outline), 0 0 18px 2px rgba(255,200,58,.75); } }
+@keyframes wiggle { 0%, 70%, 100% { transform: rotate(0); } 76% { transform: rotate(-7deg); } 84% { transform: rotate(6deg); } 92% { transform: rotate(-3deg); } }
+@keyframes tapPop { 0% { transform: scale(.92); } 100% { transform: scale(1); } }
+
+/* ---------- butoanele rotunde de pe hartă (doar pe telefon) ---------- */
+.mapfabs { display: none; }
+.fab { position: relative; display: grid; place-items: center; width: 50px; height: 50px; border-radius: 14px; padding: 0; cursor: pointer; color: #fff; text-decoration: none;
+  border: 2px solid var(--outline); background: linear-gradient(180deg, #3C6496, #234472); box-shadow: inset 0 2px 0 rgba(255,255,255,.2), 0 3px 0 var(--outline); }
+.fab:active { transform: translateY(2px); box-shadow: inset 0 2px 0 rgba(255,255,255,.2), 0 1px 0 var(--outline); }
+.fab svg { width: 24px; height: 24px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 0 var(--outline)); }
+.fab > small { position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); font: 800 9.5px/1 var(--display); color: #fff; text-shadow: var(--stroke); white-space: nowrap; }
+.fab.free { background: linear-gradient(180deg, #2F5585, #1C3A62); }
+.fab.free .ci { width: 38px; height: 31px; display: block; }
+.fab.free .ci svg { width: 100%; height: 100%; filter: none; stroke: initial; }
+.fab.free > small { bottom: -15px; color: var(--gold-1); }
+.fab.free.hot { background: linear-gradient(180deg, #FFD54A, #F2A100); animation: readyGlow 1.2s ease-in-out infinite; }
+
+/* ---------- scutul de nivel (telefon) ---------- */
+.lvl { display: none; }
+
+/* ---------- calculator ---------- */
+@media (min-width: 621px) {
+  .side .dock { margin-bottom: 4px; }
+  .rail a.on { background: rgba(255,200,58,.12); }
+  .hud .chip { border-radius: 999px; border: 2px solid var(--outline); background: #10203A; color: #fff; font-family: var(--display); font-weight: 700; box-shadow: inset 0 2px 0 rgba(255,255,255,.08); }
+  :root[data-theme="light"] .hud .chip { background: var(--paper-3); color: var(--ink); border-color: var(--rule); }
+}
+
+/* ================= TELEFON ================= */
+@media (max-width: 620px) {
+  :root { --hud: 50px; --tabbar: 58px; --safeb: max(4px, calc(env(safe-area-inset-bottom) - 18px)); }
+
+  /* cadrul fixat pe tot ecranul: fără fâșia goală de dedesubt */
+  html, body { height: 100%; overflow: hidden; }
+  .shell { position: fixed; top: 0; left: 0; right: 0; height: var(--apph, 100dvh);
+    grid-template-rows: calc(var(--hud) + env(safe-area-inset-top)) minmax(0, 1fr) calc(var(--tabbar) + var(--safeb)); }
+
+  /* ---------- bara de jos ---------- */
+  :root .rail, :root[data-theme] .rail { padding: 0 6px var(--safeb); gap: 4px; align-items: flex-end; border-top: 0; overflow: visible; z-index: 5;
+    background: linear-gradient(180deg, #1D355A 0%, #10213B 100%); box-shadow: 0 -2px 0 var(--outline), inset 0 2px 0 rgba(255,255,255,.08); }
+  :root[data-theme="light"] .rail { background: linear-gradient(180deg, #2C5285, #1A355C); }
+  :root[data-theme] .rail a { order: 3; flex: 1 1 0; height: 52px; margin-bottom: 3px; padding: 4px 2px; gap: 0; border: 0 !important; border-radius: 12px; color: #9DB3D6;
+    justify-content: center; transition: transform .18s var(--spring), background .15s; }
+:root[data-theme] .rail a[data-nav="cautare"] { order: 1; } :root[data-theme] .rail a[data-nav="harta"] { order: 2; flex-grow: 1.45; } :root[data-theme] .rail a[data-nav="firma"] { order: 3; } :root[data-theme] .rail a[data-nav="setari"] { order: 4; }
+  .rail a svg { width: 26px; height: 26px; stroke-width: 2; transition: transform .18s var(--spring); }
+  .rail a span { display: none; font: 800 11px/1 var(--display); color: #fff; text-shadow: var(--stroke); margin-top: 3px; }
+  :root[data-theme] .rail a.on { color: #fff; height: 60px; transform: translateY(-6px); background: linear-gradient(180deg, #4C7BB8, #2B568F); border: 2px solid var(--outline) !important;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.25), 0 3px 0 var(--outline); }
+  :root[data-theme] .rail a.on span { display: block; }
+  .rail a.on svg { transform: scale(1.1); }
+  .rail a[data-nav="harta"] svg { width: 30px; height: 30px; }
+  :root[data-theme] .rail a[data-nav="harta"].on { background: linear-gradient(180deg, var(--gold-1), var(--gold-2) 60%, #F29A00); color: #3A2300; }
+  .rail a[data-nav="harta"].on svg { stroke: #3A2300; }
+  .rail a .nb { top: 2px; right: calc(50% - 24px); }
+
+  /* ---------- bara de sus ---------- */
+  .hud { gap: 8px; padding: env(safe-area-inset-top) 10px 0; background: linear-gradient(180deg, #16294A, #11223D); border-bottom: 2px solid var(--outline); box-shadow: 0 2px 0 rgba(255,255,255,.05); }
+  :root[data-theme="light"] .hud { background: linear-gradient(180deg, #2C5285, #1E3E6B); }
+  .hud .rank { display: none; }
+  .lvl { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 50%; text-decoration: none;
+    background: conic-gradient(var(--gold-2) var(--p), #0A1528 0); border: 2px solid var(--outline); box-shadow: 0 2px 0 var(--outline); }
+  .lvl span { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(180deg, #4C7BB8, #24497D);
+    font: 900 15px/1 var(--display); color: #fff; text-shadow: var(--stroke); border: 1.5px solid var(--outline); }
+  .xpbar { flex: 1; min-width: 40px; }
+  .xpbar .track { position: relative; height: 18px; border-radius: 9px; background: #0A1528; border: 2px solid var(--outline); overflow: hidden; }
+  .xpbar .fill { background: linear-gradient(180deg, #8FD0FF, #3D96E6); border-radius: 0; box-shadow: inset 0 2px 0 rgba(255,255,255,.35); }
+  .xpbar .track::after { content: attr(data-t) " XP"; position: absolute; inset: 0; display: grid; place-items: center; font: 800 10.5px/1 var(--display); color: #fff; text-shadow: var(--stroke); }
+  .hud .chip { height: 30px; padding: 0 10px 0 4px; border-radius: 999px; border: 2px solid var(--outline); background: #0A1528; color: #fff;
+    font: 800 14px/1 var(--display); text-shadow: var(--stroke); box-shadow: inset 0 2px 0 rgba(255,255,255,.08); }
+  .hud .chip svg { width: 22px; height: 22px; }
+  .hud .chip.slots { display: none; }
+  .hud .chip.pts { display: inline-flex; padding: 0 9px; font-size: 12px; color: #D9C8FF; }
+
+  /* ---------- harta pe tot ecranul ---------- */
+  .view:has(.mappage) { overflow: hidden; }
+  .mappage { display: flex; flex-direction: column; align-items: stretch; height: 100%; min-height: 0; }
+  .mapwrap { flex: 1 1 auto; min-height: 0; aspect-ratio: auto; max-height: none; height: auto; border-bottom: 0; }
+  .mapwrap svg.md { inset: 0; }
+  .ticker { top: 8px; left: 70px; right: 10px; border: 2px solid var(--outline); background: rgba(10,21,40,.88); border-radius: 12px; }
+  .side { flex: none; width: 100%; padding: 10px 10px 8px; gap: 0; background: linear-gradient(180deg, rgba(14,26,46,0), #0E1A2E 22%); margin-top: -18px; position: relative; z-index: 3; overflow: visible; }
+  .side > :not(.dock) { display: none !important; }
+  .dock { gap: 9px; }
+  .dockslots { gap: 6px; }
+  .cs { min-height: 84px; }
+  .cs .ci { width: 54px; height: 44px; }
+  .playbig { padding: 9px 14px; border-radius: 16px; }
+  .playbig .pl { width: 40px; height: 40px; }
+  .playbig b { font-size: 26px; }
+
+  .mapfabs { display: flex; flex-direction: column; gap: 20px; position: absolute; left: 8px; top: 8px; z-index: 4; }
+  .legend { left: auto; right: 8px; bottom: 30px; border: 2px solid var(--outline); border-radius: 12px; background: rgba(10,21,40,.9); }
+  .legend[open] { left: 8px; }
+  .mapzoom { bottom: auto; top: 54px; }
+  .mapzoom button { width: 38px; height: 38px; border: 2px solid var(--outline); background: linear-gradient(180deg, #3C6496, #234472); color: #fff; box-shadow: 0 2px 0 var(--outline); font-weight: 800; }
+  .mapsheet { left: 70px; right: 54px; bottom: 30px; border: 2px solid var(--outline); border-radius: 16px; background: linear-gradient(180deg, var(--paper-3), var(--paper-2)); animation: pop .22s var(--spring); }
+  .legend[open] ~ .mapfabs { display: none; }
+
+  /* biroul: sloturile mari, fără să iasă din ecran */
+  .slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .slot { min-width: 0; min-height: 0; border: 2px solid var(--outline); border-radius: 16px; background: linear-gradient(180deg, #22406A, #172C4C); box-shadow: inset 0 2px 0 rgba(255,255,255,.1), 0 3px 0 var(--outline); }
+  .slot.empty { background: rgba(10,20,36,.55); border: 2px dashed #34507C; box-shadow: none; }
+  .slot .chestbox svg { width: 70px; height: 56px; }
+  .slot small { min-height: 0; overflow-wrap: anywhere; }
+  .slot .btn { white-space: normal; line-height: 1.2; height: auto; padding: 9px 8px; font-size: 13px; }
+  .slot .act { min-height: 0; }
+  .fsec { border: 2px solid var(--outline); border-radius: 18px; box-shadow: 0 3px 0 var(--outline); }
+
+  /* listele din foi */
+  .sheetlist { display: flex; flex-direction: column; text-align: left; margin: 8px 0 4px; }
+  .sheetlist a { text-decoration: none; display: grid; grid-template-columns: 12px 1fr auto; gap: 10px; align-items: center; padding: 10px 2px; border-bottom: 1px solid var(--rule-2); }
+  .sheetlist .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .sheetlist a.lockd { opacity: .55; }
+
+  .modal { border-radius: 22px 22px 0 0; border-bottom: 0; box-shadow: 0 -4px 0 var(--outline), 0 -20px 60px rgba(0,0,0,.5); animation: sheetSpring .3s var(--spring); }
+  @keyframes sheetSpring { from { transform: translateY(60px); opacity: .4; } to { transform: none; opacity: 1; } }
+  #toasts { top: calc(var(--hud) + env(safe-area-inset-top) + 6px); }
+  .toast { border: 2px solid var(--outline); background: rgba(16,32,58,.95); color: #fff; font-family: var(--display); font-weight: 600; }
+}
+@media (max-width: 380px) {
+  .hud .chip.pts { display: none; }
+  .cs small { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs.ready, .cs.ready .ci, .fab.free.hot, .playbig .pl { animation: none !important; }
+}
