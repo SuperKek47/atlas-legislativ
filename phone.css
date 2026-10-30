@@ -55,6 +55,7 @@
   .legend { left: 8px; bottom: 8px; right: auto; min-width: 0; max-width: calc(100% - 70px); padding: 6px 10px; font-size: 12px; max-height: 70%; overflow-y: auto; }
   .legend[open] { right: 8px; max-width: none; }
   .legend .credit { display: none; }
+  .legend[open] ~ .mapzoom, .legend[open] ~ .mapsheet { display: none; }
   .side { padding: 14px 14px 30px; gap: 16px; }
   .playbig { margin: 0; padding: 14px 16px; border-radius: 16px; }
   .playbig .pl { width: 46px; height: 46px; }

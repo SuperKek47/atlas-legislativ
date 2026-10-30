@@ -36,6 +36,42 @@
   "avocatura": {
    "name": "Avocatură",
    "color": "#4B4B4B"
+  },
+  "proc-penal": {
+   "name": "Procedură penală",
+   "color": "#9A3B52"
+  },
+  "contrav": {
+   "name": "Drept contravențional",
+   "color": "#B0563A"
+  },
+  "politie": {
+   "name": "Poliția și metodele speciale",
+   "color": "#2F4F6B"
+  },
+  "vamal": {
+   "name": "Drept vamal",
+   "color": "#3A6E8C"
+  },
+  "urbanism": {
+   "name": "Urbanism și construcții",
+   "color": "#7A6A4F"
+  },
+  "mediu": {
+   "name": "Dreptul mediului",
+   "color": "#2E7D5B"
+  },
+  "filosofie": {
+   "name": "Filosofia dreptului",
+   "color": "#5B4A7A"
+  },
+  "fiscal": {
+   "name": "Drept fiscal",
+   "color": "#8C7A1C"
+  },
+  "cedo": {
+   "name": "CEDO și drepturile omului",
+   "color": "#1F4E8C"
   }
  },
  "raioane": [
@@ -314,23 +350,118 @@
  "reserved": [
   {
    "unit": "balti",
-   "disc": "penal"
+   "disc": "penal",
+   "title": "Codul penal I"
   },
   {
-   "unit": "floresti",
-   "disc": "muncii"
+   "unit": "falesti",
+   "disc": "penal",
+   "title": "Codul penal II"
   },
   {
-   "unit": "cahul",
-   "disc": "administrativ"
+   "unit": "singerei",
+   "disc": "penal",
+   "title": "Codul penal III"
+  },
+  {
+   "unit": "glodeni",
+   "disc": "proc-penal",
+   "title": "Procedura penală I"
+  },
+  {
+   "unit": "riscani",
+   "disc": "proc-penal",
+   "title": "Procedura penală II"
+  },
+  {
+   "unit": "edinet",
+   "disc": "contrav",
+   "title": "Contravențional I"
+  },
+  {
+   "unit": "briceni",
+   "disc": "contrav",
+   "title": "Contravențional II"
+  },
+  {
+   "unit": "ocnita",
+   "disc": "politie",
+   "title": "Poliția și metodele speciale"
   },
   {
    "unit": "soroca",
-   "disc": "constitutional"
+   "disc": "constitutional",
+   "title": "Constituția"
+  },
+  {
+   "unit": "donduseni",
+   "disc": "constitutional",
+   "title": "Parlamentul și Guvernul"
+  },
+  {
+   "unit": "drochia",
+   "disc": "constitutional",
+   "title": "Codul electoral"
+  },
+  {
+   "unit": "floresti",
+   "disc": "muncii",
+   "title": "Dreptul muncii I"
+  },
+  {
+   "unit": "soldanesti",
+   "disc": "muncii",
+   "title": "Dreptul muncii II"
+  },
+  {
+   "unit": "cantemir",
+   "disc": "vamal",
+   "title": "Drept vamal I"
+  },
+  {
+   "unit": "taraclia",
+   "disc": "vamal",
+   "title": "Drept vamal II"
+  },
+  {
+   "unit": "cahul",
+   "disc": "administrativ",
+   "title": "Contencios administrativ"
+  },
+  {
+   "unit": "basarabeasca",
+   "disc": "urbanism",
+   "title": "Urbanism"
+  },
+  {
+   "unit": "dubasari",
+   "disc": "mediu",
+   "title": "Dreptul mediului"
+  },
+  {
+   "unit": "cimislia",
+   "disc": "filosofie",
+   "title": "Filosofia dreptului"
   },
   {
    "unit": "ungheni",
-   "disc": "avocatura"
+   "disc": "avocatura",
+   "title": "Avocatură"
+  },
+  {
+   "unit": "gagauzia",
+   "disc": "fiscal",
+   "title": "Drept fiscal I"
+  },
+  {
+   "unit": "bender",
+   "disc": "fiscal",
+   "title": "Drept fiscal II"
+  },
+  {
+   "unit": "stanga-nistrului",
+   "disc": "cedo",
+   "title": "CEDO"
   }
  ],
  "pendingActs": {},

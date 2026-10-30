@@ -29,7 +29,7 @@ A.route('harta', async view => {
       else if (A.conquered(id)) marks += pin(ICON.flag, eco && eco.firm ? eco.firm.color : '#5A3F8F');
       else if (A.bossReady(id)) marks += `<g class="pin boss" transform="translate(${lab[0]},${lab[1] - (big ? 36 : 26)})"><circle r="14" fill="#B23A2E" stroke="#fff" stroke-width="2.5"/>${ICON.swords}</g>`;
     } else if (res) {
-      paths += `<path class="u res" data-u="${id}" d="${d}"/>`;
+      paths += `<path class="u res" data-u="${id}" d="${d}" fill="${(A.disc[res.disc] || {}).color || '#999'}" fill-opacity=".16"/>`;
       labels += `<text class="lab res" x="${lab[0]}" y="${lab[1]}">${A.esc(name)}</text>`;
     } else {
       paths += `<path class="u plain" data-u="${id}" d="${d}"/>`;
@@ -44,6 +44,7 @@ A.route('harta', async view => {
     }
   }
   const discs = [...new Set(A.raioane.map(r => r.disc))];
+  const resDiscs = [...new Set(A.reserved.map(r => r.disc))].filter(d => !discs.includes(d) && A.disc[d]);
   const hatches = discs.map(dc => `<pattern id="hatch-${dc}" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="9" height="9" fill="var(--paper-2)"/><rect width="3.5" height="9" fill="${A.disc[dc].color}" opacity=".35"/></pattern>`).join('');
   const due = A.game.dueKeys().length, last = s.last;
   const daily = eco && eco.started && eco.daily ? eco.daily.quests : [];
@@ -64,7 +65,7 @@ A.route('harta', async view => {
         <div class="row"><span class="ico" style="background:#B23A2E"><svg viewBox="-14 -14 28 28">${ICON.swords}</svg></span>Bossul te așteaptă</div>
         <div class="row"><span class="ico" style="background:${eco && eco.firm ? eco.firm.color : '#5A3F8F'}"><svg viewBox="-14 -14 28 28">${ICON.flag}</svg></span>Raion cucerit</div>
         <div class="row"><span class="ico" style="background:#4A5A63"><svg viewBox="-14 -14 28 28">${ICON.lock}</svg></span>Se deschide după raionul curent</div>
-        <div class="row"><span class="sw hatch"></span>Rezervat pentru alte ramuri</div>
+        ${resDiscs.length ? `<div class="faint" style="font-size:12px;margin:8px 0 2px">Urmează (rezervate)</div>${resDiscs.map(dc => `<div class="row"><span class="sw" style="background:${A.disc[dc].color};opacity:.35"></span>${A.esc(A.disc[dc].name)}</div>`).join('')}` : ''}
         <div class="faint" style="font-size:12px;margin-top:6px">Culoarea mai intensă înseamnă stăpânire mai mare.</div>
         <div class="credit">${A.esc(MD_MAP.credit)}</div>
       </details>
@@ -101,7 +102,7 @@ A.route('harta', async view => {
       const bossLine = lock ? 'Se deschide după ce cucerești raionul curent' : A.conquered(u) ? 'Cucerit' : A.bossReady(u) ? `Bossul ${A.esc(r.boss)} te așteaptă` : `${A.study.beatenCount(u)}/9 mini-boși învinși · bossul: ${A.esc(r.boss)}`;
       return { name, title: r.title, line: bossLine + (eco && eco.branches && eco.branches.includes(u) ? ' · filiala ta' : ''), go: true };
     }
-    if (res) return { name, title: 'Rezervat: ' + A.disc[res.disc].name, line: 'Se deschide când adaugi pachetul acestei ramuri.', go: false };
+    if (res) return { name, title: (A.disc[res.disc] || { name: res.disc }).name + (res.title ? ' · ' + res.title : ''), line: 'Rezervat. Se deschide când adaugi pachetul acestei discipline.', go: false };
     return { name, title: 'Liber', line: 'Liber pentru alte ramuri de drept.', go: false };
   };
   const touchUI = A.phone() || matchMedia('(hover: none)').matches;
