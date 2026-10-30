@@ -1,0 +1,154 @@
+/* Atlasul legislativ — telefonul, ținut în picioare.
+   Se încarcă după app.css și se aplică doar pe ecrane înguste. */
+@media (max-width: 620px) {
+  :root { --rail: 0px; --hud: 52px; --tabbar: 58px; }
+  html, body { overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
+  a, button, .opt, .btn, summary, [data-do] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  input, textarea, select { font-size: 16px !important; }          /* altfel iPhone mărește pagina la scriere */
+
+  /* ---------- cadrul aplicației: antet sus, conținut, bara de file jos ---------- */
+  .shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: calc(var(--hud) + env(safe-area-inset-top)) minmax(0, 1fr) calc(var(--tabbar) + env(safe-area-inset-bottom)); height: 100vh; height: 100dvh; }
+  .view { overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+
+  .rail { grid-row: 3; grid-column: 1; flex-direction: row; align-items: stretch; justify-content: space-around;
+    padding: 0 4px env(safe-area-inset-bottom); gap: 0; border-top: 1px solid rgba(255,255,255,.08); }
+  .rail .rail-mark, .rail-spacer { display: none; }
+  .rail a { flex: 1; border-left: 0; border-top: 3px solid transparent; padding: 7px 2px 6px; gap: 3px; font-size: 11px; justify-content: center; }
+  .rail a span { display: block; }
+  .rail a svg { width: 23px; height: 23px; }
+  .rail a.on { border-left-color: transparent; border-top-color: var(--wheat); background: transparent; }
+
+  /* antetul: rang, experiență, bani, dosare — nimic care să iasă din ecran */
+  .hud { grid-column: 1; gap: 8px; padding: env(safe-area-inset-top) 12px 0; overflow: hidden; }
+  .hud .rank .stamp-mini { width: 32px; height: 32px; }
+  .hud .rank > span:last-child, .xpbar .lbl, .hud .chip.streak, .hud .chip.goal, .hud .chip.pts, .hud .chip.buff, .hud .spacer { display: none; }
+  .xpbar { flex: 1; min-width: 50px; max-width: none; }
+  .hud .chip { flex: none; padding: 4px 9px; font-size: 13px; gap: 5px; }
+  .hud .chip svg { width: 16px; height: 16px; }
+  .hud .chip.slots { padding-right: 10px; }
+  .sl { width: 10px; height: 13px; }
+
+  /* notificările: sus, scurte, nu opresc atingerile */
+  #toasts { top: calc(var(--hud) + env(safe-area-inset-top) + 8px); bottom: auto; left: 10px; right: 10px; align-items: stretch; pointer-events: none; }
+  .toast { max-width: none; font-size: 13px; line-height: 1.35; padding: 7px 12px; pointer-events: none; border-radius: 12px;
+    background: rgba(27,42,51,.92); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+  .toast > span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .toast svg, .toast .stamp-svg { width: 26px; height: 26px; }
+  .golden { width: 54px; height: 44px; }
+
+  /* ferestrele devin foi care urcă de jos */
+  #overlay { place-items: end stretch; padding: 0; }
+  .modal, .modal.wide { width: 100%; max-width: none; max-height: 88dvh; overflow-y: auto; border-radius: 18px 18px 0 0; margin: 0;
+    padding: 22px 18px calc(18px + env(safe-area-inset-bottom)); animation: sheetup .22s ease-out; }
+  .modal h2 { font-size: 22px; }
+  .modal .mbtns { flex-direction: column-reverse; gap: 8px; }
+  .modal .mbtns .btn { width: 100%; justify-content: center; }
+  @keyframes sheetup { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  /* ---------- harta ---------- */
+  .mappage { display: block; }
+  .mapwrap { position: relative; top: auto; height: auto; min-height: 0; aspect-ratio: 1020 / 1270; max-height: 68dvh; width: 100%; overflow: hidden; display: block; border-bottom: 1px solid var(--rule); }
+  .mapwrap svg.md { position: absolute; inset: 0; width: 100%; height: 100%; max-height: none; overflow: hidden; touch-action: pan-y; }
+  .mapwrap.zoomed svg.md { touch-action: none; }
+  .mapwrap .coord, .mapwrap .tooltip, #maptip { display: none !important; }
+  .ticker { top: 8px; left: 10px; right: 10px; transform: none; max-width: none; font-size: 12px; padding: 6px 12px; }
+  .legend { left: 8px; bottom: 8px; right: auto; min-width: 0; max-width: calc(100% - 70px); padding: 6px 10px; font-size: 12px; max-height: 70%; overflow-y: auto; }
+  .legend[open] { right: 8px; max-width: none; }
+  .legend .credit { display: none; }
+  .side { padding: 14px 14px 30px; gap: 16px; }
+  .playbig { margin: 0; padding: 14px 16px; border-radius: 16px; }
+  .playbig .pl { width: 46px; height: 46px; }
+  .playbig b { font-size: 24px; }
+  .quicklinks { margin: 0; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .quicklinks a { padding: 10px; grid-template-columns: 20px 1fr; }
+  .quicklinks a small { display: none; }
+
+  /* controalele hărții și foaia raionului ales */
+  .mapzoom { position: absolute; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 6px; z-index: 3; }
+  .mapzoom button { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--rule); background: var(--paper-3); color: var(--ink); font-size: 20px; line-height: 1; box-shadow: var(--shadow); }
+  .mapsheet { position: absolute; left: 8px; right: 56px; bottom: 8px; z-index: 4; background: var(--paper-3); border: 1px solid var(--rule); border-radius: 14px; box-shadow: var(--shadow);
+    padding: 12px 14px; display: grid; gap: 6px; animation: sheetup .18s ease-out; }
+  .mapsheet[hidden] { display: none; }
+  .mapsheet b { font-size: 17px; }
+  .mapsheet small { color: var(--ink-2); font-size: 13px; line-height: 1.4; }
+  .mapsheet .row2 { display: flex; gap: 8px; margin-top: 4px; }
+  .mapsheet .row2 .btn { flex: 1; justify-content: center; }
+  .md text, .md .lbl, .md .mk, .md g:not(.u) > circle, .md image { pointer-events: none; }
+  .md .unit.sel path, .md path.sel { stroke: var(--ink) !important; stroke-width: 4 !important; }
+
+  /* ---------- pagini: o singură coloană, margini egale ---------- */
+  .raion, .train, .profile, .settings, .search, .firm, .quiz, .dosar, .bossintro, .playhome, .page-inner { padding-left: 16px !important; padding-right: 16px !important; }
+  .raion, .train, .profile, .settings, .search { padding-top: 18px; padding-bottom: 30px; }
+  h1 { font-size: 30px; }
+  .raion .head { grid-template-columns: 1fr; gap: 12px; }
+  .raion .head h1 { font-size: 34px; }
+  .raion .mastery { text-align: left; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .raion .mastery .big { font-size: 30px; }
+  .raion .head .btn, .raion .mastery .btn { width: 100%; justify-content: center; }
+  .city { grid-template-columns: 1fr; }
+  .profile .idcard { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 14px; }
+  .profile .idcard > *:first-child { width: 150px; max-width: 150px; }
+  .profile .idcard > *:first-child svg, .profile .idcard > *:first-child img { width: 100%; height: auto; }
+  .statgrid, .gstats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .train .head { flex-direction: column; align-items: stretch; }
+  .train select, .train .field, .train input { width: 100%; }
+  .modes { grid-template-columns: 1fr; }
+  .settings .row { grid-template-columns: 1fr; gap: 8px; }
+  .settings .row .btn, .settings .row select { width: 100%; }
+
+  /* lectura */
+  .reader { grid-template-columns: minmax(0, 1fr); }
+  .toc { display: none; }
+  .page-inner { padding-top: 14px; padding-bottom: 30px; }
+  .chaphead { flex-direction: column; align-items: stretch; gap: 10px; }
+  .chaphead h1 { font-size: 24px; }
+  .chapstats { width: 100%; }
+  .art { grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 16px 0; }
+  .art .gut { display: flex; align-items: center; gap: 10px; text-align: left; }
+  .art .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .art .tools .btn { width: 100%; justify-content: center; }
+  .art .tools .btn.star { grid-column: auto; }
+  .chapnav { flex-direction: column; gap: 8px; }
+  .chapnav .btn { width: 100%; justify-content: center; }
+
+  /* întrebări, spețe, dosarul bossului */
+  .qcard, .dq { padding: 16px; }
+  .qcard .q, .dq .q { font-size: 18px; }
+  .opts, .opts.long { grid-template-columns: minmax(0, 1fr); }
+  .opt { padding: 13px 14px; font-size: 16px; min-height: 52px; }
+  .top { flex-wrap: wrap; gap: 8px; }
+  .top .bar, .top .bossbar { order: 3; flex-basis: 100%; }
+  .bossintro .bcard { grid-template-columns: 1fr; padding: 16px; gap: 12px; }
+  .bossintro .bseal { width: 120px; justify-self: center; }
+  .btn.big, .btn.huge { width: 100%; justify-content: center; }
+  .speta .enunt p, .speta-fold .enunt p { font-size: 15px; }
+
+  /* biroul */
+  .fhead { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .fhead h1 { font-size: 30px; }
+  .purse { text-align: left; }
+  .purse b, .purse .big { font-size: 28px !important; }
+  .ftabs { display: flex; flex-wrap: nowrap !important; overflow-x: auto; scrollbar-width: none; gap: 2px; margin: 0 -16px; padding: 0 16px; white-space: nowrap; }
+  .ftabs a { flex: none; }
+  .ftabs::-webkit-scrollbar { display: none; }
+  .slots { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .slot { min-height: 220px; padding: 10px 8px; }
+  .slot .chestbox svg { width: 76px; height: 62px; }
+  .slot b { font-size: 13px; }
+  .fgrid, .fgrid.two, .fgrid.bl, .courts, .roles, .fleet, .buylist, .garage { grid-template-columns: minmax(0, 1fr) !important; }
+  .tbl, table { display: block; overflow-x: auto; max-width: 100%; }
+  .bsets { grid-template-columns: repeat(3, 1fr); }
+  .bprev img { width: 64px; height: 64px; }
+  .drawpad canvas { width: 100% !important; height: auto !important; touch-action: none; }
+
+  img, svg, video, canvas { max-width: 100%; }
+}
+@media (max-width: 380px) {
+  .rail a { font-size: 10px; }
+  .hud .chip.slots { display: none; }
+  .quicklinks { grid-template-columns: 1fr; }
+}
+/* fără mouse: fără efecte de survol care rămân „agățate” după atingere */
+@media (hover: none) {
+  .golden:hover, .mode:hover, .opt:hover { transform: none !important; }
+}

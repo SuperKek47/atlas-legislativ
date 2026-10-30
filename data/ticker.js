@@ -1,0 +1,221 @@
+(window.__ATLAS_DATA=window.__ATLAS_DATA||{})["data/ticker.json"]={
+ "glume": [
+  "Un avocat a întârziat la ședință. Scuza: „Onorată instanță, am respectat termenul rezonabil.”",
+  "Notarul nu spune niciodată „te iubesc”. Spune „declar și semnez în prezența mea”.",
+  "Judecătorul către grefieră: „Amânăm.” Grefiera: „Pe când?” Judecătorul: „Asta amânăm și noi.”",
+  "Procurorul la cafenea: „O cafea, vă rog.” Chelnerul: „Cu zahăr?” Procurorul: „Am cerut fără circumstanțe atenuante.”",
+  "Stagiarul a citit tot Codul civil într-o noapte. A doua zi a cerut instanței să aplice analogia somnului.",
+  "De ce nu joacă avocații de-a v-ați ascunselea? Pentru că pârâtul oricum se citează prin publicitate.",
+  "Clientul: „Cât costă o consultație scurtă?” Avocatul: „Cea scurtă e întrebarea. Răspunsul e lung.”",
+  "Notarul a mers la nuntă. A cerut actele de identitate ale mirilor înainte de tort.",
+  "Un judecător nu are zile proaste. Are doar ședințe amânate pentru motive întemeiate.",
+  "Avocatul nu pierde procese. Doar le lasă pentru etapa apelului.",
+  "La examenul de notariat: „Ce faceți dacă testatorul nu știe să semneze?” Candidatul: „Îl învăț.”",
+  "Grefiera a trimis citația cu trei zile înainte. Avocatul a răspuns cu trei cereri de amânare.",
+  "Procurorul a primit flori. A întrebat imediat cine e beneficiarul real.",
+  "Executorul judecătoresc a intrat într-un magazin. Vânzătorul a scos singur inventarul.",
+  "Un stagiar întreabă: „Ce e mai greu decât un recurs?” Mentorul: „Explicarea onorariului.”",
+  "Avocatul la dentist: „Extrageți dintele, dar fără să recunoașteți pretenția.”",
+  "Notarul nu se ceartă. Autentifică dezacordul.",
+  "Judecătorul a cerut liniște în sală. Avocatul a depus o cerere de recuzare a zgomotului.",
+  "Cel mai rapid lucru din lume? Un avocat care a auzit „prescripție”.",
+  "Stagiarul a semnat cererea cu „Cu stimă”. Mentorul a adăugat: „și cu taxa de stat achitată”.",
+  "Procurorul și avocatul s-au întâlnit la pescuit. Peștii au cerut ședință închisă.",
+  "De ce le plac avocaților ploile? Pentru că și cerul formulează obiecții.",
+  "Notarul a ajuns în rai. Sfântul Petru i-a cerut două exemplare originale.",
+  "Judecătorul a scris o hotărâre de 80 de pagini. Dispozitivul: „Se respinge.”",
+  "Clientul a întrebat dacă are șanse. Avocatul a răspuns: „Depinde.” Clientul a plătit pentru „depinde”.",
+  "Grefiera nu uită nimic. Doar consemnează mai târziu.",
+  "Avocatul a primit o amendă de parcare. A depus contestație, invocând starea de necesitate a cafelei.",
+  "La facultate: „Ce e uzanța?” Studentul: „Ce facem toți, dar nu scrie nicăieri.” Profesorul: „Și nu contravine legii.”",
+  "Stagiarul a găsit un articol abrogat. L-a citat cu un respect deosebit pentru defunct.",
+  "Notarul a citit actul cu voce tare. Părțile au adormit. Actul era tot valabil."
+ ],
+ "fapte": [
+  "Codul civil al Republicii Moldova a fost adoptat prin Legea nr. 1107/2002 și republicat în 2019.",
+  "Drepturile civile pot fi limitate doar prin lege organică și doar în temeiurile prevăzute de Constituție (art. 1 CC).",
+  "Persoana fizică nu este consumator dacă cealaltă parte nu este profesionist (art. 3 CC).",
+  "Poți fi profesionist chiar dacă nu urmărești profit (art. 3 CC).",
+  "Vârsta matrimonială minimă este de 18 ani și poate fi redusă cu cel mult doi ani, pentru motive temeinice (art. 14 CF).",
+  "Capacitatea deplină de exercițiu începe la 18 ani (art. 26 CC).",
+  "Militarul dispărut în acțiuni militare poate fi declarat decedat numai după 2 ani de la încetarea acestora (art. 168 CC).",
+  "Ziua morții persoanei declarate decedată este, ca regulă, ziua în care hotărârea a rămas definitivă (art. 168 CC).",
+  "Declararea decesului produce aceleași efecte ca decesul fizic constatat (art. 168 CC).",
+  "Uzanța este o regulă de conduită neprevăzută de legislație, dar larg recunoscută și respectată regulat (art. 5 CC).",
+  "Legea nouă privind prescripția se aplică termenelor începute și neexpirate, iar timpul scurs se ia în cont (art. 7 CC).",
+  "Autoritățile tutelare sunt autoritățile administrației publice locale (art. 146 CC).",
+  "Persoana ocrotită prin curatelă poate întocmi testament de sine stătător (art. 124 CC).",
+  "Buna-credință este definită în CC ca standard de conduită: corectitudine, onestitate, deschidere (art. 11 CC).",
+  "Caracterul rezonabil se apreciază obiectiv, după natura și scopul situației (art. 12 CC)."
+ ],
+ "barfe": [
+  {
+   "t": "S-a aflat: uzanța din branșa ta se aplică doar dacă nu contravine legii, ordinii publice, bunelor moravuri și contractului.",
+   "r": {
+    "act": "CC",
+    "art": "5"
+   }
+  },
+  {
+   "t": "Zvon confirmat: instanța nu poate refuza judecata pe motiv că legea tace. Analogia îi ține de urât.",
+   "r": {
+    "act": "CC",
+    "art": "6"
+   }
+  },
+  {
+   "t": "Normele care stabilesc răspundere civilă au refuzat categoric să fie aplicate prin analogie.",
+   "r": {
+    "act": "CC",
+    "art": "6"
+   }
+  },
+  {
+   "t": "Legea nouă e curioasă, dar nu retroactivă: nu umblă la situațiile juridice stinse anterior.",
+   "r": {
+    "act": "CC",
+    "art": "7"
+   }
+  },
+  {
+   "t": "Tratatul internațional a câștigat iar disputa cu legislația civilă. Primul la rând, ca de obicei.",
+   "r": {
+    "act": "CC",
+    "art": "8"
+   }
+  },
+  {
+   "t": "Cineva și-a exercitat dreptul doar ca să-i facă rău vecinului. Codul l-a numit pe nume: abuz de drept.",
+   "r": {
+    "act": "CC",
+    "art": "13"
+   }
+  },
+  {
+   "t": "Un pârât și-a întemeiat pretenția pe propria faptă de rea-credință. Nu i-a mers.",
+   "r": {
+    "act": "CC",
+    "art": "14"
+   }
+  },
+  {
+   "t": "Gura satului: persoana răspunde, de regulă, doar pentru prejudiciul cauzat cu vinovăție.",
+   "r": {
+    "act": "CC",
+    "art": "20"
+   }
+  },
+  {
+   "t": "Un minor s-a căsătorit și a devenit, peste noapte, deplin capabil. Divorțul nu i-a luat capacitatea.",
+   "r": {
+    "act": "CC",
+    "art": "26"
+   }
+  },
+  {
+   "t": "A împlinit 16 ani, lucrează cu contract de muncă și vrea emancipare. Hotărârea o dă autoritatea tutelară.",
+   "r": {
+    "act": "CC",
+    "art": "26"
+   }
+  },
+  {
+   "t": "Toată lumea știe, dar se spune în șoaptă: persoana fizică răspunde cu tot patrimoniul, minus bunurile neurmăribile.",
+   "r": {
+    "act": "CC",
+    "art": "35"
+   }
+  },
+  {
+   "t": "Contractul care punea preț pe un rinichi a fost găsit lovit de nulitate absolută.",
+   "r": {
+    "act": "CC",
+    "art": "44"
+   }
+  },
+  {
+   "t": "Nu-ți plac funeraliile clasice? Poți decide singur felul lor. Codul îți dă voie.",
+   "r": {
+    "act": "CC",
+    "art": "49"
+   }
+  },
+  {
+   "t": "Tutela minorului se termină la 14 ani; tutorele devine curator, fără ceremonie.",
+   "r": {
+    "act": "CC",
+    "art": "63"
+   }
+  },
+  {
+   "t": "Vecina a aflat că trebuie anunțată autoritatea tutelară în 5 zile despre minorul fără ocrotire.",
+   "r": {
+    "act": "CC",
+    "art": "54"
+   }
+  },
+  {
+   "t": "Tutela și curatela se fac gratuit. Cine spera la salariu a rămas doar cu compensarea cheltuielilor.",
+   "r": {
+    "act": "CC",
+    "art": "58"
+   }
+  },
+  {
+   "t": "Ocrotirea provizorie nu ține mai mult de un an și se reînnoiește o singură dată.",
+   "r": {
+    "act": "CC",
+    "art": "101"
+   }
+  },
+  {
+   "t": "Curatorul vrea să renunțe după 3 ani? Fără motive întemeiate, nu poate până la 5 ani.",
+   "r": {
+    "act": "CC",
+    "art": "111"
+   }
+  },
+  {
+   "t": "Tutorele nou numit are doar 3 luni să inventarieze bunurile. Calculatorul e deja pornit.",
+   "r": {
+    "act": "CC",
+    "art": "137"
+   }
+  },
+  {
+   "t": "Autoritatea tutelară are 30 de zile să răspundă la cerere. Termenul curge deja.",
+   "r": {
+    "act": "CC",
+    "art": "155"
+   }
+  },
+  {
+   "t": "Ședințele consiliului de familie sunt închise. Ce se discută acolo, rămâne acolo.",
+   "r": {
+    "act": "CC",
+    "art": "160"
+   }
+  },
+  {
+   "t": "Un an fără vești de la domiciliu și poți cere declararea dispariției fără veste.",
+   "r": {
+    "act": "CC",
+    "art": "165"
+   }
+  },
+  {
+   "t": "Trei ani de tăcere — sau doar 6 luni după un accident periculos — și instanța poate declara decesul.",
+   "r": {
+    "act": "CC",
+    "art": "168"
+   }
+  },
+  {
+   "t": "Declarat decedat, dar s-a întors acasă. Instanța a anulat hotărârea și toți s-au prefăcut surprinși.",
+   "r": {
+    "act": "CC",
+    "art": "169"
+   }
+  }
+ ]
+};

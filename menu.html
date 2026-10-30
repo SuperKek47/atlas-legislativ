@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atlasul legislativ</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+  :root { --gold: #B98A12; --paper: #EDF1EC; --ink: #0B0F11; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; background: #000; color: var(--paper);
+    font-family: Bahnschrift, "DIN Alternate", "Segoe UI", system-ui, sans-serif; overflow: hidden; }
+  button { font: inherit; }
+
+  /* ---------- prefața ---------- */
+  #intro { position: fixed; inset: 0; background: #000; display: grid; place-items: center; z-index: 10; }
+  #intro .wrap { text-align: center; opacity: 0; animation: fadein 1s ease .25s forwards, fadeout .7s ease 2.5s forwards; }
+  #intro .mark { width: 110px; height: 110px; margin: 0 auto 22px; }
+  #intro h1 { margin: 0; font-size: clamp(30px, 7vw, 58px); letter-spacing: .22em; text-transform: uppercase; font-weight: 600; }
+  #intro h1 b { color: var(--gold); font-weight: 600; }
+  #intro p { margin: 14px 0 0; letter-spacing: .4em; text-transform: uppercase; font-size: 12px; color: rgba(237,241,236,.5); }
+  @keyframes fadein { to { opacity: 1; } }
+  @keyframes fadeout { to { opacity: 0; } }
+
+  /* ---------- meniul ---------- */
+  #menu { position: fixed; inset: 0; display: none; place-items: center; text-align: center;
+    background: radial-gradient(1200px 700px at 50% 30%, #1A2228 0%, #0B0F11 60%, #05080A 100%); }
+  #menu.on { display: grid; animation: fadein .5s ease both; }
+  .mwrap { padding: 20px; width: min(420px, 90vw); }
+  .logo { width: 128px; height: 128px; margin: 0 auto 10px; }
+  .title { font-size: clamp(28px, 6vw, 44px); letter-spacing: .14em; text-transform: uppercase; margin: 0; }
+  .sub { color: rgba(237,241,236,.55); letter-spacing: .26em; text-transform: uppercase; font-size: 11px; margin: 8px 0 34px; }
+  .mbtn { display: block; width: 100%; margin: 10px 0; padding: 15px 18px; cursor: pointer;
+    background: rgba(237,241,236,.06); color: var(--paper); border: 1.5px solid rgba(237,241,236,.22);
+    border-radius: 10px; font-size: 17px; letter-spacing: .08em; text-transform: uppercase; transition: .15s; }
+  .mbtn:hover, .mbtn:focus-visible { background: rgba(185,138,18,.18); border-color: var(--gold); color: #fff; outline: none; transform: translateY(-1px); }
+  .mbtn.play { background: var(--gold); border-color: var(--gold); color: #140E00; font-weight: 600; }
+  .mbtn.play:hover { background: #D7A51C; }
+  .foot { margin-top: 26px; font-size: 11px; color: rgba(237,241,236,.35); letter-spacing: .1em; }
+
+  /* ---------- setările din meniu ---------- */
+  #set { display: none; text-align: left; }
+  #set.on { display: block; }
+  .srow { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid rgba(237,241,236,.12); font-size: 15px; }
+  .srow small { display: block; color: rgba(237,241,236,.45); font-size: 12px; letter-spacing: 0; text-transform: none; }
+  .seg { display: flex; gap: 6px; }
+  .seg button { padding: 7px 12px; border-radius: 8px; border: 1.5px solid rgba(237,241,236,.22); background: transparent; color: var(--paper); cursor: pointer; font-size: 13px; }
+  .seg button.on { background: var(--gold); border-color: var(--gold); color: #140E00; }
+  .hint { color: rgba(237,241,236,.4); font-size: 12px; margin-top: 18px; line-height: 1.6; letter-spacing: 0; }
+</style>
+</head>
+<body>
+
+<div id="intro">
+  <div class="wrap">
+    <svg class="mark" viewBox="0 0 120 120" aria-hidden="true">
+      <circle cx="60" cy="60" r="44" fill="none" stroke="#B98A12" stroke-width="4"/>
+      <path d="M60 18 L68 60 L60 102 L52 60 Z" fill="#B98A12"/>
+      <circle cx="60" cy="60" r="7" fill="#000"/>
+    </svg>
+    <h1>STRATIEV <b>Games</b></h1>
+    <p>prezintă</p>
+  </div>
+</div>
+
+<div id="menu">
+  <div class="mwrap">
+    <div id="main">
+      <svg class="logo" viewBox="0 0 120 120" aria-hidden="true">
+        <circle cx="60" cy="60" r="46" fill="none" stroke="#B98A12" stroke-width="5"/>
+        <circle cx="60" cy="60" r="38" fill="none" stroke="#B98A12" stroke-width="2" stroke-dasharray="3 5"/>
+        <path d="M60 20 L68 60 L60 100 L52 60 Z" fill="#B98A12"/>
+        <circle cx="60" cy="60" r="8" fill="#0B0F11"/><circle cx="60" cy="60" r="3.4" fill="#EDF1EC"/>
+      </svg>
+      <h1 class="title">Atlasul legislativ</h1>
+      <p class="sub">Republica Moldova</p>
+      <button class="mbtn play" id="start">Start</button>
+      <button class="mbtn" id="toset">Setări</button>
+      <button class="mbtn" id="quit">Ieșire</button>
+      <div class="foot" id="foot">STRATIEV Games</div>
+    </div>
+
+    <div id="set">
+      <h1 class="title" style="font-size:26px">Setări</h1>
+      <p class="sub">înainte de joc</p>
+      <div class="srow"><div>Sunet<small>Efecte scurte la XP, monede și ștampile.</small></div>
+        <div class="seg" id="snd"><button data-v="1">Pornit</button><button data-v="0">Oprit</button></div></div>
+      <div class="srow"><div>Temă<small>Felul în care arată aplicația.</small></div>
+        <div class="seg" id="thm"><button data-v="auto">Sistem</button><button data-v="light">Lumină</button><button data-v="dark">Întuneric</button></div></div>
+      <div class="srow" id="fsrow"><div>Ecran complet<small>Fereastra jocului, fără margini.</small></div>
+        <div class="seg" id="fs"><button data-v="1">Pornit</button><button data-v="0">Oprit</button></div></div>
+      <div class="srow" id="dirrow"><div>Dosarul cu progres<small>Unde se salvează tot ce ai învățat.</small></div>
+        <div class="seg"><button id="opendir">Deschide</button></div></div>
+      <button class="mbtn" id="back" style="margin-top:20px">Înapoi</button>
+      <div class="hint">Restul setărilor (obiectivul zilnic, export, import, pachete de raion) se află în joc, la Setări.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const D = window.stratiev;              // există doar în aplicația de pe calculator
+  const $ = s => document.querySelector(s);
+  const LS = { get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } },
+               set(k, v) { try { localStorage.setItem(k, v); } catch (e) { } } };
+
+  /* prefața: 3,2 secunde, sau o apăsare */
+  const skip = () => { const i = $('#intro'); if (!i || i.dataset.gone) return; i.dataset.gone = '1'; i.remove(); $('#menu').classList.add('on'); };
+  setTimeout(skip, 3200);
+  addEventListener('pointerdown', skip, { once: true });
+  addEventListener('keydown', e => { if (!$('#intro')) return; e.preventDefault(); skip(); }, { once: true });
+
+  /* setările comune cu jocul: aceleași chei din progres */
+  const readState = () => { try { return JSON.parse(localStorage.getItem('atlas-state') || 'null') || {}; } catch (e) { return {}; } };
+  const writeSetting = (k, v) => {
+    const d = readState(); d.settings = d.settings || {}; d.settings[k] = v;
+    try { localStorage.setItem('atlas-state', JSON.stringify(d)); } catch (e) { }
+    fetch('/api/state', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) }).catch(() => { });
+  };
+  const seg = (sel, val, on) => { document.querySelectorAll(sel + ' button').forEach(b => { b.classList.toggle('on', b.dataset.v === String(val)); b.onclick = () => { on(b.dataset.v); seg(sel, b.dataset.v, on); }; }); };
+
+  const boot = async () => {
+    let st = {};
+    try { const r = await fetch('/api/state'); const d = await r.json(); if (d && d.settings) st = d.settings; } catch (e) { }
+    if (!st.theme) { const d = readState(); st = (d && d.settings) || {}; }
+    document.documentElement.dataset.theme = st.theme || 'auto';
+    seg('#snd', st.sound === false ? '0' : '1', v => writeSetting('sound', v === '1'));
+    seg('#thm', st.theme || 'auto', v => writeSetting('theme', v));
+    if (D) {
+      const on = await D.isFullscreen();
+      seg('#fs', on ? '1' : '0', async v => { await D.toggleFullscreen(v === '1'); });
+      $('#opendir').onclick = () => D.openSaveFolder();
+      const info = await D.info(); $('#foot').textContent = 'STRATIEV Games · versiunea ' + info.version;
+    } else {
+      $('#fsrow').style.display = 'none'; $('#dirrow').style.display = 'none';
+    }
+  };
+  boot();
+
+  $('#start').onclick = () => { location.href = 'index.html'; };
+  $('#toset').onclick = () => { $('#main').style.display = 'none'; $('#set').classList.add('on'); };
+  $('#back').onclick = () => { $('#set').classList.remove('on'); $('#main').style.display = ''; };
+  $('#quit').onclick = () => { if (D) D.quit(); else window.close(); };
+  addEventListener('keydown', e => {
+    if (e.key === 'Escape' && $('#set').classList.contains('on')) $('#back').click();
+    if (e.key === 'F11' && D) D.toggleFullscreen();
+  });
+})();
+</script>
+</body>
+</html>
