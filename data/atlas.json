@@ -245,6 +245,22 @@
     {
      "act": "L106",
      "role": "village"
+    },
+    {
+     "act": "LTS",
+     "role": "village"
+    },
+    {
+     "act": "L9",
+     "role": "village"
+    },
+    {
+     "act": "L514",
+     "role": "village"
+    },
+    {
+     "act": "L76",
+     "role": "village"
     }
    ],
    "short": "Legi conexe",
@@ -254,14 +270,14 @@
    "unit": "anenii-noi",
    "disc": "proc-civ",
    "title": "Procedura civilă I",
-   "about": "Codul de procedură civilă, art. 1–356: dispozițiile generale și procedura în prima instanță.",
+   "about": "Codul de procedură civilă, art. 1–259: principiile, competența, participanții, cheltuielile, termenele, probele, acțiunea civilă, dezbaterile și hotărârea.",
    "boss": "Grefiera Termenelor",
    "places": [
     {
      "act": "CPC",
      "role": "capital",
      "from": "1",
-     "to": "356"
+     "to": "259"
     }
    ],
    "short": "Procedura I",
@@ -271,30 +287,14 @@
    "unit": "causeni",
    "disc": "proc-civ",
    "title": "Procedura civilă II",
-   "about": "CPC art. 357–492 (căile de atac, extraneitatea, arbitrajul), taxa de stat, medierea și organizarea judecătorească.",
+   "about": "Codul de procedură civilă, art. 260–492: suspendarea și încetarea procesului, procedurile speciale, apelul, recursul, revizuirea și procesele cu element de extraneitate.",
    "boss": "Recurentul Tardiv",
    "places": [
     {
      "act": "CPC",
      "role": "capital",
-     "from": "357",
+     "from": "260",
      "to": "492"
-    },
-    {
-     "act": "LTS",
-     "role": "suburb"
-    },
-    {
-     "act": "L9",
-     "role": "suburb"
-    },
-    {
-     "act": "L514",
-     "role": "village"
-    },
-    {
-     "act": "L76",
-     "role": "village"
     }
    ],
    "requires": "anenii-noi",

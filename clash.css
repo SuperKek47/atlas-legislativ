@@ -357,19 +357,19 @@ button.playbig.go .shine { animation: shineFast .45s ease-out forwards; }
 
 /* deschiderea dosarului */
 .loot { cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 14px; -webkit-user-select: none; user-select: none; }
-.lt-rays { position: absolute; inset: -50%; background: repeating-conic-gradient(from 0deg, rgba(255,230,150,.10) 0 10deg, transparent 10deg 20deg); animation: spin 18s linear infinite; pointer-events: none; }
+.lt-rays { position: absolute; inset: -50%; background: repeating-conic-gradient(from 0deg, rgba(255,230,150,.10) 0 10deg, transparent 10deg 20deg); animation: cxSpin 18s linear infinite; pointer-events: none; }
 .loot.burst .lt-rays { background: repeating-conic-gradient(from 0deg, rgba(255,230,150,.28) 0 10deg, transparent 10deg 20deg); }
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes cxSpin { to { transform: rotate(360deg); } }
 .lt-title { position: relative; font: 900 26px/1 var(--display); text-shadow: var(--stroke); letter-spacing: .02em; }
 .lt-stage { position: relative; width: 260px; height: 230px; display: grid; place-items: center; }
-.lt-chest { width: 220px; transition: transform .3s, opacity .3s; animation: bob 1.8s ease-in-out infinite; }
+.lt-chest { width: 220px; transition: transform .3s, opacity .3s; animation: cxBob 1.8s ease-in-out infinite; }
 .lt-chest svg { width: 100%; height: auto; filter: drop-shadow(0 10px 0 rgba(0,0,0,.35)); }
 .lt-chest.shake { animation: chestShake .65s ease-in-out; }
 .lt-chest.gone { transform: scale(.5) translateY(80px); opacity: 0; }
 @keyframes chestShake { 0%, 100% { transform: none; } 15% { transform: rotate(-8deg) scale(1.05); } 30% { transform: rotate(8deg) scale(1.1); } 45% { transform: rotate(-10deg) scale(1.15); } 60% { transform: rotate(10deg) scale(1.2); } 80% { transform: scale(1.3); } }
-@keyframes bob { 50% { transform: translateY(-8px); } }
-.loot.burst::after { content: ''; position: absolute; inset: 0; background: #fff; animation: flash .5s ease-out forwards; pointer-events: none; }
-@keyframes flash { from { opacity: .9; } to { opacity: 0; } }
+@keyframes cxBob { 50% { transform: translateY(-8px); } }
+.loot.burst::after { content: ''; position: absolute; inset: 0; background: #fff; animation: cxFlash .5s ease-out forwards; pointer-events: none; }
+@keyframes cxFlash { from { opacity: .9; } to { opacity: 0; } }
 .lt-card { position: absolute; inset: 0; margin: auto; width: 200px; height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
   border-radius: 20px; border: 3px solid var(--outline); background: linear-gradient(180deg, #2C5C98, #1B3A64); box-shadow: 0 6px 0 var(--outline), 0 0 40px rgba(111,195,255,.35); }
 .lt-card.rare { background: linear-gradient(180deg, #8B4FD6, #4B2490); box-shadow: 0 6px 0 var(--outline), 0 0 50px rgba(197,155,255,.6); }
@@ -389,7 +389,7 @@ button.playbig.go .shine { animation: shineFast .45s ease-out forwards; }
 
 /* nivel nou */
 .lvlup { flex-direction: column; }
-.lu-rays { position: absolute; inset: -50%; background: repeating-conic-gradient(from 0deg, rgba(111,195,255,.12) 0 9deg, transparent 9deg 18deg); animation: spin 22s linear infinite; }
+.lu-rays { position: absolute; inset: -50%; background: repeating-conic-gradient(from 0deg, rgba(111,195,255,.12) 0 9deg, transparent 9deg 18deg); animation: cxSpin 22s linear infinite; }
 .lu-box { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; width: min(400px, 100%); }
 .lu-kicker { font: 900 20px/1 var(--display); letter-spacing: .25em; color: var(--gold-1); text-shadow: var(--stroke); animation: banner .5s var(--spring) forwards; opacity: 0; transform: translateY(-30px); }
 .lu-shield { width: 150px; height: 150px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--gold-2), #FFF1B8, var(--gold-2), #C77A00, var(--gold-2)); border: 4px solid var(--outline); box-shadow: 0 6px 0 var(--outline), 0 0 60px rgba(255,200,58,.6); animation: shieldIn .6s var(--spring); }
@@ -470,4 +470,14 @@ button.playbig.go .shine { animation: shineFast .45s ease-out forwards; }
   .offers { gap: 7px; } .offer b { font-size: 11.5px; }
   .vbanner span { font-size: 30px; }
   .dock { gap: 7px; }
+}
+
+/* textul stă pe loc: fără deplasare laterală și fără mărire cu degetele pe telefon */
+@media (max-width: 620px) {
+  html, body, .shell, .view { touch-action: pan-y; overscroll-behavior: none; }
+  .view { overflow-x: hidden !important; overscroll-behavior-x: none; }
+  .view > * { max-width: 100%; overflow-x: hidden; }
+  .view .btn { white-space: normal; max-width: 100%; overflow-wrap: anywhere; text-align: center; }
+  .chapnav .btn { line-height: 1.25; padding: 10px 12px; }
+  .art, .art .body, .art .body p { max-width: 100%; overflow-wrap: break-word; }
 }
