@@ -142,19 +142,20 @@ A.route('joc', async (view, [mode, arg]) => {
     const type = total >= n ? (Math.random() < .15 ? 'aur' : 'argint') : total >= n - 1 ? 'argint' : total >= 2 ? 'simplu' : null;
     const got = type && E.grantChest(type, 'Joc rapid');
     A.S.quiz.farm = (A.S.quiz.farm || 0) + 1; A.store.save(); A.game.checkStamps();
-    root.innerHTML = `<div class="qcard summary"><div class="big">${total}/${n}</div><p class="muted">${gok}/3 grile corecte · ${A.esc(spMsg)}</p><p><b>+${A.lei(money)}</b> · <b>+${xp} XP</b> · <b>+${gok} grile</b></p>
-      <p>${type ? (got ? `Ai primit un ${E.CHESTS[type].name.toLowerCase()}.` : 'Sloturile de dosare sunt pline: deschide un dosar ca să primești altele.') : 'Fără dosar de data asta: ai nevoie de cel puțin 2 răspunsuri corecte.'}</p>
-      <div class="mbtns"><button class="btn primary" id="again">Încă o rundă</button><a class="btn" href="#/harta">Harta</a></div></div>`;
-    const ag = A.$('#again', root); if (ag) ag.onclick = () => A.render();
+    const R = A.arena, crowns = total >= n ? 3 : total >= n - 1 ? 2 : total >= 2 ? 1 : 0;
+    root.innerHTML = '';
+    R.victory({ win: total >= 2, crowns, title: `${total} din ${n} corecte`, sub: `${gok}/3 grile · ${A.esc(spMsg)}<br>${type ? (got ? `Ai primit un ${E.CHESTS[type].name.toLowerCase()}.` : 'Sloturile de dosare sunt pline: deschide un dosar ca să primești altele.') : 'Fără dosar: ai nevoie de cel puțin 2 răspunsuri corecte.'}`,
+      rewards: [{ ico: R.ICO.lei, n: Math.round(money), label: 'lei' }, { ico: R.ICO.xp, n: xp, label: 'XP' }, { ico: R.ICO.gr, n: gok, label: 'puncte-grilă' }].concat(type && got ? [{ ico: R.ICO.chest(type), label: E.CHESTS[type].name }] : []),
+      primary: { t: 'Încă o rundă', fn: () => { if (A.arena.useEnergy()) A.render(); else A.go('#/harta'); } }, secondary: { t: 'Harta', href: '#/harta' } });
   };
 });
 
 /* ---------------- testul de deschidere imediată ---------------- */
 async function speedTest(view, slot) {
   const E = A.eco, s = E.s(), c = s.slots[slot];
-  if (!c || !c.unlockEnd || c.unlockEnd <= Date.now() || c.speedLocked) return A.go('#/firma');
+  if (!c || !c.unlockEnd || c.unlockEnd <= Date.now() || c.speedLocked) return A.go('#/harta');
   const pool = P.examPool();
-  if (pool.length < E.SPEED_N) { A.toast('Nu sunt destule grile în raioanele deschise.'); return A.go('#/firma'); }
+  if (pool.length < E.SPEED_N) { A.toast('Nu sunt destule grile în raioanele deschise.'); return A.go('#/harta'); }
   const go = () => {
     c.speedLocked = true; A.store.save();   // o singură încercare per dosar
     const root = document.createElement('div'); root.className = 'quiz'; view.innerHTML = ''; view.appendChild(root);
@@ -162,11 +163,11 @@ async function speedTest(view, slot) {
     P.examRun(root, list, `Deschide ${E.CHESTS[c.type].name.toLowerCase()}`, 30, (ok, n) => {
       if (ok >= E.SPEED_PASS) c.speedLocked = false;
       E.speedResult(slot, ok, n);
-      root.innerHTML = `<div class="qcard summary"><div class="big">${ok}/${n}</div><p>${ok >= E.SPEED_PASS ? 'Dosarul se deschide acum.' : `Ai nevoie de ${E.SPEED_PASS} corecte. Dosarul se va deschide la timpul lui.`}</p><a class="btn primary" href="#/firma">Înapoi la birou</a></div>`;
+      root.innerHTML = `<div class="qcard summary"><div class="big">${ok}/${n}</div><p>${ok >= E.SPEED_PASS ? 'Dosarul se deschide acum.' : `Ai nevoie de ${E.SPEED_PASS} corecte. Dosarul se va deschide la timpul lui.`}</p><a class="btn primary" href="#/harta">Înapoi la hartă</a></div>`;
     });
   };
   view.innerHTML = `<div class="playhome"><div class="playhero"><h1>Deschide dosarul acum</h1><p class="muted">${E.SPEED_N} grile de examen, 30 de secunde fiecare. Ai nevoie de cel puțin ${E.SPEED_PASS} răspunsuri corecte. Ai o singură încercare: dacă pici, dosarul se deschide doar la timpul lui.</p>
-    <div class="mbtns"><button class="btn primary huge" id="go">Încep testul</button><a class="btn" href="#/firma">Renunț</a></div></div></div>`;
+    <div class="mbtns"><button class="btn primary huge" id="go">Încep testul</button><a class="btn" href="#/harta">Renunț</a></div></div></div>`;
   A.$('#go', view).onclick = go;
 }
 })();

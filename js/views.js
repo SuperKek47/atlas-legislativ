@@ -87,6 +87,7 @@ A.route('harta', async view => {
     </div>
     <aside class="side">
       <div class="dock">
+        <div class="enwrap">${A.arena.energyHTML()}</div>
         <button type="button" class="playbig" id="play"><b>PLAY</b><i class="shine"></i></button>
         <div class="dockslots">${hasEco ? E.dockHTML() : `<a class="cs found" href="#/firma"><b>Înființează biroul</b><small>ca să primești dosare</small></a>`}</div>
       </div>
@@ -101,7 +102,8 @@ A.route('harta', async view => {
   </div>`;
   const tip = document.createElement('div'); tip.className = 'maptip'; tip.hidden = true; view.appendChild(tip);
   /* PLAY: sclipire, apoi jocul apare din estompare */
-  A.$('#play', view).onclick = e => { const b = e.currentTarget; if (b.classList.contains('go')) return; b.classList.add('go'); A.sound('level'); setTimeout(() => A.fadeGo('#/joc'), 520); };
+  A.$('#play', view).onclick = e => { const b = e.currentTarget; if (b.classList.contains('go')) return; if (!A.arena.useEnergy()) return; b.classList.add('go'); A.buzz([20, 40, 60]); A.sound('level'); setTimeout(() => A.fadeGo('#/joc'), 520); };
+  A.every(5000, () => { const w = A.$('.enwrap', view); if (w) w.innerHTML = A.arena.energyHTML(); });
   /* rândul de dosare și butoanele rotunde de pe hartă */
   const dock = A.$('.dockslots', view);
   if (hasEco) {
@@ -258,7 +260,8 @@ function chaptersHTML(unit) {
   const cur = A.study.activeChapter(unit);
   return `<section class="chaps"><h2 class="regh">Capitolele și mini-boșii</h2>${cs.map(c => {
     const st = A.study.chapStats(c), open = A.study.chapterOpen(c), won = A.study.beaten(c.id), ready = A.study.miniReady(c), isCur = cur && cur.id === c.id && !A.conquered(unit);
-    return `<details class="chap ${won ? 'won' : ready ? 'ready' : open ? '' : 'lock'}" ${isCur ? 'open' : ''}><summary><span class="cn">${c.ci + 1}</span><span class="ct"><b>${A.esc(c.name)}</b><small>Mini-boss: ${A.esc(c.boss)} · ${open ? `${st.und}/${st.n} articole înțelese` : 'blocat până învingi mini-bossul anterior'}</small></span>
+    const [rk, rn] = A.arena.rarity(c.ci);
+    return `<details class="chap rar-${rk} ${won ? 'won' : ready ? 'ready' : open ? '' : 'lock'}" ${isCur ? 'open' : ''}><summary><span class="cn">${c.ci + 1}</span><span class="ct"><b>${A.esc(c.name)}</b><span class="mb"><span class="rar ${rk}">${rn}</span><span class="mbn">${A.esc(c.boss)}</span><span class="hearts">${'♥'.repeat(3)}</span><span class="prize">${A.lei(A.eco.miniPrize ? A.eco.miniPrize(c) : 0)}</span></span><small> ${open ? `${st.und}/${st.n} articole înțelese` : 'blocat până învingi mini-bossul anterior'}</small></span>
       ${won ? '<span class="ok">învins</span>' : ready ? `<a class="btn small primary" href="#/cariera/mini/${c.id}">Provoacă</a>` : open ? `<span class="num">${st.microDone}/${st.micro}</span>` : '<span class="faint">blocat</span>'}</summary>
       <div class="micros">${c.micro.map(m => { const ms = A.study.microStats(m), first = m.arts.find(a => !A.study.artDone(m.act, a)) || m.arts[0]; const gN = (A.study.gByMicro[m.id] || []).length, sN = (A.study.sByMicro[m.id] || []).length;
         return `<a class="micro ${ms.done ? 'done' : ''} ${open ? '' : 'lock'}" href="#/act/${m.act}/a/${first}"><span><b>${A.esc(m.name)}</b><small>${A.esc(A.actShort(m.act))}, art. ${A.idToNum(m.arts[0])}–${A.idToNum(m.arts[m.arts.length - 1])}${gN || sN ? ` · ${gN} grile, ${sN} spețe` : ''}</small></span><span class="num">${ms.und}/${ms.n}</span><div class="bar thin"><i style="width:${ms.und / ms.n * 100}%"></i></div></a>`; }).join('')}</div></details>`; }).join('')}</section>`;
@@ -482,6 +485,7 @@ A.route('lectura', async view => {
     return `<a href="#/raion/${x.unit}" class="lr ${lock ? 'lockd' : ''} ${won ? 'won' : ''}"><span class="dot" style="background:${won && s.eco && s.eco.started ? s.eco.firm.color : A.disc[x.disc].color}"></span><span><b>${A.esc(x.name)}</b><small>${A.esc(x.short)} · ${lock ? 'se deschide după raionul curent' : won ? 'cucerit' : `capitolul ${Math.min(9, b + 1)} din 9 · ${pc}%`}</small></span><span class="num">${lock ? '🔒' : won ? '✓' : b + '/9'}</span></a>`; }).join('');
   view.innerHTML = `<div class="lectura">
     <form class="lsearch" id="lq"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></svg><input id="q" placeholder="Caută: uzucapiune, termen de apel…" enterkeyhint="search"></form>
+    ${A.arena.roadStrip()}
     ${r ? `<a class="lnow" href="#/raion/${cu}" style="--pc:${A.conqColor(A.conqPct(cu))}"><small>Acum studiezi · ${A.esc(r.name)} · ${A.esc(r.short)}</small><b>Capitolul ${c.ci + 1}: ${A.esc(c.name)}</b>
       <span class="lbar"><i style="width:${Math.round(A.conqPct(cu) * 100)}%"></i></span><small>${cs.und}/${cs.n} articole înțelese în capitol · ${A.study.beatenCount(cu)}/9 mini-boși · ${Math.round(A.conqPct(cu) * 100)}% cucerit</small><span class="go">Continuă lectura ›</span></a>` : ''}
     <div class="ltiles">
@@ -567,6 +571,7 @@ A.route('setari', async view => {
   view.innerHTML = `<div class="settings"><a class="backlink" href="#/firma">‹ Biroul</a><h1>Setări</h1>
     <div class="row"><div><b>Obiectivul zilnic</b><small>Câte XP vrei să aduni în fiecare zi.</small></div><select id="goal">${[30, 60, 100, 150, 250].map(g => `<option ${g === st.goal ? 'selected' : ''}>${g}</option>`).join('')}</select></div>
     <div class="row"><div><b>Sunet</b><small>Efecte scurte la XP, monede și ștampile.</small></div><select id="snd"><option value="1" ${st.sound ? 'selected' : ''}>Pornit</option><option value="0" ${!st.sound ? 'selected' : ''}>Oprit</option></select></div>
+    <div class="row"><div><b>Vibrații</b><small>Vibrație scurtă la dosare, victorii și nivel nou, pe telefoanele care o permit. iPhone nu permite vibrații aplicațiilor web.</small></div><select id="vib"><option value="1" ${st.vib !== false ? 'selected' : ''}>Pornite</option><option value="0" ${st.vib === false ? 'selected' : ''}>Oprite</option></select></div>
     <div class="row"><div><b>Temă</b><small>Luminoasă, întunecată sau după sistem.</small></div><select id="theme"><option value="auto">După sistem</option><option value="light">Luminoasă</option><option value="dark">Întunecată</option></select></div>
     <div class="row"><div><b>Exportă progresul</b><small>Salvează un fișier cu tot progresul tău (copie de siguranță).</small></div><button class="btn" id="exp">Exportă</button></div>
     <div class="row"><div><b>Importă progresul</b><small>Înlocuiește progresul curent cu cel dintr-un fișier exportat.</small></div><label class="btn">Alege fișierul<input type="file" id="imp" accept=".json" hidden></label></div>
@@ -583,6 +588,7 @@ A.route('setari', async view => {
   }
   A.$('#goal', view).onchange = e => { st.goal = +e.target.value; A.store.save(); A.hud(); };
   A.$('#snd', view).onchange = e => { st.sound = e.target.value === '1'; A.store.save(); };
+  A.$('#vib', view).onchange = e => { st.vib = e.target.value === '1'; A.store.save(); A.buzz(30); };
   A.$('#theme', view).onchange = e => { st.theme = e.target.value; A.applyTheme(); A.store.save(); };
   A.$('#exp', view).onclick = () => { const b = new Blob([JSON.stringify(A.S, null, 1)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `atlas-progres-${A.today()}.json`; a.click(); };
   A.$('#imp', view).onchange = async e => { const f = e.target.files[0]; if (!f) return; try { const d = JSON.parse(await f.text()); if (!d.v) throw 0; A.store.data = Object.assign(A.defaultState(), d); A.eco.init(); await A.store.flush(); A.toast('Progres importat.'); A.render(); } catch (x) { A.toast('Fișierul nu este un export valid.'); } };

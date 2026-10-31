@@ -476,7 +476,11 @@ E.dockTap = i => {
   if (!c) { A.toast('Slot liber. Dosarele vin din jocul rapid, micro-secțiuni, procese, misiuni și mini-boși.'); return; }
   const lock = E.chestsLocked(); if (lock) { A.toast(`Dosarele se deschid după etapa de începător: mai citește ${lock} ${lock === 1 ? 'articol' : 'articole'}.`); A.sound('warn'); return; }
   if (c.unlockEnd && c.unlockEnd <= Date.now()) return E.openChest(i);
-  if (c.unlockEnd) return A.go('#/firma');
+  if (c.unlockEnd) { const C = E.CHESTS[c.type];
+    const m = A.modal(`<div class="chestbox">${E.chestSVG(c.type)}</div><h2>${C.name}</h2><p>Se deschide peste <b>${E.shortDur(c.unlockEnd - Date.now())}</b>.</p>
+      ${c.speedLocked ? '<p class="faint">Testul a fost picat: dosarul se deschide la timpul lui.</p>' : `<p>Sau îl deschizi acum: ${E.SPEED_N} grile grele, ai nevoie de ${E.SPEED_PASS} corecte. O singură încercare.</p>`}
+      <div class="mbtns">${c.speedLocked ? '' : `<button class="btn primary" id="spd">Deschide acum: testul</button>`}<button class="btn" data-close>Închide</button></div>`);
+    const b = A.$('#spd', m.el); if (b) b.onclick = () => { m.close(); E.speedChest(i); }; return; }
   if (E.unlocking()) { A.toast('Se deblochează deja alt dosar. Câte unul pe rând.'); A.sound('warn'); return; }
   E.startUnlock(i); A.sound('chest');
 };

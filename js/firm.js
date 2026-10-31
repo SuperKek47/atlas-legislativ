@@ -14,7 +14,7 @@ const logo = () => `<span class="flogo">${A.brand.logo()}</span>`;
 const GEAR = '<a class="gear" href="#/setari" aria-label="Setări"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 2h3.4l.5 2.6c.7.2 1.3.5 1.9.9l2.4-1.2 2.4 2.4-1.2 2.4c.4.6.7 1.2.9 1.9l2.6.5v3.4l-2.6.5c-.2.7-.5 1.3-.9 1.9l1.2 2.4-2.4 2.4-2.4-1.2c-.6.4-1.2.7-1.9.9l-.5 2.6h-3.4l-.5-2.6c-.7-.2-1.3-.5-1.9-.9l-2.4 1.2-2.4-2.4 1.2-2.4c-.4-.6-.7-1.2-.9-1.9L1 13.7v-3.4l2.6-.5c.2-.7.5-1.3.9-1.9L3.3 5.5l2.4-2.4 2.4 1.2c.6-.4 1.2-.7 1.9-.9z"/><circle cx="12" cy="12" r="3.6"/></svg></a>';
 A.GEAR = GEAR;
 const head = (title, sub) => { const s = E.s(); return `<div class="fhead" style="--firm:${s.firm.color}">${GEAR}<div class="fh1">${logo()}<div><div class="faint" style="font-size:13px">${A.esc(s.firm.name)}</div><h1>${title}</h1>${sub ? `<p class="muted">${sub}</p>` : ''}</div></div>
-  <div class="purse"><b class="${s.money < 0 ? 'neg' : ''}">${A.lei(s.money)}</b><small>putere juridică ${A.fmt(E.power())} · bonus onorarii +${Math.round((E.feeMult() - 1) * 100)}% · salarii ${A.lei(E.dailyCost())}/zi</small></div></div>`; };
+  <div class="purse"><b class="${s.money < 0 ? 'neg' : ''}">${A.lei(s.money)}</b><small>◆ ${A.fmt(A.S.points.grile)} puncte-grilă · ✦ ${A.fmt(A.S.points.spete)} puncte-speță · putere juridică ${A.fmt(E.power())} · bonus onorarii +${Math.round((E.feeMult() - 1) * 100)}% · salarii ${A.lei(E.dailyCost())}/zi</small></div></div>`; };
 const prog = (a, b) => `<div class="bar thin"><i data-prog="${a},${b}" style="width:${(A.clamp((Date.now() - a) / (b - a), 0, 1) * 100).toFixed(1)}%"></i></div>`;
 const until = t => `<span class="num" data-until="${t}">${A.dur(t - Date.now())}</span>`;
 const at = el => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top }; };
@@ -190,6 +190,7 @@ A.route('firma', async (view, [sub]) => {
   const q = s.daily ? s.daily.quests : [];
   const nextTimes = [...s.consults.map(c => c.end), ...s.procs.map(p => p.end), ...s.slots.filter(c => c && c.unlockEnd).map(c => c.unlockEnd), s.freeStock < 2 ? s.freeAt : 0];
   view.innerHTML = `<div class="firm">${head('Biroul', '')}${tabs('')}
+    ${A.arena.shopHTML()}
     <div class="fgrid">
       <section class="fsec"><div class="sh"><h2>De încasat</h2></div>
         <div class="income"><div><b>${A.lei(pas)}</b><small>din ${s.branches.length} ${s.branches.length === 1 ? 'filială' : 'filiale'} · ${A.lei(rate)} pe oră${A.active() ? '' : ' · <span style="color:var(--seal)">oprit: studiază ca filialele să producă</span>'}</small></div><button class="btn primary" data-do="passive" ${pas < 1 ? 'disabled' : ''}>Încasează</button></div>
@@ -197,8 +198,7 @@ A.route('firma', async (view, [sub]) => {
         ${readyP.map(p => `<div class="income"><div><b>${A.esc(p.title)}</b><small>avocatul s-a întors de la ${A.esc(A.unitById[p.unit].name)}</small></div><button class="btn primary" data-do="cp:${p.id}">Află verdictul</button></div>`).join('')}
         ${!readyC.length && !readyP.length ? `<p class="faint" style="margin:10px 0 0">Nicio consultație sau proces terminat încă.</p>` : ''}
       </section>
-      <section class="fsec"><div class="sh"><h2>Misiunile zilei</h2><span class="faint">Toate trei aduc un dosar de aur</span></div>
-        ${q.map(x => `<div class="quest ${x.done ? 'done' : ''}"><span>${A.esc(x.t)}</span><span class="num">${Math.min(x.p, x.n)}/${x.n}</span><div class="bar thin"><i style="width:${Math.min(100, x.p / x.n * 100)}%"></i></div></div>`).join('')}</section>
+      ${A.arena.questsHTML()}
       <section class="fsec"><div class="sh"><h2>Pe scurt</h2></div>
         <div class="kv"><span>Puterea juridică</span><b>${A.fmt(E.power())}</b></div>
         <div class="kv"><span>Echipa</span><b>${s.staff.length}/${E.staffLimit()} · ${busy} ocupați${strike ? ` · <span style="color:var(--seal)">${strike} în grevă</span>` : ''}</b></div>
@@ -215,6 +215,7 @@ A.route('firma', async (view, [sub]) => {
     passive: b => { E.collectPassive(at(b)); A.render(); },
     cc: (b, id) => { E.collectConsult(+id, at(b)); A.render(); }, cp: (b, id) => { E.collectProc(+id, at(b)); A.render(); },
   });
+  A.arena.bindBiroul(view);
   watch(nextTimes);
 });
 
@@ -498,30 +499,26 @@ function miniDuel(view, c) {
       const wrongKeys = [...new Set(res.wrong)];
       A.S.study.prep[cid] = { need: E.MINI_PREP, done: 0, at: Date.now(), keys: wrongKeys.length ? wrongKeys : chapKeys(c).slice(0, 12) };
       A.store.save();
-      root.innerHTML = `<div class="qcard summary"><div class="big">${res.ok}/${E.MINI.hp}</div>
-        <p class="muted">${A.esc(c.boss)} te-a scos din sală. Cheltuieli: ${A.lei(fee)}.</p>
-        <p>Înainte de revanșă ai de răspuns la ${E.MINI_PREP} întrebări din articolele la care ai greșit.</p>
-        ${wrongKeys.length ? `<div class="weak" style="text-align:left;margin:14px 0"><h3 style="margin-bottom:6px">De recitit</h3>${wrongKeys.slice(0, 8).map(k => { const [a, r] = k.split(':'); return `<a href="#/act/${a}/a/${r}"><span>${A.actShort(a)}, art. ${A.idToNum(r)}</span><span class="faint">deschide</span></a>`; }).join('')}</div>` : ''}
-        <div class="mbtns"><button class="btn primary" id="prep">Începe pregătirea</button><a class="btn" href="#/raion/${c.unit}">Înapoi</a></div></div>`;
-      A.$('#prep', root).onclick = () => miniPrep(view, c, A.S.study.prep[cid].keys);
+      root.innerHTML = '';
+      A.arena.victory({ win: false, crowns: 0, title: `${A.esc(c.boss)} te-a scos din sală`, sub: `${res.ok}/${E.MINI.hp} lovituri date · cheltuieli ${A.lei(fee)}.<br>Înainte de revanșă: ${E.MINI_PREP} întrebări din articolele la care ai greșit.`,
+        extra: wrongKeys.length ? `<div class="vweak">${wrongKeys.slice(0, 6).map(k => { const [a, r] = k.split(':'); return `<a href="#/act/${a}/a/${r}">${A.actShort(a)}, art. ${A.idToNum(r)}</a>`; }).join('')}</div>` : '',
+        primary: { t: 'Începe pregătirea', fn: () => miniPrep(view, c, A.S.study.prep[cid].keys) }, secondary: { t: 'Înapoi', href: '#/raion/' + c.unit } });
       return;
     }
     if (rematch) {
       const p2 = E.earn(Math.round(E.miniPrize(c) * .3)); A.game.addXP(15); A.store.save();
-      root.innerHTML = `<div class="qcard summary"><div class="big">${res.ok}/${res.answered}</div><p>Revanșă câștigată: +${A.lei(p2)} · +15 XP.</p><a class="btn primary" href="#/raion/${c.unit}">Înapoi</a></div>`;
+      const lv = Math.max(0, E.MINI.lives - (res.answered - res.ok)); root.innerHTML = '';
+      A.arena.victory({ win: true, crowns: lv, title: 'Revanșă câștigată', rewards: [{ ico: A.arena.ICO.lei, n: p2, label: 'lei' }, { ico: A.arena.ICO.xp, n: 15, label: 'XP' }], primary: { t: 'Înapoi', href: '#/raion/' + c.unit } });
       return;
     }
     A.S.study.chapters[cid] = A.today();
     const prize = E.earn(E.miniPrize(c)); A.game.addXP(60); E.grantChest(c.ci >= 6 ? 'aur' : 'argint', 'Mini-boss învins'); A.S.points.grile += 5;
     const got = E.grantPerk(perk.id, 'Trofeu: ' + c.boss);
-    A.store.save(); A.game.checkStamps(); A.sound('level'); A.confetti();
-    const next = ST.chapters(c.unit)[c.ci + 1];
-    root.innerHTML = `<div class="qcard summary"><div class="stampwrap slam" style="color:var(--seal)">${A.stampSVG('capitol', 'mini-boss', String(c.ci + 1), 'var(--seal)', -10)}</div>
-      <h2>${A.esc(c.boss)} a fost învins</h2>
-      <p>+${A.lei(prize)} · +60 XP · un dosar · +5 puncte-grilă.</p>
-      ${got ? `<div class="trophy"><b>Trofeu: ${A.esc(got.n)}</b><span>${A.esc(got.d)}</span></div>` : ''}
-      <p class="muted">${next ? `S-a deschis capitolul ${c.ci + 2}: ${A.esc(next.name)}.` : `Toți mini-boșii au căzut: dosarul bossului, ${A.esc(A.raion(c.unit).boss)}, te așteaptă.`}</p>
-      <div class="mbtns"><a class="btn primary" href="#/raion/${c.unit}">Înapoi la raion</a></div></div>`;
+    A.store.save(); A.game.checkStamps();
+    const next = ST.chapters(c.unit)[c.ci + 1], lives = Math.max(0, E.MINI.lives - (res.answered - res.ok)), [rk, rn] = A.arena.rarity(c.ci); root.innerHTML = '';
+    A.arena.victory({ win: true, crowns: lives, title: `${c.boss} a fost învins`, sub: `<span class="rar ${rk}">${rn}</span> Capitolul ${c.ci + 1} · ${lives} ${lives === 1 ? 'viață rămasă' : 'vieți rămase'}<br>${next ? `S-a deschis capitolul ${c.ci + 2}: ${A.esc(next.name)}.` : `Toți mini-boșii au căzut: dosarul bossului, ${A.esc(A.raion(c.unit).boss)}, te așteaptă.`}`,
+      rewards: [{ ico: A.arena.ICO.lei, n: prize, label: 'lei' }, { ico: A.arena.ICO.xp, n: 60, label: 'XP' }, { ico: A.arena.ICO.gr, n: 5, label: 'puncte-grilă' }, { ico: A.arena.ICO.chest(c.ci >= 6 ? 'aur' : 'argint'), label: 'dosar' }],
+      extra: got ? `<div class="trophy"><b>Trofeu: ${A.esc(got.n)}</b><span>${A.esc(got.d)}</span></div>` : '', primary: { t: 'Înapoi la raion', href: '#/raion/' + c.unit } });
   } });
 }
 
