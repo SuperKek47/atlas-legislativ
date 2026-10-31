@@ -456,6 +456,7 @@ E.shortDur = ms => { ms = Math.max(0, ms); const h = Math.floor(ms / 3600e3), m 
 E.dockHTML = () => {
   const s = E.s();
   if (!s || !s.started) return `<a class="cs found" href="#/firma"><b>Înființează biroul</b><small>ca să primești dosare</small></a>`;
+  if (!s.slots.length) s.slots.push(null, null, null, null);
   const n = Date.now(), lock = E.chestsLocked(), busy = E.unlocking();
   return s.slots.slice(0, 4).map((c, i) => {
     if (!c) return `<button type="button" class="cs empty" data-cs="${i}" aria-label="Slot liber"><span class="ph"></span><small>Slot liber</small></button>`;
@@ -569,5 +570,5 @@ E.hudBits = () => {
   return `${buffs.length ? `<span class="chip buff" title="${A.esc(buffs.map(b => b.label).join(', '))}">${A.esc(buffs[0].label.split(':')[0])} · <span data-until="${buffs[0].until}">${A.dur(buffs[0].until - n)}</span></span>` : ''}
    <span class="chip pts" title="Puncte-grilă / puncte-speță: monede de studiu pentru îmbunătățiri">◆ ${A.fmt(A.S.points.grile)} · ✦ ${A.fmt(A.S.points.spete)}</span>
    <a class="chip money ${s.money < 0 ? 'neg' : ''}" href="#/firma" style="text-decoration:none" title="Onorarii"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="var(--wheat)"/><text x="12" y="16.5" font-size="12" text-anchor="middle" fill="#3D2E05" font-family="Bahnschrift,sans-serif" font-weight="700">L</text></svg>${A.fmt(s.money)}</a>
-   <a class="chip slots" href="#/firma" style="text-decoration:none" title="Dosare-cufăr">${slots}${ready ? `<b class="ready-n">${ready}</b>` : ''}</a>`;
+`;
 };

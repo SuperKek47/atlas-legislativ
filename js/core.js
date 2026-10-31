@@ -445,7 +445,8 @@ A.render = async () => {
   A.timers.forEach(t => clearInterval(t)); A.timers = [];
   const parts = (location.hash.replace(/^#\/?/, '') || 'harta').split('/').map(decodeURIComponent);
   const name = parts[0];
-  A.$$('.rail a[data-nav]').forEach(a => a.classList.toggle('on', a.dataset.nav === name || (name === 'raion' && a.dataset.nav === 'harta') || (name === 'act' && a.dataset.nav === 'harta') || (['firma', 'garaj', 'cariera', 'profil'].includes(name) && a.dataset.nav === 'firma') || (['joc', 'antrenament'].includes(name) && a.dataset.nav === 'harta')));
+  const navOf = { lectura: 'lectura', cautare: 'lectura', raion: 'lectura', act: 'lectura', antrenament: 'lectura', firma: 'firma', garaj: 'firma', cariera: 'firma', profil: 'firma', setari: 'firma', harta: 'harta', joc: 'harta' };
+  A.$$('.rail a[data-nav]').forEach(a => a.classList.toggle('on', a.dataset.nav === (navOf[name] || name)));
   const view = A.$('#view');
   const fn = A.routes[name] || A.routes.harta;
   try { await fn(view, parts.slice(1)); }
@@ -455,16 +456,6 @@ A.render = async () => {
 A.every = (ms, fn) => { const t = setInterval(fn, ms); A.timers.push(t); return t; };
 window.addEventListener('hashchange', () => A.render());
 
-/* ---------------- înălțimea reală a ecranului ----------------
-   Pe iPhone, aplicația instalată raportează 100vh mai mic decât ecranul (fără bara de stare),
-   iar dedesubt rămânea o fâșie goală. În modul instalat folosim înălțimea ecranului. */
-A.fitHeight = () => {
-  const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
-  const h = standalone && innerWidth < 700 && innerHeight > innerWidth ? Math.max(innerHeight, screen.height) : innerHeight;
-  document.documentElement.style.setProperty('--apph', h + 'px');
-};
-A.fitHeight(); addEventListener('resize', A.fitHeight); addEventListener('orientationchange', () => setTimeout(A.fitHeight, 250));
-
 /* insignele roșii de pe file: ce așteaptă să fie luat */
 A.navBadges = () => {
   const E = A.eco, s = E && E.s && E.s(); const n = Date.now();
@@ -473,6 +464,20 @@ A.navBadges = () => {
   const chests = E.chestsLocked() ? 0 : s.slots.filter(c => c && c.unlockEnd && c.unlockEnd <= n).length + (s.freeStock > 0 ? 1 : 0);
   const office = s.consults.filter(c => c.end <= n).length + s.procs.filter(p => p.end <= n).length;
   set('harta', chests); set('firma', office);
+  try { set('lectura', A.game.dueKeys().length); } catch (e) { }
+};
+
+/* ---------------- ecranul de pornire și trecerile cu estompare ---------------- */
+A.splashDone = () => {
+  const sp = A.$('#splash'); if (!sp) return;
+  const wait = Math.max(0, 1800 - performance.now());
+  setTimeout(() => { sp.classList.add('out'); document.documentElement.classList.remove('splashing'); setTimeout(() => sp.remove(), 650); }, wait);
+};
+/* estompează ecranul, schimbă pagina, apoi îl readuce */
+A.fadeGo = hash => {
+  const f = A.$('#fader'); if (!f) return A.go(hash);
+  f.classList.add('on');
+  setTimeout(() => { A.go(hash); setTimeout(() => f.classList.remove('on'), 120); }, 380);
 };
 
 /* ---------------- tema ---------------- */
@@ -491,6 +496,7 @@ A.boot = async () => {
   A.game && A.game.init();
   A.eco && A.eco.init();
   A.render();
+  A.splashDone();
   // păstrează serverul local în viață și salvează periodic
   if (A.api) setInterval(() => { fetch('/api/ping').catch(() => { }); }, 15000);
   setInterval(() => { A.eco && A.eco.tick(); }, 1000);

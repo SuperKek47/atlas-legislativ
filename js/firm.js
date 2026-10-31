@@ -9,9 +9,11 @@ const stars = n => `<span class="stars">${'★'.repeat(n)}<span>${'★'.repeat(3
 const nameOf = m => m.me ? 'Tu' : m.name;
 const roleName = m => `${nameOf(m)} · ${E.ROLES[m.role].name.toLowerCase()}`;
 const tabs = cur => `<nav class="ftabs">${[['', 'Biroul'], ['echipa', 'Echipa'], ['consultatii', 'Consultații'], ['instanta', 'Instanța']].map(([k, n]) => `<a href="#/firma${k ? '/' + k : ''}" class="${cur === k ? 'on' : ''}">${n}${badge(k)}</a>`).join('')}<a href="#/garaj" class="${cur === 'garaj' ? 'on' : ''}">Garajul</a><a href="#/cariera" class="${cur === 'cariera' ? 'on' : ''}">Bossii</a><a href="#/profil" class="${cur === 'profil' ? 'on' : ''}">Ștampile</a></nav>`;
-const badge = k => { const s = E.s(), n = Date.now(); let c = 0; if (k === 'consultatii') c = s.consults.filter(x => x.end <= n).length; if (k === 'instanta') c = s.procs.filter(x => x.end <= n).length; if (k === '') c = s.slots.filter(x => x && x.unlockEnd && x.unlockEnd <= n).length + (s.freeStock > 0 ? 1 : 0); return c ? `<b class="bdg">${c}</b>` : ''; };
-const logo = () => { const b = A.S.brand; return b && b.logo ? `<img class="flogo" src="${b.logo}" alt="Sigla firmei">` : ''; };
-const head = (title, sub) => { const s = E.s(); return `<div class="fhead" style="--firm:${s.firm.color}"><div class="fh1">${logo()}<div><div class="faint" style="font-size:13px">${A.esc(s.firm.name)}</div><h1>${title}</h1>${sub ? `<p class="muted">${sub}</p>` : ''}</div></div>
+const badge = k => { const s = E.s(), n = Date.now(); let c = 0; if (k === 'consultatii') c = s.consults.filter(x => x.end <= n).length; if (k === 'instanta') c = s.procs.filter(x => x.end <= n).length; return c ? `<b class="bdg">${c}</b>` : ''; };
+const logo = () => `<span class="flogo">${A.brand.logo()}</span>`;
+const GEAR = '<a class="gear" href="#/setari" aria-label="Setări"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 2h3.4l.5 2.6c.7.2 1.3.5 1.9.9l2.4-1.2 2.4 2.4-1.2 2.4c.4.6.7 1.2.9 1.9l2.6.5v3.4l-2.6.5c-.2.7-.5 1.3-.9 1.9l1.2 2.4-2.4 2.4-2.4-1.2c-.6.4-1.2.7-1.9.9l-.5 2.6h-3.4l-.5-2.6c-.7-.2-1.3-.5-1.9-.9l-2.4 1.2-2.4-2.4 1.2-2.4c-.4-.6-.7-1.2-.9-1.9L1 13.7v-3.4l2.6-.5c.2-.7.5-1.3.9-1.9L3.3 5.5l2.4-2.4 2.4 1.2c.6-.4 1.2-.7 1.9-.9z"/><circle cx="12" cy="12" r="3.6"/></svg></a>';
+A.GEAR = GEAR;
+const head = (title, sub) => { const s = E.s(); return `<div class="fhead" style="--firm:${s.firm.color}">${GEAR}<div class="fh1">${logo()}<div><div class="faint" style="font-size:13px">${A.esc(s.firm.name)}</div><h1>${title}</h1>${sub ? `<p class="muted">${sub}</p>` : ''}</div></div>
   <div class="purse"><b class="${s.money < 0 ? 'neg' : ''}">${A.lei(s.money)}</b><small>putere juridică ${A.fmt(E.power())} · bonus onorarii +${Math.round((E.feeMult() - 1) * 100)}% · salarii ${A.lei(E.dailyCost())}/zi</small></div></div>`; };
 const prog = (a, b) => `<div class="bar thin"><i data-prog="${a},${b}" style="width:${(A.clamp((Date.now() - a) / (b - a), 0, 1) * 100).toFixed(1)}%"></i></div>`;
 const until = t => `<span class="num" data-until="${t}">${A.dur(t - Date.now())}</span>`;
@@ -139,14 +141,17 @@ const COLORS = ['#5A3F8F', '#2B5C8A', '#B23A2E', '#2E7D5B', '#B98A12', '#1B2A33'
 function onboarding(view) {
   const home = ST.current() || A.raioane[0].unit;
   let color = COLORS[0];
-  view.innerHTML = `<div class="firm onboard"><div class="hero"><div class="faint" style="font-size:13px;letter-spacing:.08em;text-transform:uppercase">Biroul tău de avocați</div>
+  view.innerHTML = `<div class="firm onboard">${GEAR}<div class="hero"><div class="faint" style="font-size:13px;letter-spacing:.08em;text-transform:uppercase">Biroul tău de avocați</div>
     <h1>Înființează biroul</h1><p class="muted">Prima filială e în ${A.esc(A.unitById[home].name)}, raionul pe care îl studiezi acum. Clienții vin pe măsură ce citești și rezumi articole: sub 50 de articole înțelese, aproape nimeni nu-ți trece pragul.</p></div>
     <label class="field"><span>Numele biroului</span><input id="fname" maxlength="40" value="Biroul de avocați"></label>
     <div class="field"><span>Culoarea firmei</span><div class="swatches">${COLORS.map(c => `<button class="sw ${c === color ? 'on' : ''}" data-c="${c}" style="background:${c}" aria-label="Culoare ${c}"></button>`).join('')}</div></div>
-    <ul class="perks"><li>Pornești cu 2.000 de lei, cu tine (avocat) și un avocat stagiar.</li><li>Angajații au salariu pe zi reală; fără bani intră în grevă.</li><li>Alegi sau desenezi ștampila, insigna și sigla biroului. O singură dată.</li></ul>
-    <button class="btn primary big" id="go">Alege însemnele și înființează biroul</button></div>`;
-  A.$$('.sw', view).forEach(b => b.onclick = () => { color = b.dataset.c; A.$$('.sw', view).forEach(x => x.classList.toggle('on', x === b)); });
-  A.$('#go', view).onclick = () => { const name = A.$('#fname', view).value.trim(); E.brandChooser(() => { E.found(name, color, home); A.go('#/firma'); }); };
+    <ul class="perks"><li>Pornești cu 2.000 de lei, cu tine (avocat) și un avocat stagiar.</li><li>Angajații au salariu pe zi reală; fără bani intră în grevă.</li><li>Culoarea aleasă colorează raioanele pe care le cucerești și cerneala ștampilei.</li></ul>
+    <div class="insemne"><figure>${A.brand.logo()}<figcaption>Sigla</figcaption></figure><figure class="st">${A.brand.stamp(color, 'Biroul de avocați')}<figcaption>Ștampila</figcaption></figure><figure>${A.brand.insignia(color)}<figcaption>Insigna</figcaption></figure></div>
+    <button class="btn primary big" id="go">Înființează biroul</button></div>`;
+  const ins = A.$('.insemne', view), redraw = () => { const nm = A.$('#fname', view).value.trim() || 'Biroul de avocați'; ins.children[1].innerHTML = A.brand.stamp(color, nm) + '<figcaption>Ștampila</figcaption>'; ins.children[2].innerHTML = A.brand.insignia(color) + '<figcaption>Insigna</figcaption>'; };
+  A.$('#fname', view).oninput = A.debounce(redraw, 200);
+  A.$$('.sw', view).forEach(b => b.onclick = () => { color = b.dataset.c; A.$$('.sw', view).forEach(x => x.classList.toggle('on', x === b)); redraw(); });
+  A.$('#go', view).onclick = () => { const name = A.$('#fname', view).value.trim(); E.found(name, color, home); A.go('#/firma'); };
 }
 E.found = (name, color, unit) => {
   const s = E.s(), now = Date.now(), r = A.raion(unit);
@@ -185,9 +190,6 @@ A.route('firma', async (view, [sub]) => {
   const q = s.daily ? s.daily.quests : [];
   const nextTimes = [...s.consults.map(c => c.end), ...s.procs.map(p => p.end), ...s.slots.filter(c => c && c.unlockEnd).map(c => c.unlockEnd), s.freeStock < 2 ? s.freeAt : 0];
   view.innerHTML = `<div class="firm">${head('Biroul', '')}${tabs('')}
-    <section class="fsec"><div class="sh"><h2>Dosare-cufăr</h2><span class="faint">${chestLock ? `Dosarele se deschid după ce citești ${E.CHEST_MIN_READ} articole: ți-au mai rămas ${chestLock}.` : 'Se deblochează câte unul pe rând. Secretarii scurtează timpul.'}</span></div>
-      <div class="slots">${s.slots.map(slot).join('')}
-        <div class="slot free"><div class="chestbox">${E.chestSVG('simplu')}</div><b>${E.FREE_NAME}${s.freeStock > 1 ? ' ×' + s.freeStock : ''}</b>${s.freeStock > 0 ? `<small>Gata acum. Se acumulează cel mult două.</small><div class="act"><button class="btn primary" data-do="free" ${chestLock ? 'disabled' : ''}>Deschide</button></div>` : `<small>Următorul peste ${until(s.freeAt)}</small>${prog(s.freeAt - E.FREE_EVERY, s.freeAt)}`}</div></div></section>
     <div class="fgrid">
       <section class="fsec"><div class="sh"><h2>De încasat</h2></div>
         <div class="income"><div><b>${A.lei(pas)}</b><small>din ${s.branches.length} ${s.branches.length === 1 ? 'filială' : 'filiale'} · ${A.lei(rate)} pe oră${A.active() ? '' : ' · <span style="color:var(--seal)">oprit: studiază ca filialele să producă</span>'}</small></div><button class="btn primary" data-do="passive" ${pas < 1 ? 'disabled' : ''}>Încasează</button></div>
@@ -333,7 +335,7 @@ E.carSVG = (tier, paint, vinyl, moving) => {
   const kind = E.CARS[tier][4], id = 'c' + Math.random().toString(36).slice(2, 7);
   const wheel = (cx, cy, R) => `<g class="wheel" style="transform-origin:${cx}px ${cy}px"><circle cx="${cx}" cy="${cy}" r="${R}" fill="#16191B"/><circle cx="${cx}" cy="${cy}" r="${R * .62}" fill="#B9C0C7"/><circle cx="${cx}" cy="${cy}" r="${R * .5}" fill="#8A9399"/>${[0, 72, 144, 216, 288].map(a => `<rect x="${cx - 1.6}" y="${cy - R * .58}" width="3.2" height="${R * .5}" rx="1.4" fill="#D7DCE0" transform="rotate(${a} ${cx} ${cy})"/>`).join('')}<circle cx="${cx}" cy="${cy}" r="${R * .14}" fill="#5A6066"/></g>`;
   const road = `<g class="road">${moving ? [0, 1, 2, 3, 4, 5].map(i => `<rect class="dash" x="${i * 80}" y="152" width="40" height="3" fill="var(--rule)"/>`).join('') : ''}</g>`;
-  const logoFill = A.S.brand && A.S.brand.logo ? `<image href="${A.S.brand.logo}" x="-14" y="-14" width="28" height="28"/>` : `<circle r="11" fill="#fff"/>`;
+  const logoFill = `<image href="${A.brand.url(A.brand.logo({ bare: true }))}" x="-15" y="-15" width="30" height="30"/>`;
   if (kind === 'bus') {
     return `<svg viewBox="0 0 400 160" class="carsvg ${moving ? 'moving' : ''}"><ellipse cx="200" cy="146" rx="182" ry="6" fill="rgba(0,0,0,.28)"/>${road}<g class="bodyg">
       <path d="M14 126 L14 40 Q14 28 28 28 L368 28 Q386 28 388 46 L392 112 Q392 126 380 126 Z" fill="${paint}" stroke="#15191C" stroke-width="2.5"/>
