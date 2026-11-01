@@ -139,9 +139,9 @@ A.route('joc', async (view, [mode, arg]) => {
     let spMsg = 'Nicio speță deblocată încă: parcurge micro-secțiuni ca să apară.';
     if (res) { if (res.ok) { A.S.points.spete++; money += E.earn(600 * mult); xp += A.game.addXP(30); spMsg = 'Speță rezolvată: +1 punct-speță.'; } else if (res.score > 0) { money += E.earn(250 * mult); xp += A.game.addXP(12); spMsg = 'Speță rezolvată parțial.'; } else spMsg = 'Speța nu a fost rezolvată.'; }
     const total = gok + (res && res.ok ? 1 : 0), n = 3 + (res ? 1 : 0);
-    /* dosar la 2+ răspunsuri corecte: simplu 63,5% · argint 20% · aur 15% · magic 1% · legendar 0,5% */
+    /* dosar doar dacă totul e corect (3/3 fără speță, 4/4 cu speță): simplu 63,5% · argint 20% · aur 15% · magic 1% · legendar 0,5% */
     const roll = Math.random() * 100;
-    const type = total < 2 ? null : roll < 63.5 ? 'simplu' : roll < 83.5 ? 'argint' : roll < 98.5 ? 'aur' : roll < 99.5 ? 'magic' : 'decan';
+    const type = total < n ? null : roll < 63.5 ? 'simplu' : roll < 83.5 ? 'argint' : roll < 98.5 ? 'aur' : roll < 99.5 ? 'magic' : 'decan';
     const got = type && E.grantChest(type, 'Joc rapid');
     A.S.quiz.farm = (A.S.quiz.farm || 0) + 1; A.store.save(); A.game.checkStamps();
     const R = A.arena, crowns = total >= n ? 3 : total >= n - 1 ? 2 : total >= 2 ? 1 : 0;

@@ -969,3 +969,10 @@ table.staff td.free { color: var(--forest); }
   .hud { justify-content: space-between; }
 }
 .btn .spg, .btn svg.spg { fill: #D4A72C; stroke: none; width: 12px; height: 12px; display: inline-block; }
+
+/* ---- dosarele de pe hartă: fără chenar, mai mari ---- */
+.cs:not(.found):not(.empty), .cs.ready { background: none !important; border: 0 !important; box-shadow: none !important; animation: none; }
+.cs:not(.found):not(.empty) .ci { width: 78px; height: 64px; filter: drop-shadow(0 4px 6px rgba(0,0,0,.5)); }
+.cs.ready .ci { filter: drop-shadow(0 0 10px #FFD54A) drop-shadow(0 4px 6px rgba(0,0,0,.5)); }
+.cs:not(.found):not(.empty) b, .cs:not(.found):not(.empty) small { text-shadow: 0 1px 3px #000; }
+@media (max-width: 620px) { .cs { min-height: 96px; } .cs:not(.found):not(.empty) .ci { width: 72px; height: 60px; } }

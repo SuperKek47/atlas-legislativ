@@ -578,7 +578,7 @@ A.route('profil', async view => {
 /* ======================= UPDATE (istoricul modificărilor) ======================= */
 A.CHANGELOG = [
   { v: '1 noiembrie 2026 · dosare și interfață', items: [
-    'Dosarele se primesc acum din jocul rapid (PLAY), la 2+ răspunsuri corecte: simplu 63,5%, argint 20%, aur 15%, magic 1%, legendar 0,5%. Au rămas premiile speciale (mini-boși, serii de zile, misiuni, magazin).',
+    'Dosarele se primesc acum din jocul rapid (PLAY), doar cu toate răspunsurile corecte (3/3 la grile, 4/4 dacă ai și speță): simplu 63,5%, argint 20%, aur 15%, magic 1%, legendar 0,5%. Au rămas premiile speciale (mini-boși, serii de zile, misiuni, magazin).',
     'Bara de sus (telefon): doar cercul nivelului; apasă-l ca să vezi XP-ul (de exemplu 143/1.430 XP). Romburile de puncte arată acum corect denumirea la apăsare.',
     'Meniul Birou: butoanele de îmbunătățire și concediere nu mai sunt alungite; angajații apar ca fișe.',
     'Lectură: antetul secțiunii nu mai iese din ecran, iar bara de grile are o linie roșie până la care trebuie obligatoriu trecute grile pentru mini-boss.',
