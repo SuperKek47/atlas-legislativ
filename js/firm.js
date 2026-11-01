@@ -177,7 +177,7 @@ A.route('firma', async (view, [sub]) => {
     const C = E.CHESTS[c.type];
     const head = `<div class="chestbox">${E.chestSVG(c.type)}</div><b>${C.name}</b>`;
     if (c.unlockEnd && c.unlockEnd <= n)
-      return `<div class="slot ready" style="--c:${C.color}">${head}<small>${A.esc(c.src || '')}</small><div class="act"><button class="btn primary" data-do="open:${i}">Deschide</button></div></div>`;
+      return `<div class="slot ready" style="--c:${C.color}">${head}<small>${A.esc(c.src || '')}</small><div class="act"><button class="btn primary" data-do="open:${i}">Deschide · ${E.spGem}${C.sp}</button></div></div>`;
     if (c.unlockEnd)
       return `<div class="slot run" style="--c:${C.color}">${head}<small>se deblochează: ${until(c.unlockEnd)}</small>${prog(c.unlockEnd - E.unlockMs(c.type), c.unlockEnd)}
         <div class="act">${c.speedLocked ? '<small class="faint">Testul a fost picat: se deschide la timp.</small>' : `<button class="btn small" data-do="speed:${i}" title="15 grile grele; ai nevoie de ${E.SPEED_PASS} corecte">Deschide acum: test de ${E.SPEED_N} grile</button>`}</div></div>`;
@@ -235,7 +235,7 @@ function team(view) {
       ${fired.map((f, i) => `<div class="tier"><div><b>${A.esc(f.name)}</b><small>${E.ROLES[f.role].name} · nivelul ${f.lvl} · reducere ${Math.round(E.ROLES[f.role].disc * 100)}% · încă ${A.dur(f.at + E.REHIRE_DAYS * 864e5 - Date.now())}</small></div><button class="btn small" data-do="rehire:${i}" ${block ? 'disabled' : ''}>Reangajează · ${A.lei(Math.round(E.ROLES[f.role].cost * (1 - E.ROLES[f.role].disc)))}</button></div>`).join('')}</section>` : ''}
     <section class="fsec"><div class="sh"><h2>Oamenii firmei</h2><span class="faint">Cartonașe: ${E.ROLE_ORDER.filter(r => s.cards[r]).map(r => `${E.ROLES[r].name} ${s.cards[r]}`).join(' · ') || 'niciunul'} · grile disponibile: ${A.fmt(A.S.points.grile)}</span></div><table class="staff"><tbody>
       ${s.staff.map(m => { const need = E.upgradeNeed(m); return `<tr><td><b>${A.esc(nameOf(m))}</b>${m.me ? '' : ` <button class="lnk" data-do="ren:${m.id}">redenumește</button>`}</td><td>${E.ROLES[m.role].name}</td><td class="num">nivelul ${m.lvl || 1}</td><td class="${E.busy(m.id) || m.strike ? '' : 'free'}">${st(m)}</td>
-        <td class="ups"><button class="btn small" data-do="up:${m.id}" title="${A.lei(need.money)} · ${need.cards} cartonașe · ${need.grile} grile">Nivelul ${(m.lvl || 1) + 1}: ${A.lei(need.money)} + ${need.cards} cart. + ${need.grile} grile</button>
+        <td class="ups"><button class="btn small" data-do="up:${m.id}" title="${A.lei(need.money)} · ${need.cards} cartonașe · ${need.grile} grile${need.spete ? ' · ' + need.spete + ' puncte-speță' : ''}">Nivelul ${(m.lvl || 1) + 1}: ${A.lei(need.money)} + ${need.cards} cart. + ${need.grile} grile${need.spete ? ' + ' + need.spete + ' ' + E.spGem : ''}</button>
         ${m.strike ? `<button class="btn small primary" data-do="pay:${m.id}">Plătește ${A.lei(E.ROLES[m.role].sal)}</button>` : ''}${m.me ? '' : `<button class="btn small ghost" data-do="fire:${m.id}" ${E.busy(m.id) ? 'disabled' : ''}>Concediază</button>`}</td></tr>`; }).join('')}
     </tbody></table></section></div>`;
   bind(view, {
@@ -512,7 +512,7 @@ function miniDuel(view, c) {
       return;
     }
     A.S.study.chapters[cid] = A.today();
-    const prize = E.earn(E.miniPrize(c)); A.game.addXP(60); E.grantChest(c.ci >= 6 ? 'aur' : 'argint', 'Mini-boss învins'); A.S.points.grile += 5;
+    const prize = E.earn(E.miniPrize(c)); A.game.addXP(60); E.grantChest(c.ci >= 8 ? 'magic' : c.ci >= 6 ? 'aur' : 'argint', 'Mini-boss învins'); A.S.points.grile += 5;
     const got = E.grantPerk(perk.id, 'Trofeu: ' + c.boss);
     A.store.save(); A.game.checkStamps();
     const next = ST.chapters(c.unit)[c.ci + 1], lives = Math.max(0, E.MINI.lives - (res.answered - res.ok)), [rk, rn] = A.arena.rarity(c.ci); root.innerHTML = '';
@@ -544,11 +544,12 @@ function duel(view, unit) {
       const prize = E.earn(decan ? 500000 : Math.round(r.n * 150 * (1 + 0.2 * k) * (score >= .95 ? 1.25 : 1)));
       if (!decan && s.started && !s.branches.includes(unit)) s.branches.push(unit);
       A.game.addXP(decan ? 1000 : 250); A.S.points.spete += 5;
+      const lg = s.started ? E.grantChest('decan', decan ? 'Decanul' : 'Raion cucerit') : false;
       A.store.save(); A.game.checkStamps();
       const next = decan ? null : A.raion(ST.current());
       const marks = E.MARKERS(Math.min(14, k)); let picked = 0;
       host.innerHTML = `<div class="stampwrap slam" style="color:var(--seal)">${A.stampSVG('cucerit', decan ? 'decanul' : r.name, '✓', 'var(--seal)', -10)}</div>
-        <p>${decan ? 'Toată harta este a ta.' : `${A.esc(r.name)} este cucerit${s.started ? ' și ai o filială acolo' : ''}.`} +${A.lei(prize)} · +${decan ? 1000 : 250} XP · +5 puncte-speță.${next ? ` S-a deschis ${A.esc(next.name)}.` : ''}</p>
+        <p>${decan ? 'Toată harta este a ta.' : `${A.esc(r.name)} este cucerit${s.started ? ' și ai o filială acolo' : ''}.`} +${A.lei(prize)} · +${decan ? 1000 : 250} XP · +5 puncte-speță${lg ? ' · un dosar legendar' : ''}.${next ? ` S-a deschis ${A.esc(next.name)}.` : ''}</p>
         ${s.started ? `<p class="muted">Alege două dintre cele șase plicuri sigilate.</p><div class="markers">${marks.map((m, x) => `<button class="marker" data-i="${x}"><span>?</span></button>`).join('')}</div>` : ''}
         <div id="mk-done" ${s.started ? 'hidden' : ''} style="margin-top:16px"><a class="btn primary" href="#/harta">Harta</a>${next ? ` <a class="btn" href="#/raion/${next.unit}">Mergi la ${A.esc(next.name)}</a>` : ''}</div>`;
       A.$$('.marker', host).forEach(b => b.onclick = () => {

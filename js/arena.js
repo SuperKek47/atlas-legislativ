@@ -138,7 +138,7 @@ R.useEnergy = () => {
 R.onUnderstood = () => { const a = st(); a.undCnt++; if (a.undCnt % R.EPER_UND === 0) { const e = R.energy(); if (e.n < R.EMAX) { a.energy.n++; A.toast(`${ICO.en}<span><b>+1 energie</b> pentru ${R.EPER_UND} articole rezumate</span>`); } } R.roadCheck(); A.store.save(); };
 
 /* ================= SERIA DE ZILE ================= */
-R.STREAK = [[3, 'argint', 0], [7, 'aur', 0], [14, 'aur', 5000], [30, 'decan', 0], [60, 'decan', 20000], [100, 'decan', 50000]];
+R.STREAK = [[3, 'argint', 0], [7, 'aur', 0], [14, 'magic', 5000], [30, 'decan', 0], [60, 'decan', 20000], [100, 'decan', 50000]];
 R.checkStreak = () => {
   if (!A.S || !A.game) return; const n = A.game.streak(), a = st();
   for (const [d, chest, lei] of R.STREAK) if (n >= d && !a.streakPaid[d]) {
@@ -152,7 +152,7 @@ R.nextStreak = () => { const n = A.game.streak(); const x = R.STREAK.find(([d]) 
 /* ================= CALEA ATLASULUI ================= */
 /* praguri pe articole rezumate (înțelese) */
 R.ROAD = [
-  [5, 'lei', 1000], [10, 'chest', 'argint'], [20, 'gr', 10], [35, 'lei', 3000], [50, 'chest', 'aur'], [75, 'en', 5], [100, 'lei', 8000], [130, 'chest', 'aur'],
+  [5, 'lei', 1000], [10, 'chest', 'argint'], [20, 'gr', 10], [35, 'lei', 3000], [50, 'chest', 'aur'], [75, 'en', 5], [100, 'lei', 8000], [130, 'chest', 'magic'],
   [170, 'gr', 30], [220, 'lei', 15000], [280, 'chest', 'decan'], [350, 'sp', 10], [430, 'lei', 25000], [520, 'chest', 'aur'], [620, 'gr', 60], [750, 'chest', 'decan'],
   [900, 'lei', 50000], [1100, 'chest', 'decan'], [1350, 'sp', 30], [1650, 'lei', 100000], [2000, 'chest', 'decan'], [2400, 'lei', 250000],
 ];
@@ -189,6 +189,8 @@ A.route('calea', async view => {
 R.OFFERS = [
   { id: 'argint', t: 'Dosar de argint', lei: 1500, ico: () => ICO.chest('argint'), give: () => E().grantChest('argint', 'Magazin') },
   { id: 'aur', t: 'Dosar de aur', lei: 6000, ico: () => ICO.chest('aur'), give: () => E().grantChest('aur', 'Magazin') },
+  { id: 'magic', t: 'Dosar magic', sp: 6, ico: () => ICO.chest('magic'), give: () => E().grantChest('magic', 'Magazin') },
+  { id: 'legendar', t: 'Dosar legendar', sp: 12, ico: () => ICO.chest('decan'), give: () => E().grantChest('decan', 'Magazin') },
   { id: 'xp2', t: 'XP dublu · 30 min', lei: 2500, ico: () => ICO.xp, give: () => R.buff('xp', 2, 30, 'XP dublu') },
   { id: 'money2', t: 'Onorarii duble · 30 min', lei: 2500, ico: () => ICO.lei, give: () => R.buff('money', 2, 30, 'Onorarii duble') },
   { id: 'nitro', t: '2 × nitro', lei: 900, ico: () => ICO.nitro, give: () => { E().s().nitro += 2; return true; } },
@@ -198,20 +200,21 @@ R.OFFERS = [
 ];
 R.buff = (kind, mult, min, label) => { const s = E().s(); s.buffs[kind] = { kind, mult, until: Math.max(Date.now(), (s.buffs[kind] || {}).until || 0) + min * 60e3, label }; return true; };
 R.todayOffers = () => { const d = A.today(); let h = 0; for (const c of d) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  const pool = R.OFFERS.slice(), out = []; while (out.length < 3) { h = (h * 1103515245 + 12345) >>> 0; out.push(pool.splice(h % pool.length, 1)[0]); } return out; };
+  const rare = R.OFFERS.filter(o => o.sp), pool = R.OFFERS.filter(o => !o.sp), out = [rare[(parseInt(d.slice(-2), 10) || 0) % rare.length]]; while (out.length < 3) { h = (h * 1103515245 + 12345) >>> 0; out.push(pool.splice(h % pool.length, 1)[0]); } return out; };
 R.shopHTML = () => {
   const a = st(); if (a.shop.date !== A.today()) a.shop = { date: A.today(), bought: [] };
   const left = new Date(); left.setHours(24, 0, 0, 0);
   return `<section class="fsec shop"><div class="sh"><h2>Magazinul zilei</h2><span class="faint">se schimbă peste ${E().shortDur(left - Date.now())}</span></div>
     <div class="offers">${R.todayOffers().map(o => { const got = a.shop.bought.includes(o.id);
-      return `<button class="offer ${got ? 'sold' : ''}" data-buy="${o.id}" ${got ? 'disabled' : ''}><span class="oi">${o.ico()}</span><b>${A.esc(o.t)}</b><span class="price">${got ? 'cumpărat' : o.lei ? `${ICO.lei}${A.fmt(o.lei)}` : `${ICO.gr}${o.gr}`}</span></button>`; }).join('')}</div></section>`;
+      return `<button class="offer ${got ? 'sold' : ''}" data-buy="${o.id}" ${got ? 'disabled' : ''}><span class="oi">${o.ico()}</span><b>${A.esc(o.t)}</b><span class="price">${got ? 'cumpărat' : o.lei ? `${ICO.lei}${A.fmt(o.lei)}` : o.sp ? `${E().spGem}${o.sp}` : `${ICO.gr}${o.gr}`}</span></button>`; }).join('')}</div></section>`;
 };
 R.buy = id => {
   const o = R.OFFERS.find(x => x.id === id), a = st(); if (!o || a.shop.bought.includes(id)) return;
   if (o.gr && (A.S.points.grile || 0) < o.gr) { A.toast(`Îți trebuie ${o.gr} puncte-grilă. Ai ${A.S.points.grile || 0}.`); A.sound('warn'); return; }
+  if (o.sp && (A.S.points.spete || 0) < o.sp) { A.toast(`Îți trebuie ${o.sp} puncte-speță. Ai ${A.S.points.spete || 0}.`); A.sound('warn'); return; }
   if (o.lei && E().s().money < o.lei) return A.noMoney();
-  if ((o.id === 'argint' || o.id === 'aur') && !E().s().slots.some(x => !x)) { A.toast('Sloturile de dosare sunt pline.'); A.sound('warn'); return; }
-  if (o.lei) E().s().money -= o.lei; if (o.gr) A.S.points.grile -= o.gr;
+  if (['argint', 'aur', 'magic', 'legendar'].includes(o.id) && !E().s().slots.some(x => !x)) { A.toast('Sloturile de dosare sunt pline.'); A.sound('warn'); return; }
+  if (o.lei) E().s().money -= o.lei; if (o.gr) A.S.points.grile -= o.gr; if (o.sp) A.S.points.spete -= o.sp;
   o.give(); a.shop.bought.push(id); A.store.save(); A.sound('coin'); A.buzz(20); A.toast(`Ai cumpărat: ${A.esc(o.t)}.`); A.hud(); A.render();
 };
 
@@ -263,7 +266,12 @@ R.init = () => {
     const s = Eo.s(); let type;
     const left0 = Eo.chestsLocked(); if (left0) { A.toast(`Dosarele se deschid după etapa de începător: mai citește ${left0} ${left0 === 1 ? 'articol' : 'articole'}.`); A.sound('warn'); return; }
     if (free) { if (s.freeStock < 1) return; s.freeStock--; if (s.freeStock < 2 && s.freeAt < Date.now()) s.freeAt = Date.now() + Eo.FREE_EVERY; type = 'simplu'; }
-    else { const c = s.slots[i]; if (!c || !c.unlockEnd || c.unlockEnd > Date.now()) return; type = c.type; s.slots[i] = null; }
+    else {
+      const c = s.slots[i]; if (!c || !c.unlockEnd || c.unlockEnd > Date.now()) return;
+      const sp = Eo.CHESTS[c.type].sp || 0;
+      if ((A.S.points.spete || 0) < sp) { A.toast(`Pentru ${Eo.CHESTS[c.type].name.toLowerCase()} îți trebuie ${sp} ${sp === 1 ? 'punct-speță' : 'puncte-speță'}. Ai ${A.S.points.spete || 0}. Rezolvă spețe în jocul rapid.`, 4500); A.sound('warn'); return; }
+      A.S.points.spete -= sp; type = c.type; s.slots[i] = null; A.hud();
+    }
     A.store.save();
     const reveal = mult => { const loot = Eo.scaleLoot(Eo.rollChest(type), mult); Eo.applyLoot(loot);
       R.lootShow(type, (free ? Eo.FREE_NAME : Eo.CHESTS[type].name) + (mult > 1 ? ' · dublat' : ''), R.lootItems(loot, mult), () => A.render()); };

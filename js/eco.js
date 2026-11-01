@@ -34,12 +34,15 @@ E.PAINTS = [['Gri de serviciu', '#8A9399'], ['Albastru topografic', '#2B5C8A'], 
 E.VINYLS = [['Fără', ''], ['Sigla firmei', 'logo'], ['Dungi', 'stripes']];
 E.PAINT_COST = 6000; E.VINYL_COST = 15000;
 E.CHESTS = {
-  simplu: { name: 'Dosar simplu', ms: 60 * 60e3, color: '#8A6A3C', money: [300, 900], clients: [1, 1], cards: [1, 2], roles: ['stagiar', 'jurist', 'secretar'], buff: .2, cosm: .1, nitro: .25 },
-  argint: { name: 'Dosar de argint', ms: 3 * 60 * 60e3, color: '#8E9AA6', money: [1200, 3500], clients: [2, 2], cards: [3, 5], roles: ['stagiar', 'jurist', 'avocat', 'secretar'], buff: .4, cosm: .25, nitro: 1 },
-  aur: { name: 'Dosar de aur', ms: 8 * 60 * 60e3, color: '#C99A1E', money: [5000, 14000], clients: [3, 3], cards: [6, 10], roles: ['jurist', 'avocat', 'senior'], buff: .7, cosm: .45, nitro: 2 },
-  decan: { name: 'Dosarul Decanului', ms: 24 * 60 * 60e3, color: '#5A3F8F', money: [25000, 70000], clients: [4, 4], cards: [12, 20], roles: ['avocat', 'senior', 'partener'], buff: 1, cosm: .75, nitro: 3 },
+  simplu: { name: 'Dosar simplu', sp: 1, ms: 60 * 60e3, color: '#8A6A3C', money: [300, 900], clients: [1, 1], cards: [1, 2], roles: ['stagiar', 'jurist', 'secretar'], buff: .2, cosm: .1, nitro: .25 },
+  argint: { name: 'Dosar de argint', sp: 2, ms: 3 * 60 * 60e3, color: '#8E9AA6', money: [1200, 3500], clients: [2, 2], cards: [3, 5], roles: ['stagiar', 'jurist', 'avocat', 'secretar'], buff: .4, cosm: .25, nitro: 1 },
+  aur: { name: 'Dosar de aur', sp: 3, ms: 8 * 60 * 60e3, color: '#C99A1E', money: [5000, 14000], clients: [3, 3], cards: [6, 10], roles: ['jurist', 'avocat', 'senior'], buff: .7, cosm: .45, nitro: 2 },
+  magic: { name: 'Dosar magic', sp: 4, ms: 14 * 60 * 60e3, color: '#7B4BD6', money: [12000, 32000], clients: [4, 4], cards: [9, 15], roles: ['jurist', 'avocat', 'senior'], buff: .85, cosm: .6, nitro: 2 },
+  decan: { name: 'Dosar legendar', sp: 5, ms: 24 * 60 * 60e3, color: '#E4572E', money: [25000, 70000], clients: [4, 4], cards: [12, 20], roles: ['avocat', 'senior', 'partener'], buff: 1, cosm: .75, nitro: 3 },
 };
 E.FREE_NAME = 'Dosar de la CNAJGS';
+/* romb auriu = punct-speță; deschiderea unui dosar costă E.CHESTS[tip].sp puncte-speță (dosarul gratuit de la CNAJGS nu costă) */
+E.spGem = '<svg class="spg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 22 12 12 22 2 12Z"/></svg>';
 E.FREE_EVERY = 4 * 60 * 60e3;
 E.KM_PER_UNIT = 0.269;
 E.TIME_COMPRESS = 4;
@@ -164,14 +167,16 @@ E.fire = id => {
 E.REHIRE_DAYS = 7;
 E.firedOpen = () => { const n = Date.now(); E.s().fired = E.s().fired.filter(f => n - f.at < E.REHIRE_DAYS * 864e5); return E.s().fired; };
 /* îmbunătățirea unui angajat: bani + cartonașe + grile rezolvate (puncte-grilă care se consumă) */
-E.upgradeNeed = m => { const lvl = m.lvl || 1; return { money: Math.round(E.ROLES[m.role].cost * 0.5 * Math.pow(2, lvl - 1)), cards: E.CARDS_FOR[lvl] || 999, grile: 20 * lvl }; };
+/* puncte-speță cerute de nivelurile superioare: seniori și parteneri, apoi orice rol de la nivelul 4 */
+E.upgradeNeed = m => { const lvl = m.lvl || 1; const spete = m.role === 'partener' ? 2 * lvl : m.role === 'senior' ? lvl : lvl >= 4 ? lvl - 3 : 0; return { money: Math.round(E.ROLES[m.role].cost * 0.5 * Math.pow(2, lvl - 1)), cards: E.CARDS_FOR[lvl] || 999, grile: 20 * lvl, spete }; };
 E.upgrade = id => {
   const s = E.s(), m = s.staff.find(x => x.id === id); if (!m) return;
   const need = E.upgradeNeed(m), have = s.cards[m.role] || 0;
   if (have < need.cards) { A.toast(`Îți lipsesc ${need.cards - have} cartonașe de ${E.ROLES[m.role].name.toLowerCase()}.`); A.sound('warn'); return; }
   if ((A.S.points.grile || 0) < need.grile) { A.toast(`Îți lipsesc ${need.grile - (A.S.points.grile || 0)} grile rezolvate. Joacă sau antrenează-te.`); A.sound('warn'); return; }
+  if ((A.S.points.spete || 0) < need.spete) { A.toast(`Îți lipsesc ${need.spete - (A.S.points.spete || 0)} puncte-speță. Rezolvă spețe.`); A.sound('warn'); return; }
   if (!E.spend(need.money)) return;
-  s.cards[m.role] -= need.cards; A.S.points.grile -= need.grile; m.lvl = (m.lvl || 1) + 1;
+  s.cards[m.role] -= need.cards; A.S.points.grile -= need.grile; A.S.points.spete -= need.spete; m.lvl = (m.lvl || 1) + 1;
   A.sound('level'); A.toast(`${A.esc(m.me ? 'Tu' : m.name)}: nivelul ${m.lvl}.`); A.store.save();
 };
 E.lvlMult = m => 1 + 0.1 * ((m.lvl || 1) - 1);
@@ -429,7 +434,12 @@ E.openChest = (i, free) => {
   const s = E.s(); let type;
   const left0 = E.chestsLocked(); if (left0) { A.toast(`Dosarele se deschid după etapa de începător: mai citește ${left0} ${left0 === 1 ? 'articol' : 'articole'}.`); A.sound('warn'); return; }
   if (free) { if (s.freeStock < 1) return; s.freeStock--; if (s.freeStock < 2 && s.freeAt < Date.now()) s.freeAt = Date.now() + E.FREE_EVERY; type = 'simplu'; }
-  else { const c = s.slots[i]; if (!c || !c.unlockEnd || c.unlockEnd > Date.now()) return; type = c.type; s.slots[i] = null; }
+  else {
+    const c = s.slots[i]; if (!c || !c.unlockEnd || c.unlockEnd > Date.now()) return;
+    const sp = E.CHESTS[c.type].sp || 0;
+    if ((A.S.points.spete || 0) < sp) { A.toast(`Pentru ${E.CHESTS[c.type].name.toLowerCase()} îți trebuie ${sp} ${sp === 1 ? 'punct-speță' : 'puncte-speță'}. Ai ${A.S.points.spete || 0}. Rezolvă spețe în jocul rapid.`, 4500); A.sound('warn'); return; }
+    A.S.points.spete -= sp; type = c.type; s.slots[i] = null; A.hud();
+  }
   A.store.save();
   const reveal = mult => {
     const loot = E.scaleLoot(E.rollChest(type), mult);
@@ -462,7 +472,7 @@ E.dockHTML = () => {
     if (!c) return `<button type="button" class="cs empty" data-cs="${i}" aria-label="Slot liber"><span class="ph"></span><small>Slot liber</small></button>`;
     const C = E.CHESTS[c.type], img = `<span class="ci">${E.chestSVG(c.type)}</span>`;
     if (lock) return `<button type="button" class="cs locked" data-cs="${i}" style="--c:${C.color}">${img}<small>🔒 încă ${lock} art.</small></button>`;
-    if (c.unlockEnd && c.unlockEnd <= n) return `<button type="button" class="cs ready" data-cs="${i}" style="--c:${C.color}">${img}<b>DESCHIDE!</b></button>`;
+    if (c.unlockEnd && c.unlockEnd <= n) return `<button type="button" class="cs ready" data-cs="${i}" style="--c:${C.color}">${img}<b>DESCHIDE!</b><small>${E.spGem}${C.sp}</small></button>`;
     if (c.unlockEnd) return `<button type="button" class="cs run" data-cs="${i}" style="--c:${C.color}">${img}<b class="num" data-t="${c.unlockEnd}">${E.shortDur(c.unlockEnd - n)}</b><small>se deblochează</small></button>`;
     return `<button type="button" class="cs idle ${busy ? '' : 'go'}" data-cs="${i}" style="--c:${C.color}">${img}<b>${busy ? E.shortDur(E.unlockMs(c.type)) : 'Deblochează'}</b><small>${busy ? 'în așteptare' : E.shortDur(E.unlockMs(c.type))}</small></button>`;
   }).join('');

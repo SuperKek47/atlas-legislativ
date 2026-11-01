@@ -576,6 +576,12 @@ A.route('profil', async view => {
 
 /* ======================= UPDATE (istoricul modificărilor) ======================= */
 A.CHANGELOG = [
+  { v: '1 noiembrie 2026 · puncte-speță', items: [
+    'Dosarele costă puncte-speță la deschidere: dosar simplu 1, de argint 2, de aur 3, magic 4, legendar 5. Dosarul gratuit de la CNAJGS nu costă nimic. Costul se vede pe butonul de deschidere.',
+    'Două tipuri noi de dosare: Dosar magic (violet) și Dosar legendar (portocaliu, fostul Dosar al Decanului). Magicul se primește la mini-bossul ultimului capitol, la seria de 14 zile și pe Calea Atlasului; legendarul, la cucerirea unui raion.',
+    'Magazinul zilei: în fiecare zi are un dosar rar de cumpărat cu puncte-speță (magic 6, legendar 12).',
+    'Îmbunătățirea angajaților: avocații seniori și partenerii cer puncte-speță, la fel orice angajat de la nivelul 4 în sus.',
+  ] },
   { v: '1 noiembrie 2026', items: [
     'Grile de studiu: 3364 de grile și 417 spețe încărcate pentru 13 raioane civile (Chișinău, Anenii Noi, Căușeni, Criuleni, Hîncești, Ialoveni, Leova, Nisporeni, Orhei, Rezina, Ștefan Vodă, Strășeni, Telenești).',
     'Raioanele noi Nisporeni (312 grile, 39 spețe) și Ștefan Vodă (425 grile, 40 spețe, capitole despre executarea sancțiunilor din Codul de executare) sunt acum în joc.',
