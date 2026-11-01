@@ -176,6 +176,7 @@ Q.bankFor = pool => {
   for (const it of pool) { const k = A.key(it.act.id, it.art.id); const l = Q.bankByKey[k], st = Q.studyByKey[k]; if (l) out.push(...l); if (st) out.push(...st, ...st); }
   return out;
 };
+A.quizRecent = () => Q.recent;
 Q.fromBank = (g, pool) => {
   const r = (g.r || [])[0] || {};
   const it = pool.find(x => x.act.id === r.act && x.art.id === r.art);
@@ -213,11 +214,15 @@ Q.makeFor = (it, pool, kinds) => {
 /* opt: {mode, scope, n, kinds, lives, seconds, perQuestion, title, onDone(result), keys, rival} */
 Q.run = async (view, opt) => {
   view.innerHTML = `<div class="quiz"><div class="empty">Pregătesc întrebările…</div></div>`;
-  let pool = opt.keys ? await Q.pool('keys:' + opt.keys.join(',')) : (opt.mode === 'taxa' ? [] : await Q.pool(opt.scope || 'citite'));
-  if (opt.mode !== 'taxa' && !pool.length) { view.innerHTML = `<div class="quiz"><div class="empty">Nu există încă articole în acest domeniu. Citește câteva articole și revino.</div></div>`; return; }
+  /* sesiune pe secțiune: grilele se aleg la fiecare sesiune (opt.makeGrile) */
+  const gList = opt.makeGrile ? opt.makeGrile() : null;
+  if (gList && !gList.length) { view.innerHTML = `<div class="quiz"><div class="empty">Secțiunea nu are încă grile de studiu. <a href="#/antrenament">Înapoi</a></div></div>`; return; }
+  let pool = gList ? [] : opt.keys ? await Q.pool('keys:' + opt.keys.join(',')) : (opt.mode === 'taxa' ? [] : await Q.pool(opt.scope || 'citite'));
+  if (!gList && opt.mode !== 'taxa' && !pool.length) { view.innerHTML = `<div class="quiz"><div class="empty">Nu există încă articole în acest domeniu. Citește câteva articole și revino.</div></div>`; return; }
   const fullPool = opt.keys ? await Q.pool(opt.scope || 'tot') : pool;
   const st = { i: 0, ok: 0, combo: 0, best: 0, lives: opt.lives || 0, xp: 0, money: 0, start: Date.now(), heat: 1, answered: 0, wrong: [] };
-  const total = opt.n || 10;
+  const total = gList ? gList.length : (opt.n || 10);
+  let gQueue = gList ? gList.slice() : null;
   const deadline = opt.seconds ? Date.now() + opt.seconds * 1000 : 0;
   let cur = null, qStart = 0, keysQueue = opt.keys ? opt.keys.slice() : null;
   const root = document.createElement('div'); root.className = 'quiz'; view.innerHTML = ''; view.appendChild(root);
@@ -246,8 +251,10 @@ Q.run = async (view, opt) => {
     if (opt.hp && st.ok >= opt.hp) return finish();
     if (!opt.lives && !opt.seconds && st.i >= total) return finish();
     if (keysQueue && !keysQueue.length) return finish();
+    if (gQueue && !gQueue.length) return finish();
     st.i++;
-    if (opt.mode === 'taxa') cur = await Q.taxQuestion();
+    if (gQueue) { const g = gQueue.shift(); cur = Q.fromBank(g, []); cur.study = { m: g.m, id: g.id }; }
+    else if (opt.mode === 'taxa') cur = await Q.taxQuestion();
     else if (keysQueue) {
       const k = keysQueue.shift(); const p1 = pool.filter(x => A.key(x.act.id, x.art.id) === k);
       await Q.loadBank(); const bc = Q.bankFor(p1).filter(g => !Q.recent.includes(g.id));
@@ -317,6 +324,7 @@ Q.run = async (view, opt) => {
       st.xp += xp;
       const money = A.eco ? A.eco.earn(12 * mult * hm, null, 'antrenament') : 0; st.money += money;
       if (cur.kind === 'bank') { A.S.points.grile++; gained += ' +1 grilă.'; }
+      if (cur.study && A.study && A.study.credit) A.study.credit(cur.study.m, cur.study.id);
       if (crit) A.fly('Lovitură critică!', r.left + 40, r.top - 10, true);
       A.sound(crit ? 'level' : 'ok');
       if (cur.key) A.game.review(cur.key, true);

@@ -572,7 +572,6 @@ E.hudBits = () => {
   const ready = E.readyCount();
   const buffs = Object.values(s.buffs).filter(b => b.until > n);
   return `${buffs.length ? `<span class="chip buff" title="${A.esc(buffs.map(b => b.label).join(', '))}">${A.esc(buffs[0].label.split(':')[0])} · <span data-until="${buffs[0].until}">${A.dur(buffs[0].until - n)}</span></span>` : ''}
-   <span class="chip pts" title="Puncte-grilă / puncte-speță: monede de studiu pentru îmbunătățiri">◆ ${A.fmt(A.S.points.grile)} · ✦ ${A.fmt(A.S.points.spete)}</span>
    <a class="chip money ${s.money < 0 ? 'neg' : ''}" href="#/firma" style="text-decoration:none" title="Onorarii"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="var(--wheat)"/><text x="12" y="16.5" font-size="12" text-anchor="middle" fill="#3D2E05" font-family="Bahnschrift,sans-serif" font-weight="700">L</text></svg>${A.fmt(s.money)}</a>
 `;
 };

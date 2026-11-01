@@ -242,6 +242,8 @@ A.hud = () => {
   const li = G.levelInfo(), st = G.streak(), today = A.S.days[A.today()] || 0, goal = A.S.settings.goal;
   const gp = Math.min(1, today / goal), C = 2 * Math.PI * 10;
   const eco = A.eco ? A.eco.hudBits() : '';
+  const gem = (kind, n) => `<span class="gemw"><button class="chip gem ${kind}" data-gem="${kind}" aria-label="${kind === 'grile' ? 'Puncte grilă' : 'Puncte speță'}: ${A.fmt(n)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 22 12 12 22 2 12Z"/></svg><b>${A.fmt(n)}</b></button></span>`;
+  const gems = `${gem('grile', A.S.points.grile)}${gem('spete', A.S.points.spete)}`;
   el.innerHTML = `
    <a class="rank" href="#/profil" style="text-decoration:none">
      <span class="stamp-mini">${A.stampSVG('nivel', li.rank, String(li.L), 'var(--stamp)', -6)}</span>
@@ -255,7 +257,17 @@ A.hud = () => {
      <svg class="goal-ring" viewBox="0 0 26 26"><circle class="bg" cx="13" cy="13" r="10"/><circle class="fg" cx="13" cy="13" r="10" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - gp)}"/></svg>
      ${A.fmt(today)}/${goal}</span>
    <span class="spacer"></span>
+   ${gems}
    ${eco}`;
+  /* romburi de puncte: click -> mini-fereastră sub ele */
+  A.$$('.gem', el).forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const wrap = b.parentNode, old = A.$('.gem-pop', wrap);
+    A.$$('.gem-pop', el).forEach(p => p.remove());
+    if (old) return;
+    const p = document.createElement('div'); p.className = 'gem-pop'; p.textContent = b.dataset.gem === 'grile' ? 'puncte grilă' : 'puncte speță';
+    wrap.appendChild(p); setTimeout(() => p.remove(), 2200);
+  });
   /* telefon: scutul de nivel cu inelul de experiență */
   const lv = document.createElement('a'); lv.className = 'lvl'; lv.href = '#/profil'; lv.title = `${li.rank} · nivelul ${li.L}`;
   lv.style.setProperty('--p', (li.pct * 100).toFixed(1) + '%');

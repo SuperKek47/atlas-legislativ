@@ -445,7 +445,7 @@ A.render = async () => {
   A.timers.forEach(t => clearInterval(t)); A.timers = [];
   const parts = (location.hash.replace(/^#\/?/, '') || 'harta').split('/').map(decodeURIComponent);
   const name = parts[0];
-  const navOf = { lectura: 'lectura', cautare: 'lectura', raion: 'lectura', act: 'lectura', antrenament: 'lectura', firma: 'firma', garaj: 'firma', cariera: 'firma', profil: 'firma', setari: 'firma', harta: 'harta', joc: 'harta' };
+  const navOf = { lectura: 'lectura', cautare: 'lectura', raion: 'lectura', act: 'lectura', antrenament: 'lectura', firma: 'firma', garaj: 'firma', cariera: 'firma', profil: 'firma', setari: 'firma', update: 'firma', harta: 'harta', joc: 'harta' };
   A.$$('.rail a[data-nav]').forEach(a => a.classList.toggle('on', a.dataset.nav === (navOf[name] || name)));
   const view = A.$('#view');
   const fn = A.routes[name] || A.routes.harta;

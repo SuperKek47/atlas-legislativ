@@ -44,7 +44,31 @@ ST.chapOf = m => ST.chapById[m.id.replace(/\.m\d+$/, '')];
 
 /* progres */
 ST.artDone = (act, art) => { const r = A.S.arts[act + ':' + art]; return !!(r && r.r && r.u); };
-ST.microStats = m => { let read = 0, und = 0; for (const a of m.arts) { const r = A.S.arts[m.act + ':' + a]; if (r && r.r) read++; if (r && r.r && r.u) und++; } return { n: m.arts.length, read, und, done: und === m.arts.length }; };
+/* grile de studiu: o grilă e „trecută” la prima încercare corectă; prag pe micro-secțiune = min(10, nr. grile) */
+ST.grileNeed = m => Math.min(10, (ST.gByMicro[m] || []).length);
+ST.grilePassedN = m => Object.keys(((A.S.study.passed || {})[m]) || {}).length;
+ST.isPassed = g => !!(((A.S.study.passed || {})[g.m]) || {})[g.id];
+ST.credit = (m, gid) => {
+  const P = A.S.study.passed = A.S.study.passed || {};
+  P[m] = P[m] || {};
+  if (P[m][gid]) return false;
+  P[m][gid] = 1; A.store.save();
+  const mi = ST.microById[m]; if (mi) ST.checkMicro(mi);
+  return true;
+};
+ST.microStats = m => { let read = 0, und = 0; for (const a of m.arts) { const r = A.S.arts[m.act + ':' + a]; if (r && r.r) read++; if (r && r.r && r.u) und++; } const need = ST.grileNeed(m.id), gp = Math.min(need, ST.grilePassedN(m.id)); return { n: m.arts.length, read, und, gNeed: need, gPassed: gp, gDone: gp >= need, done: und === m.arts.length && gp >= need }; };
+/* grilele unei secțiuni (nod din arborele actului): toate micro-secțiunile ei */
+ST.sectionMicros = (act, nid) => { const ids = new Set(); const walk = x => { const n = act.nodeById[x]; if (!n) return; for (const a of n.arts) { const m = ST.microOf(act.id, a); if (m) ids.add(m.id); } (act.kids[x] || []).forEach(walk); }; walk(nid); return [...ids]; };
+ST.sectionStats = (act, nid) => { let n = 0, p = 0; for (const mid of ST.sectionMicros(act, nid)) { const k = (ST.gByMicro[mid] || []).length; n += k; p += Math.min(k, ST.grilePassedN(mid)); } return { n, p }; };
+/* sesiune de 5 grile din secțiune: întâi cele netrecute și nearătate recent, apoi restul */
+ST.pickSession = (act, nid, k = 5) => {
+  const all = ST.sectionMicros(act, nid).flatMap(m => ST.gByMicro[m] || []);
+  const recent = (A.quizRecent && A.quizRecent()) || [];
+  const tiers = [all.filter(g => !ST.isPassed(g) && !recent.includes(g.id)), all.filter(g => !ST.isPassed(g)), all];
+  const out = [];
+  for (const t of tiers) for (const g of A.shuffle(t.slice())) { if (out.length >= k) break; if (!out.includes(g)) out.push(g); }
+  return out.slice(0, k);
+};
 ST.chapStats = c => { let n = 0, read = 0, und = 0, md = 0; for (const m of c.micro) { const s = ST.microStats(m); n += s.n; read += s.read; und += s.und; if (s.done) md++; } return { n, read, und, micro: c.micro.length, microDone: md, done: md === c.micro.length }; };
 ST.miniReady = c => ST.chapterOpen(c) && !ST.beaten(c.id) && ST.chapStats(c).done;
 ST.beatenCount = unit => ST.chapters(unit).filter(c => ST.beaten(c.id)).length;
@@ -53,8 +77,7 @@ ST.bossReady = unit => { const cs = ST.chapters(unit); return unit === ST.curren
 ST.activeChapter = unit => ST.chapters(unit).find(c => !ST.beaten(c.id)) || ST.chapters(unit).slice(-1)[0];
 
 /* la bifarea unui articol: micro-secțiune terminată -> se deblochează grilele și spețele ei */
-ST.onProgress = (act, art) => {
-  const m = ST.microOf(act, art); if (!m) return;
+ST.checkMicro = m => {
   const s = ST.microStats(m);
   if (s.done && !A.S.study.micro[m.id]) {
     A.S.study.micro[m.id] = A.today();
@@ -66,6 +89,8 @@ ST.onProgress = (act, art) => {
     A.store.save();
   } else if (!s.done && A.S.study.micro[m.id]) { delete A.S.study.micro[m.id]; A.store.save(); }
 };
+/* la bifarea unui articol: verifică micro-secțiunea (citire + grile) */
+ST.onProgress = (act, art) => { const m = ST.microOf(act, art); if (m) ST.checkMicro(m); };
 
 /* banca de studiu deblocată (micro-secțiuni parcurse) */
 ST.unlockedMicros = () => Object.keys(A.S.study.micro || {}).filter(id => ST.microById[id]);

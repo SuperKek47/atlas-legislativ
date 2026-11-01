@@ -327,7 +327,11 @@ A.route('act', async (view, args) => {
       ${(act.annexes || []).filter(x => x.blocks && x.blocks.length).map(x => `<div style="padding:10px 18px"><a href="#/act/${id}/anexa/${x.id}" class="btn small">${A.esc(x.label)}</a></div>`).join('')}</nav>
     <div class="page" id="page"><div class="page-inner">
       ${mode === 'anexa' ? '' : `<div class="chaphead"><div><div class="crumb">${path.slice(0, -1).map(n => A.esc(n.label + ' ' + n.name)).join(' › ')}</div><h1>${A.esc(group.label)} ${A.esc(group.name)}</h1></div>
-        <div class="chapstats">${gs.read}/${gs.n} citite în această secțiune<div class="bar read"><i style="width:${gs.n ? gs.read / gs.n * 100 : 0}%"></i></div><a class="btn small" href="#/antrenament/grila/node:${id}:${group.id}">Antrenează secțiunea</a></div></div>
+        ${(() => { const sp = A.study.sectionStats(act, group.id), pc = sp.n ? sp.p / sp.n * 100 : 0; return `<div class="chapstats secprog">
+          <div class="secprog-top"><span class="secicon"><svg viewBox="0 0 24 24"><path d="M5 6h14M5 12h14M5 18h9"/></svg></span><div><small>Grile de studiu trecute</small><b>${sp.p} din ${sp.n} grile</b></div></div>
+          <div class="bar"><i style="width:${pc}%"></i></div>
+          <div class="secprog-foot"><span class="faint">${gs.read}/${gs.n} articole citite</span><a class="btn primary small" href="#/antrenament/grila/node:${id}:${group.id}">Antrenează secțiunea</a></div></div>`; })()}
+      </div>
       ${anyLocked ? (() => { const a0 = group.arts.find(x => !act.artById[x].abrogat && lockedArt(act.artById[x])), u = A.unitOf(id, a0), lr = A.raion(u); return A.locked(u) ? `<div class="lockbar"><b>${A.esc(lr.name)} · ${A.esc(lr.short)} nu este raionul curent.</b> Raioanele se cuceresc pe rând; textul rămâne deschis pentru consultare, dar progresul nu se numără.</div>` : `<div class="lockbar"><b>Capitol încă închis.</b> Învinge mini-bossul capitolului anterior ca să numeri progresul aici. Textul rămâne deschis pentru consultare.</div>`; })() : ''}
       ${(group.intro || []).map(t => `<p class="intro">${A.esc(t)}</p>`).join('')}
       ${comm && comm.chapters && comm.chapters[group.id] ? `<div class="comm chap"><b>Comentariu la capitol</b>${A.esc(comm.chapters[group.id])}</div>` : ''}
@@ -512,6 +516,11 @@ A.route('antrenament', async (view, [mode, scope]) => {
       taxa: { title: 'Taxa de stat', n: 5, mode: 'taxa' },
     }[mode];
     if (!cfg) return A.go('#/antrenament');
+    if (mode === 'grila' && /^node:/.test(scope || '')) {
+      /* antrenament pe secțiune: 5 grile de studiu, alese la fiecare sesiune */
+      const [, aid, nid] = scope.split(':'); const sact = await A.loadAct(aid);
+      cfg.title = 'Secțiune'; cfg.makeGrile = () => A.study.pickSession(sact, nid, 5);
+    }
     if (mode === 'repetare' && !cfg.keys.length) { view.innerHTML = `<div class="quiz"><div class="empty">Nicio repetare scadentă azi. <a href="#/antrenament">Înapoi</a></div></div>`; return; }
     const opt = Object.assign({ mode, scope: scope || 'citite' }, cfg);
     if (mode === 'urmarire') opt.onDone = (res, root) => {
@@ -565,6 +574,24 @@ A.route('profil', async view => {
   </div>`;
 });
 
+/* ======================= UPDATE (istoricul modificărilor) ======================= */
+A.CHANGELOG = [
+  { v: '1 noiembrie 2026', items: [
+    'Grile de studiu: 3364 de grile și 417 spețe încărcate pentru 13 raioane civile (Chișinău, Anenii Noi, Căușeni, Criuleni, Hîncești, Ialoveni, Leova, Nisporeni, Orhei, Rezina, Ștefan Vodă, Strășeni, Telenești).',
+    'Raioanele noi Nisporeni (312 grile, 39 spețe) și Ștefan Vodă (425 grile, 40 spețe, capitole despre executarea sancțiunilor din Codul de executare) sunt acum în joc.',
+    'Antrenament pe secțiune: fiecare sesiune are 5 grile, diferite la fiecare reluare; poți repeta sesiunile oricâte ori.',
+    'Progres la grile: sub titlul secțiunii vezi „x din N grile” trecute. O grilă se socotește trecută dacă ai răspuns corect, indiferent de câte încercări ai avut.',
+    'Mini-boss: pentru fiecare micro-secțiune trebuie trecute min(10, numărul grilelor ei) grile, pe lângă citirea și înțelegerea articolelor. O micro-secțiune cu 6 grile cere toate cele 6.',
+    'Antetul secțiunii din Lectură a fost refăcut: card cu iconiță, progres în grile, articole citite și butonul „Antrenează secțiunea”.',
+    'Bara de sus: puncte-grilă (romb smarald) și puncte-speță (romb auriu), vizibile pe toate paginile. Apasă pe un romb ca să vezi denumirea lui.',
+    'Secțiune nouă în Setări: Update (această listă).',
+  ] },
+];
+A.route('update', async view => {
+  view.innerHTML = `<div class="settings"><a class="backlink" href="#/setari">‹ Setări</a><h1>Update</h1>
+    ${A.CHANGELOG.map(u => `<div class="row" style="display:block"><b>${A.esc(u.v)}</b><ul style="margin:8px 0 0 18px;padding:0;line-height:1.55">${u.items.map(i => `<li>${A.esc(i)}</li>`).join('')}</ul></div>`).join('')}</div>`;
+});
+
 /* ======================= SETĂRI ======================= */
 A.route('setari', async view => {
   const st = A.S.settings;
@@ -573,6 +600,7 @@ A.route('setari', async view => {
     <div class="row"><div><b>Sunet</b><small>Efecte scurte la XP, monede și ștampile.</small></div><select id="snd"><option value="1" ${st.sound ? 'selected' : ''}>Pornit</option><option value="0" ${!st.sound ? 'selected' : ''}>Oprit</option></select></div>
     <div class="row"><div><b>Vibrații</b><small>Vibrație scurtă la dosare, victorii și nivel nou, pe telefoanele care o permit. iPhone nu permite vibrații aplicațiilor web.</small></div><select id="vib"><option value="1" ${st.vib !== false ? 'selected' : ''}>Pornite</option><option value="0" ${st.vib === false ? 'selected' : ''}>Oprite</option></select></div>
     <div class="row"><div><b>Temă</b><small>Luminoasă, întunecată sau după sistem.</small></div><select id="theme"><option value="auto">După sistem</option><option value="light">Luminoasă</option><option value="dark">Întunecată</option></select></div>
+    <div class="row"><div><b>Update</b><small>Ce s-a adăugat și ce s-a schimbat în aplicație, pe versiuni.</small></div><a class="btn" href="#/update">Vezi</a></div>
     <div class="row"><div><b>Exportă progresul</b><small>Salvează un fișier cu tot progresul tău (copie de siguranță).</small></div><button class="btn" id="exp">Exportă</button></div>
     <div class="row"><div><b>Importă progresul</b><small>Înlocuiește progresul curent cu cel dintr-un fișier exportat.</small></div><label class="btn">Alege fișierul<input type="file" id="imp" accept=".json" hidden></label></div>
     <div class="row"><div><b>Adaugă un pachet de raion</b><small>Un fișier .json generat în alt proiect (de exemplu, penal). Raionul lui se aprinde pe hartă.</small></div><label class="btn">Adaugă pachet<input type="file" id="pack" accept=".json" hidden></label></div>
