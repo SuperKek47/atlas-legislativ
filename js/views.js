@@ -329,7 +329,8 @@ A.route('act', async (view, args) => {
       ${mode === 'anexa' ? '' : `<div class="chaphead"><div><div class="crumb">${path.slice(0, -1).map(n => A.esc(n.label + ' ' + n.name)).join(' › ')}</div><h1>${A.esc(group.label)} ${A.esc(group.name)}</h1></div>
         ${(() => { const sp = A.study.sectionStats(act, group.id), pc = sp.n ? sp.p / sp.n * 100 : 0; return `<div class="chapstats secprog">
           <div class="secprog-top"><span class="secicon"><svg viewBox="0 0 24 24"><path d="M5 6h14M5 12h14M5 18h9"/></svg></span><div><small>Grile de studiu trecute</small><b>${sp.p} din ${sp.n} grile</b></div></div>
-          <div class="bar"><i style="width:${pc}%"></i></div>
+          <div class="bar mark"><i style="width:${pc}%"></i>${sp.n ? `<u class="need" style="left:${(sp.need / sp.n * 100).toFixed(1)}%" title="Minimul obligatoriu pentru mini-boss"></u>` : ''}</div>
+          <small class="needlbl">Până la linia roșie (${sp.need} grile) este obligatoriu pentru mini-boss.</small>
           <div class="secprog-foot"><span class="faint">${gs.read}/${gs.n} articole citite</span><a class="btn primary small" href="#/antrenament/grila/node:${id}:${group.id}">Antrenează secțiunea</a></div></div>`; })()}
       </div>
       ${anyLocked ? (() => { const a0 = group.arts.find(x => !act.artById[x].abrogat && lockedArt(act.artById[x])), u = A.unitOf(id, a0), lr = A.raion(u); return A.locked(u) ? `<div class="lockbar"><b>${A.esc(lr.name)} · ${A.esc(lr.short)} nu este raionul curent.</b> Raioanele se cuceresc pe rând; textul rămâne deschis pentru consultare, dar progresul nu se numără.</div>` : `<div class="lockbar"><b>Capitol încă închis.</b> Învinge mini-bossul capitolului anterior ca să numeri progresul aici. Textul rămâne deschis pentru consultare.</div>`; })() : ''}
@@ -576,6 +577,12 @@ A.route('profil', async view => {
 
 /* ======================= UPDATE (istoricul modificărilor) ======================= */
 A.CHANGELOG = [
+  { v: '1 noiembrie 2026 · dosare și interfață', items: [
+    'Dosarele se primesc acum din jocul rapid (PLAY), la 2+ răspunsuri corecte: simplu 63,5%, argint 20%, aur 15%, magic 1%, legendar 0,5%. Au rămas premiile speciale (mini-boși, serii de zile, misiuni, magazin).',
+    'Bara de sus (telefon): doar cercul nivelului; apasă-l ca să vezi XP-ul (de exemplu 143/1.430 XP). Romburile de puncte arată acum corect denumirea la apăsare.',
+    'Meniul Birou: butoanele de îmbunătățire și concediere nu mai sunt alungite; angajații apar ca fișe.',
+    'Lectură: antetul secțiunii nu mai iese din ecran, iar bara de grile are o linie roșie până la care trebuie obligatoriu trecute grile pentru mini-boss.',
+  ] },
   { v: '1 noiembrie 2026 · puncte-speță', items: [
     'Dosarele costă puncte-speță la deschidere: dosar simplu 1, de argint 2, de aur 3, magic 4, legendar 5. Dosarul gratuit de la CNAJGS nu costă nimic. Costul se vede pe butonul de deschidere.',
     'Două tipuri noi de dosare: Dosar magic (violet) și Dosar legendar (portocaliu, fostul Dosar al Decanului). Magicul se primește la mini-bossul ultimului capitol, la seria de 14 zile și pe Calea Atlasului; legendarul, la cucerirea unui raion.',

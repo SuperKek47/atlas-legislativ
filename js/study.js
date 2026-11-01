@@ -59,7 +59,7 @@ ST.credit = (m, gid) => {
 ST.microStats = m => { let read = 0, und = 0; for (const a of m.arts) { const r = A.S.arts[m.act + ':' + a]; if (r && r.r) read++; if (r && r.r && r.u) und++; } const need = ST.grileNeed(m.id), gp = Math.min(need, ST.grilePassedN(m.id)); return { n: m.arts.length, read, und, gNeed: need, gPassed: gp, gDone: gp >= need, done: und === m.arts.length && gp >= need }; };
 /* grilele unei secțiuni (nod din arborele actului): toate micro-secțiunile ei */
 ST.sectionMicros = (act, nid) => { const ids = new Set(); const walk = x => { const n = act.nodeById[x]; if (!n) return; for (const a of n.arts) { const m = ST.microOf(act.id, a); if (m) ids.add(m.id); } (act.kids[x] || []).forEach(walk); }; walk(nid); return [...ids]; };
-ST.sectionStats = (act, nid) => { let n = 0, p = 0; for (const mid of ST.sectionMicros(act, nid)) { const k = (ST.gByMicro[mid] || []).length; n += k; p += Math.min(k, ST.grilePassedN(mid)); } return { n, p }; };
+ST.sectionStats = (act, nid) => { let n = 0, p = 0, need = 0; for (const mid of ST.sectionMicros(act, nid)) { const k = (ST.gByMicro[mid] || []).length; n += k; need += ST.grileNeed(mid); p += Math.min(k, ST.grilePassedN(mid)); } return { n, p, need }; };
 /* sesiune de 5 grile din secțiune: întâi cele netrecute și nearătate recent, apoi restul */
 ST.pickSession = (act, nid, k = 5) => {
   const all = ST.sectionMicros(act, nid).flatMap(m => ST.gByMicro[m] || []);

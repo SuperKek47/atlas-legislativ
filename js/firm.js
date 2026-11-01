@@ -173,7 +173,7 @@ A.route('firma', async (view, [sub]) => {
   const n = Date.now(), unlocking = E.unlocking();
   const chestLock = E.chestsLocked();
   const slot = (c, i) => {
-    if (!c) return `<div class="slot empty"><div class="ph">Slot liber</div><small>Dosarele vin din jocul rapid, micro-secțiuni parcurse, procese, misiuni și mini-boși.</small></div>`;
+    if (!c) return `<div class="slot empty"><div class="ph">Slot liber</div><small>Dosarele vin din jocul rapid (butonul PLAY), mini-boși, misiuni și serii de zile.</small></div>`;
     const C = E.CHESTS[c.type];
     const head = `<div class="chestbox">${E.chestSVG(c.type)}</div><b>${C.name}</b>`;
     if (c.unlockEnd && c.unlockEnd <= n)

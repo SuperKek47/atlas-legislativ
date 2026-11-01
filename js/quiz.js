@@ -235,7 +235,6 @@ Q.run = async (view, opt) => {
     const res = { ok: st.ok, answered: st.answered, acc, best: st.best, ms: Date.now() - st.start, xp: st.xp, money: st.money, wrong: st.wrong };
     if (opt.onDone) return opt.onDone(res, root);
     let chest = '';
-    if (st.answered >= 8 && acc >= .6 && A.eco) { const t = acc >= .9 ? 'argint' : 'simplu'; if (A.eco.grantChest(t, 'Sesiune de antrenament')) chest = `<p>Ai primit un dosar ${t === 'argint' ? 'de argint' : 'simplu'}.</p>`; }
     root.innerHTML = `<div class="qcard summary"><div class="big">${st.ok}/${st.answered}</div>
       <p class="muted">${opt.title || 'Antrenament'} · ${Math.round(acc * 100)}% corecte · cel mai lung combo ${st.best}</p>
       <p><b>+${A.fmt(st.xp)} XP</b> &nbsp; <b>+${A.lei(st.money)}</b></p>${chest}

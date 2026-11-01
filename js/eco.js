@@ -300,7 +300,6 @@ E.collectProc = (id, at) => {
   A.sound(won ? 'coin' : 'ko');
   const u = A.unitById[p.unit].name;
   A.toast(won ? `<b>${jack ? 'Onorariu de succes!' : 'Proces câștigat'}</b>&nbsp;la ${A.esc(u)}: ${A.esc(p.title)}, +${A.lei(got)}` : `Proces pierdut la ${A.esc(u)}. Onorariu de consultanță: +${A.lei(got)}`, 4200);
-  if (won && Math.random() < .12) E.grantChest(Math.random() < .2 ? 'aur' : 'simplu', 'Proces câștigat');
   A.store.save(); A.game.checkStamps();
 };
 /* pregătirea dosarului: aceleași 3 întrebări pentru același dosar, oricâte ieșiri ar fi */
@@ -483,7 +482,7 @@ E.dockKey = () => { const s = E.s(); if (!s || !s.started) return '-'; const n =
 E.dockTimers = root => A.$$('[data-t]', root).forEach(el => { el.textContent = E.shortDur(+el.dataset.t - Date.now()); });
 E.dockTap = i => {
   const s = E.s(), c = s && s.slots[i]; if (!s) return;
-  if (!c) { A.toast('Slot liber. Dosarele vin din jocul rapid, micro-secțiuni, procese, misiuni și mini-boși.'); return; }
+  if (!c) { A.toast('Slot liber. Dosarele vin din jocul rapid (butonul PLAY), mini-boși, misiuni și serii de zile.'); return; }
   const lock = E.chestsLocked(); if (lock) { A.toast(`Dosarele se deschid după etapa de începător: mai citește ${lock} ${lock === 1 ? 'articol' : 'articole'}.`); A.sound('warn'); return; }
   if (c.unlockEnd && c.unlockEnd <= Date.now()) return E.openChest(i);
   if (c.unlockEnd) { const C = E.CHESTS[c.type];

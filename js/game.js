@@ -160,8 +160,7 @@ G.checkChapter = (act, node) => {
   if (live.length && live.every(a => (A.S.arts[A.key(act.id, a)] || {}).r)) {
     A.S.chaptersDone[k] = A.today();
     G.addXP(50); A.sound('chest');
-    A.toast(`<b>Capitol parcurs:</b>&nbsp;${A.esc(node.label)} ${A.esc(node.name || '')}. Ai primit un dosar simplu.`, 4200);
-    A.eco && A.eco.grantChest('simplu', 'Capitol parcurs');
+    A.toast(`<b>Capitol parcurs:</b>&nbsp;${A.esc(node.label)} ${A.esc(node.name || '')}. `, 4200);
     A.store.save();
   }
 };
@@ -260,16 +259,20 @@ A.hud = () => {
    ${gems}
    ${eco}`;
   /* romburi de puncte: click -> mini-fereastră sub ele */
-  A.$$('.gem', el).forEach(b => b.onclick = e => {
-    e.stopPropagation();
-    const wrap = b.parentNode, old = A.$('.gem-pop', wrap);
-    A.$$('.gem-pop', el).forEach(p => p.remove());
-    if (old) return;
-    const p = document.createElement('div'); p.className = 'gem-pop'; p.textContent = b.dataset.gem === 'grile' ? 'puncte grilă' : 'puncte speță';
-    wrap.appendChild(p); setTimeout(() => p.remove(), 2200);
-  });
+  /* mini-fereastră fixă, sub elementul apăsat (nu e tăiată de bara de sus) */
+  const pop = (anchor, text) => {
+    const had = anchor._pop; A.$$('.gem-pop').forEach(p => p.remove()); A.$$('.hud [data-gem], .hud .lvl').forEach(x => { x._pop = false; });
+    if (had) return;
+    const r = anchor.getBoundingClientRect(), p = document.createElement('div'); p.className = 'gem-pop'; p.textContent = text;
+    document.body.appendChild(p);
+    const w = p.offsetWidth, x = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2));
+    p.style.left = x + 'px'; p.style.top = (r.bottom + 8) + 'px'; anchor._pop = true;
+    setTimeout(() => { p.remove(); anchor._pop = false; }, 2500);
+  };
+  A.$$('.gem', el).forEach(b => b.onclick = e => { e.stopPropagation(); pop(b, b.dataset.gem === 'grile' ? 'puncte grilă' : 'puncte speță'); });
   /* telefon: scutul de nivel cu inelul de experiență */
-  const lv = document.createElement('a'); lv.className = 'lvl'; lv.href = '#/profil'; lv.title = `${li.rank} · nivelul ${li.L}`;
+  const lv = document.createElement('button'); lv.type = 'button'; lv.className = 'lvl'; lv.title = `${li.rank} · nivelul ${li.L}`;
+  lv.onclick = e => { e.stopPropagation(); pop(lv, `${A.fmt(li.xp - li.lo)}/${A.fmt(li.hi - li.lo)} XP`); };
   lv.style.setProperty('--p', (li.pct * 100).toFixed(1) + '%');
   lv.innerHTML = `<span>${li.L}</span>`;
   el.prepend(lv);
