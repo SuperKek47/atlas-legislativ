@@ -976,3 +976,14 @@ table.staff td.free { color: var(--forest); }
 .cs.ready .ci { filter: drop-shadow(0 0 10px #FFD54A) drop-shadow(0 4px 6px rgba(0,0,0,.5)); }
 .cs:not(.found):not(.empty) b, .cs:not(.found):not(.empty) small { text-shadow: 0 1px 3px #000; }
 @media (max-width: 620px) { .cs { min-height: 96px; } .cs:not(.found):not(.empty) .ci { width: 72px; height: 60px; } }
+
+/* ---- calculator taxă, listă spețe ---- */
+.taxcalc, .train .sprow { max-width: 720px; }
+.taxcalc .field { display: block; margin: 12px 0; }
+.taxcalc .field span { display: block; font-size: 13px; color: var(--ink-3, #777); margin-bottom: 4px; }
+.taxcalc select, .taxcalc input { width: 100%; box-sizing: border-box; padding: 10px 12px; font: inherit; border-radius: 10px; }
+.taxcalc .calcout { margin-top: 16px; padding: 16px; border-radius: 14px; border: 1px solid var(--rule, #ccc); }
+.taxcalc .calcout .big { font-size: 30px; font-weight: 800; }
+.sprow { text-decoration: none; }
+.taxcalc .field[hidden] { display: none; }
+.taxcalc { padding: 16px; margin: 0 auto; }

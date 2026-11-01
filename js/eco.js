@@ -373,17 +373,14 @@ E.unlockMs = type => E.CHESTS[type].ms * (1 - Math.min(.4, .1 * E.s().staff.filt
 E.unlocking = () => E.s().slots.find(x => x && x.unlockEnd && x.unlockEnd > Date.now());
 E.startUnlock = i => { const s = E.s(), c = s.slots[i]; if (!c || c.unlockEnd || E.unlocking()) return;
   const left = E.chestsLocked(); if (left) { A.toast(`Dosarele se deschid după etapa de începător: mai citește ${left} ${left === 1 ? 'articol' : 'articole'}.`); A.sound('warn'); return; } c.unlockEnd = Date.now() + E.unlockMs(c.type); A.store.save(); };
-/* deschiderea imediată: 15 grile grele, cel puțin 14 corecte; altfel dosarul se deschide doar la timp */
-E.SPEED_N = 15; E.SPEED_PASS = 14;
-E.speedChest = i => {
-  const s = E.s(), c = s.slots[i]; if (!c || !c.unlockEnd || c.unlockEnd <= Date.now() || c.speedLocked) return;
-  A.go(`#/joc/test/${i}`);
-};
-E.speedResult = (i, ok, n) => {
-  const s = E.s(), c = s.slots[i]; if (!c) return;
-  if (ok >= E.SPEED_PASS) { c.unlockEnd = Date.now(); A.toast(`<b>${ok}/${n} corecte.</b>&nbsp;Dosarul se deschide acum.`, 5000); A.sound('level'); }
-  else { c.speedLocked = true; A.toast(`${ok}/${n} corecte. Dosarul se va deschide la timpul lui.`, 5000); A.sound('ko'); }
-  A.store.save();
+/* deschiderea imediată: cu puncte-speță (costul depinde de tipul dosarului) */
+E.openNow = i => {
+  const s = E.s(), c = s && s.slots[i]; if (!c || (c.unlockEnd && c.unlockEnd <= Date.now())) return;
+  const left = E.chestsLocked(); if (left) { A.toast(`Dosarele se deschid după etapa de începător: mai citește ${left} ${left === 1 ? 'articol' : 'articole'}.`); A.sound('warn'); return; }
+  const sp = E.CHESTS[c.type].sp || 0, have = A.S.points.spete || 0;
+  if (have < sp) { A.toast(`Pentru ${E.CHESTS[c.type].name.toLowerCase()} îți trebuie ${sp} ${sp === 1 ? 'punct-speță' : 'puncte-speță'}. Ai ${have}. Rezolvă spețe în Antrenament sau așteaptă.`, 4500); A.sound('warn'); return; }
+  A.S.points.spete -= sp; c.unlockEnd = Date.now() - 1; A.store.save(); A.hud();
+  E.openChest(i);
 };
 E.rollChest = type => {
   const C = E.CHESTS[type], L = A.game.levelInfo().L, out = { money: 0, clients: [], cards: {}, buff: null, cosm: null, nitro: 0 };
@@ -433,12 +430,7 @@ E.openChest = (i, free) => {
   const s = E.s(); let type;
   const left0 = E.chestsLocked(); if (left0) { A.toast(`Dosarele se deschid după etapa de începător: mai citește ${left0} ${left0 === 1 ? 'articol' : 'articole'}.`); A.sound('warn'); return; }
   if (free) { if (s.freeStock < 1) return; s.freeStock--; if (s.freeStock < 2 && s.freeAt < Date.now()) s.freeAt = Date.now() + E.FREE_EVERY; type = 'simplu'; }
-  else {
-    const c = s.slots[i]; if (!c || !c.unlockEnd || c.unlockEnd > Date.now()) return;
-    const sp = E.CHESTS[c.type].sp || 0;
-    if ((A.S.points.spete || 0) < sp) { A.toast(`Pentru ${E.CHESTS[c.type].name.toLowerCase()} îți trebuie ${sp} ${sp === 1 ? 'punct-speță' : 'puncte-speță'}. Ai ${A.S.points.spete || 0}. Rezolvă spețe în jocul rapid.`, 4500); A.sound('warn'); return; }
-    A.S.points.spete -= sp; type = c.type; s.slots[i] = null; A.hud();
-  }
+  else { const c = s.slots[i]; if (!c || !c.unlockEnd || c.unlockEnd > Date.now()) return; type = c.type; s.slots[i] = null; }
   A.store.save();
   const reveal = mult => {
     const loot = E.scaleLoot(E.rollChest(type), mult);
@@ -471,7 +463,7 @@ E.dockHTML = () => {
     if (!c) return `<button type="button" class="cs empty" data-cs="${i}" aria-label="Slot liber"><span class="ph"></span><small>Slot liber</small></button>`;
     const C = E.CHESTS[c.type], img = `<span class="ci">${E.chestSVG(c.type)}</span>`;
     if (lock) return `<button type="button" class="cs locked" data-cs="${i}" style="--c:${C.color}">${img}<small>🔒 încă ${lock} art.</small></button>`;
-    if (c.unlockEnd && c.unlockEnd <= n) return `<button type="button" class="cs ready" data-cs="${i}" style="--c:${C.color}">${img}<b>DESCHIDE!</b><small>${E.spGem}${C.sp}</small></button>`;
+    if (c.unlockEnd && c.unlockEnd <= n) return `<button type="button" class="cs ready" data-cs="${i}" style="--c:${C.color}">${img}<b>DESCHIDE!</b></button>`;
     if (c.unlockEnd) return `<button type="button" class="cs run" data-cs="${i}" style="--c:${C.color}">${img}<b class="num" data-t="${c.unlockEnd}">${E.shortDur(c.unlockEnd - n)}</b><small>se deblochează</small></button>`;
     return `<button type="button" class="cs idle ${busy ? '' : 'go'}" data-cs="${i}" style="--c:${C.color}">${img}<b>${busy ? E.shortDur(E.unlockMs(c.type)) : 'Deblochează'}</b><small>${busy ? 'în așteptare' : E.shortDur(E.unlockMs(c.type))}</small></button>`;
   }).join('');
@@ -485,13 +477,13 @@ E.dockTap = i => {
   if (!c) { A.toast('Slot liber. Dosarele vin din jocul rapid (butonul PLAY), mini-boși, misiuni și serii de zile.'); return; }
   const lock = E.chestsLocked(); if (lock) { A.toast(`Dosarele se deschid după etapa de începător: mai citește ${lock} ${lock === 1 ? 'articol' : 'articole'}.`); A.sound('warn'); return; }
   if (c.unlockEnd && c.unlockEnd <= Date.now()) return E.openChest(i);
-  if (c.unlockEnd) { const C = E.CHESTS[c.type];
-    const m = A.modal(`<div class="chestbox">${E.chestSVG(c.type)}</div><h2>${C.name}</h2><p>Se deschide peste <b>${E.shortDur(c.unlockEnd - Date.now())}</b>.</p>
-      ${c.speedLocked ? '<p class="faint">Testul a fost picat: dosarul se deschide la timpul lui.</p>' : `<p>Sau îl deschizi acum: ${E.SPEED_N} grile grele, ai nevoie de ${E.SPEED_PASS} corecte. O singură încercare.</p>`}
-      <div class="mbtns">${c.speedLocked ? '' : `<button class="btn primary" id="spd">Deschide acum: testul</button>`}<button class="btn" data-close>Închide</button></div>`);
-    const b = A.$('#spd', m.el); if (b) b.onclick = () => { m.close(); E.speedChest(i); }; return; }
-  if (E.unlocking()) { A.toast('Se deblochează deja alt dosar. Câte unul pe rând.'); A.sound('warn'); return; }
-  E.startUnlock(i); A.sound('chest');
+  const C = E.CHESTS[c.type], sp = C.sp || 0, running = !!c.unlockEnd, have = A.S.points.spete || 0;
+  const m = A.modal(`<div class="chestbox">${E.chestSVG(c.type)}</div><h2>${C.name}</h2>
+    <p>${running ? `Se deschide peste <b>${E.shortDur(c.unlockEnd - Date.now())}</b>.` : `Deblocarea durează <b>${E.shortDur(E.unlockMs(c.type))}</b>.`}</p>
+    <p class="faint">Ai ${E.spGem} ${A.fmt(have)}</p>
+    <div class="mbtns"><button class="btn primary" id="optsp">Deschide cu puncte-speță · ${E.spGem}${sp}</button><button class="btn" id="optw">${running ? 'Așteaptă' : 'Așteaptă: pornește deblocarea'}</button></div>`);
+  A.$('#optsp', m.el).onclick = () => { m.close(); E.openNow(i); };
+  A.$('#optw', m.el).onclick = () => { m.close(); if (running) return; if (E.unlocking()) { A.toast('Se deblochează deja alt dosar. Câte unul pe rând.'); A.sound('warn'); return; } E.startUnlock(i); A.sound('chest'); };
 };
 E.freeHTML = () => {
   const s = E.s(); if (!s || !s.started) return '';

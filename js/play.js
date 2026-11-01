@@ -1,5 +1,5 @@
 /* Atlasul legislativ — spețe cu răspuns liber (corectare offline pe concepte-cheie),
-   jocul rapid (3 grile de examen + 1 speță) și testul de deschidere imediată a dosarelor. */
+   jocul rapid (3 grile de examen + 1 speță) */
 'use strict';
 (() => {
 const P = A.play = {};
@@ -62,10 +62,10 @@ P.speta = (host, sp, onDone) => {
         <div class="why"><b>Răspunsul model:</b> ${A.esc(q.model)}</div>${q.refs && q.refs.length ? `<div class="why">${q.refs.map(refLink).join(' · ')}</div>` : ''}</div></div>`;
     });
     const score = pts / sp.q.length;
-    const rec = A.S.spete[sp.id] = A.S.spete[sp.id] || {}; rec.last = A.today(); if (score >= .99) rec.ok = (rec.ok || 0) + 1; else rec.ko = (rec.ko || 0) + 1;
+    const rec = A.S.spete[sp.id] = A.S.spete[sp.id] || {}; const first = score >= .99 && !rec.ok; rec.last = A.today(); if (score >= .99) rec.ok = (rec.ok || 0) + 1; else rec.ko = (rec.ko || 0) + 1;
     A.studied(); A.store.save(); A.sound(score >= .99 ? 'ok' : score > 0 ? 'xp' : 'ko');
     A.$('#sgo', host).outerHTML = `<button class="btn primary" id="snext">Continuă</button>`;
-    A.$('#snext', host).onclick = () => onDone({ score, ok: score >= .99 });
+    A.$('#snext', host).onclick = () => onDone({ score, ok: score >= .99, first });
   };
   A.$('#sgo', host).onclick = () => finish(false);
   A.guardStart(() => finish(true));
@@ -117,7 +117,6 @@ P.examRun = async (root, list, title, perQ, onDone, onEach) => {
 /* ---------------- jocul rapid: 3 grile + 1 speță ---------------- */
 A.route('joc', async (view, [mode, arg]) => {
   await A.quiz.loadBank();
-  if (mode === 'test') return speedTest(view, +arg);
   const E = A.eco, s = E.s(), pool = P.examPool(), spN = ST.unlockedSpete().length;
   if (pool.length < 3) {
     view.innerHTML = `<div class="playhome"><div class="playhero"><div class="faint">Joc rapid</div><h1>3 grile de examen și o speță</h1>
@@ -137,7 +136,7 @@ A.route('joc', async (view, [mode, arg]) => {
   }, good => { if (good) { money += E.earn(150 * mult); xp += A.game.addXP(8); } });
   const end = res => {
     let spMsg = 'Nicio speță deblocată încă: parcurge micro-secțiuni ca să apară.';
-    if (res) { if (res.ok) { A.S.points.spete++; money += E.earn(600 * mult); xp += A.game.addXP(30); spMsg = 'Speță rezolvată: +1 punct-speță.'; } else if (res.score > 0) { money += E.earn(250 * mult); xp += A.game.addXP(12); spMsg = 'Speță rezolvată parțial.'; } else spMsg = 'Speța nu a fost rezolvată.'; }
+    if (res) { if (res.ok) { if (res.first) A.S.points.spete++; money += E.earn(600 * mult); xp += A.game.addXP(30); spMsg = res.first ? 'Speță rezolvată pentru prima dată: +1 punct-speță.' : 'Speță rezolvată (punctul-speță se acordă doar la prima rezolvare).'; } else if (res.score > 0) { money += E.earn(250 * mult); xp += A.game.addXP(12); spMsg = 'Speță rezolvată parțial.'; } else spMsg = 'Speța nu a fost rezolvată.'; }
     const total = gok + (res && res.ok ? 1 : 0), n = 3 + (res ? 1 : 0);
     /* dosar doar dacă totul e corect (3/3 fără speță, 4/4 cu speță): simplu 63,5% · argint 20% · aur 15% · magic 1% · legendar 0,5% */
     const roll = Math.random() * 100;
@@ -152,24 +151,4 @@ A.route('joc', async (view, [mode, arg]) => {
   };
 });
 
-/* ---------------- testul de deschidere imediată ---------------- */
-async function speedTest(view, slot) {
-  const E = A.eco, s = E.s(), c = s.slots[slot];
-  if (!c || !c.unlockEnd || c.unlockEnd <= Date.now() || c.speedLocked) return A.go('#/harta');
-  const pool = P.examPool();
-  if (pool.length < E.SPEED_N) { A.toast('Nu sunt destule grile în raioanele deschise.'); return A.go('#/harta'); }
-  const go = () => {
-    c.speedLocked = true; A.store.save();   // o singură încercare per dosar
-    const root = document.createElement('div'); root.className = 'quiz'; view.innerHTML = ''; view.appendChild(root);
-    const list = A.shuffle(pool).slice(0, E.SPEED_N).map(g => Object.assign({}, g));
-    P.examRun(root, list, `Deschide ${E.CHESTS[c.type].name.toLowerCase()}`, 30, (ok, n) => {
-      if (ok >= E.SPEED_PASS) c.speedLocked = false;
-      E.speedResult(slot, ok, n);
-      root.innerHTML = `<div class="qcard summary"><div class="big">${ok}/${n}</div><p>${ok >= E.SPEED_PASS ? 'Dosarul se deschide acum.' : `Ai nevoie de ${E.SPEED_PASS} corecte. Dosarul se va deschide la timpul lui.`}</p><a class="btn primary" href="#/harta">Înapoi la hartă</a></div>`;
-    });
-  };
-  view.innerHTML = `<div class="playhome"><div class="playhero"><h1>Deschide dosarul acum</h1><p class="muted">${E.SPEED_N} grile de examen, 30 de secunde fiecare. Ai nevoie de cel puțin ${E.SPEED_PASS} răspunsuri corecte. Ai o singură încercare: dacă pici, dosarul se deschide doar la timpul lui.</p>
-    <div class="mbtns"><button class="btn primary huge" id="go">Încep testul</button><a class="btn" href="#/harta">Renunț</a></div></div></div>`;
-  A.$('#go', view).onclick = go;
-}
 })();

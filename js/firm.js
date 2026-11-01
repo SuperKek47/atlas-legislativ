@@ -177,12 +177,12 @@ A.route('firma', async (view, [sub]) => {
     const C = E.CHESTS[c.type];
     const head = `<div class="chestbox">${E.chestSVG(c.type)}</div><b>${C.name}</b>`;
     if (c.unlockEnd && c.unlockEnd <= n)
-      return `<div class="slot ready" style="--c:${C.color}">${head}<small>${A.esc(c.src || '')}</small><div class="act"><button class="btn primary" data-do="open:${i}">Deschide · ${E.spGem}${C.sp}</button></div></div>`;
+      return `<div class="slot ready" style="--c:${C.color}">${head}<small>${A.esc(c.src || '')}</small><div class="act"><button class="btn primary" data-do="open:${i}">Deschide</button></div></div>`;
     if (c.unlockEnd)
       return `<div class="slot run" style="--c:${C.color}">${head}<small>se deblochează: ${until(c.unlockEnd)}</small>${prog(c.unlockEnd - E.unlockMs(c.type), c.unlockEnd)}
-        <div class="act">${c.speedLocked ? '<small class="faint">Testul a fost picat: se deschide la timp.</small>' : `<button class="btn small" data-do="speed:${i}" title="15 grile grele; ai nevoie de ${E.SPEED_PASS} corecte">Deschide acum: test de ${E.SPEED_N} grile</button>`}</div></div>`;
+        <div class="act"><button class="btn small" data-do="now:${i}" title="Deschizi imediat, fără să aștepți">Deschide cu puncte-speță · ${E.spGem}${C.sp}</button></div></div>`;
     return `<div class="slot" style="--c:${C.color}">${head}<small>${A.esc(c.src || '')} · deblocare ${A.dur(E.unlockMs(c.type))}</small>
-      <div class="act"><button class="btn" data-do="unlock:${i}" ${unlocking || chestLock ? 'disabled' : ''}>${chestLock ? `Încă ${chestLock} ${chestLock === 1 ? 'articol' : 'articole'} de citit` : unlocking ? 'Alt dosar se deblochează' : 'Pornește deblocarea'}</button></div></div>`;
+      <div class="act"><button class="btn small" data-do="now:${i}" title="Deschizi imediat, fără să aștepți">Deschide cu puncte-speță · ${E.spGem}${C.sp}</button><button class="btn" data-do="unlock:${i}" ${unlocking || chestLock ? 'disabled' : ''}>${chestLock ? `Încă ${chestLock} ${chestLock === 1 ? 'articol' : 'articole'} de citit` : unlocking ? 'Alt dosar se deblochează' : 'Pornește deblocarea'}</button></div></div>`;
   };
   const readyC = s.consults.filter(c => c.end <= n), readyP = s.procs.filter(p => p.end <= n);
   const pas = E.passiveRaw(), rate = E.passiveRateRaw() * E.feeMult();
@@ -211,7 +211,7 @@ A.route('firma', async (view, [sub]) => {
     </div></div>`;
   bind(view, {
     open: (b, i) => E.openChest(+i), free: () => E.openChest(0, true),
-    unlock: (b, i) => { E.startUnlock(+i); A.render(); }, speed: (b, i) => E.speedChest(+i),
+    unlock: (b, i) => { E.startUnlock(+i); A.render(); }, now: (b, i) => E.openNow(+i),
     passive: b => { E.collectPassive(at(b)); A.render(); },
     cc: (b, id) => { E.collectConsult(+id, at(b)); A.render(); }, cp: (b, id) => { E.collectProc(+id, at(b)); A.render(); },
   });

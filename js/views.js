@@ -505,8 +505,90 @@ A.route('lectura', async view => {
   A.$('#lq', view).onsubmit = e => { e.preventDefault(); const q = A.$('#q', view).value.trim(); if (q) A.go('#/cautare/' + encodeURIComponent(q)); };
 });
 
+/* ======================= CALCULATOR TAXĂ DE STAT (anexa nr. 1 LTS, pct. 1) ======================= */
+A.taxBand = (v, pf) => {
+  if (v <= 5000) { const m = pf ? 150 : 250, t = Math.max(v * .05, m); return { tax: t, pct: '1.1.1', how: `5% × ${A.fmt(v)} = ${A.money2(v * .05)}, dar minimum ${m} lei (${pf ? 'persoană fizică' : 'persoană juridică'})` }; }
+  if (v <= 50000) return { tax: 250 + .04 * (v - 5001), pct: '1.1.2', how: `250 + 4% × (${A.fmt(v)} − 5.001)` };
+  if (v <= 1500000) return { tax: 2050 + .03 * (v - 50001), pct: '1.1.3', how: `2.050 + 3% × (${A.fmt(v)} − 50.001)` };
+  if (v <= 5000000) return { tax: 45550 + .02 * (v - 1500001), pct: '1.1.4', how: `45.550 + 2% × (${A.fmt(v)} − 1.500.001)` };
+  if (v <= 10000000) return { tax: 115550 + .01 * (v - 5000001), pct: '1.1.5', how: `115.550 + 1% × (${A.fmt(v)} − 5.000.001)` };
+  return { tax: 165550 + .005 * (v - 10000001), pct: '1.1.6', how: `165.550 + 0,5% × (${A.fmt(v)} − 10.000.001)` };
+};
+A.money2 = n => (Math.round(n * 100) / 100).toLocaleString('ro-RO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+A.TAXTYPES = [
+  { id: 'pat', n: 'Cerere de chemare în judecată cu caracter patrimonial', pct: '1.1', val: true },
+  { id: 'partaj', n: 'Cerere de partaj (din valoarea bunurilor pretinse)', pct: '1.7', val: true },
+  { id: 'gaj', n: 'Exercitarea dreptului de gaj (din valoarea bunului gajat sau a creanței)', pct: '1.10', val: true },
+  { id: 'prej', n: 'Prejudiciu moral și material în acțiuni de proprietate intelectuală, onoare și demnitate sau contencios administrativ', pct: '1.12, 1.14, 1.15', val: true },
+  { id: 'insp', n: 'Cerere patrimonială în insolvabilitate (fără cererile de admitere a creanțelor)', pct: '1.5', val: true },
+  { id: 'div', n: 'Desfacerea căsătoriei', pct: '1.6', fixed: 500 },
+  { id: 'dom', n: 'Stabilirea domiciliului copilului minor', pct: '1.8', fixed: 200 },
+  { id: 'nonpat', n: 'Cerere de chemare în judecată cu caracter nepatrimonial', pct: '1.9', fixed: 250 },
+  { id: 'spec', n: 'Cerere (plângere) cu procedură specială', pct: '1.11', fixed: 250 },
+  { id: 'exec', n: 'Contestarea actelor și acțiunilor executorului judecătoresc', pct: '1.2', fixed: 250 },
+  { id: 'susp', n: 'Cerere asociată cu suspendarea executării', pct: '1.3', fixed: 250 },
+  { id: 'insol', n: 'Cerere introductivă de insolvabilitate (creditor sau debitor)', pct: '1.4', fixed: 1000 },
+  { id: 'onoare', n: 'Apărarea onoarei și demnității', pct: '1.13', fixed: 250 },
+  { id: 'tranz', n: 'Confirmarea tranzacției încheiate în afara procesului', pct: '1.19', fixed: 500 },
+  { id: 'audio', n: 'Eliberarea înregistrării audio a ședinței', pct: '1.20', fixed: 50 },
+  { id: 'arb', n: 'Hotărâri arbitrale: recunoaștere, executare, desființare', pct: '1.22', fixed: 250 },
+  { id: 'apel', n: 'Cerere de apel', pct: '1.16', share: .85, from: true },
+  { id: 'recurs', n: 'Cerere de recurs', pct: '1.17', share: .70, from: true },
+  { id: 'revizuire', n: 'Cerere de revizuire', pct: '1.18', share: .55, from: true },
+];
+A.taxCalc = view => {
+  view.innerHTML = `<div class="taxcalc"><a class="backlink" href="#/antrenament">‹ Antrenament</a><h1>Calculator taxă de stat</h1>
+    <p class="muted">După anexa nr. 1 la Legea nr. 213/2023. Alege tipul cererii și completează câmpurile care apar.</p>
+    <label class="field"><span>Tipul cererii</span><select id="tt">${A.TAXTYPES.map(t => `<option value="${t.id}">${A.esc(t.n)} · pct. ${t.pct}</option>`).join('')}</select></label>
+    <label class="field" id="f-base" hidden><span>Calculezi din</span><select id="tb"><option value="taxa">Taxa achitată în prima instanță</option><option value="suma">Suma contestată (litigiu patrimonial)</option></select></label>
+    <label class="field" id="f-val" hidden><span id="lv">Valoarea acțiunii (lei)</span><input id="tv" inputmode="decimal" autocomplete="off" placeholder="de exemplu 120000"></label>
+    <label class="field" id="f-pf" hidden><span>Reclamantul este</span><select id="tp"><option value="pf">persoană fizică</option><option value="pj">persoană juridică</option></select></label>
+    <div class="calcout" id="out" aria-live="polite"></div>
+    <p class="faint" style="font-size:12px;margin-top:14px">Rezultatul nu include taxa de timbru (200 lei), care se datorează separat, în condițiile art. 2 LTS. Scutirile se verifică în anexa nr. 2.</p></div>`;
+  const $ = id => A.$('#' + id, view);
+  const num = x => parseFloat(String(x).replace(/\s|\./g, '').replace(',', '.'));
+  const calc = () => {
+    const t = A.TAXTYPES.find(x => x.id === $('tt').value), pf = $('tp').value === 'pf';
+    const bySuma = t.from && $('tb').value === 'suma', needVal = t.val || bySuma;
+    $('f-base').hidden = !t.from; $('f-val').hidden = !(needVal || (t.from && !bySuma)); $('f-pf').hidden = !needVal;
+    $('lv').textContent = t.from ? (bySuma ? 'Suma contestată (lei)' : 'Taxa achitată în prima instanță (lei)') : 'Valoarea (lei)';
+    const out = $('out');
+    if (t.fixed) { out.innerHTML = `<div class="big">${A.money2(t.fixed)} lei</div><p>Taxă fixă, anexa nr. 1 LTS, pct. ${t.pct}.</p>`; return; }
+    const v = num($('tv').value);
+    if (!(v >= 0) || $('tv').value.trim() === '') { out.innerHTML = '<p class="muted">Introdu suma ca să vezi taxa.</p>'; return; }
+    if (t.from && !bySuma) { const x = v * t.share; out.innerHTML = `<div class="big">${A.money2(x)} lei</div><p>${Math.round(t.share * 100)}% × ${A.money2(v)} lei, anexa nr. 1 LTS, pct. ${t.pct}.</p>`; return; }
+    const b = A.taxBand(v, pf), x = t.from ? b.tax * t.share : b.tax;
+    out.innerHTML = `<div class="big">${A.money2(x)} lei</div><p>${t.from ? `Taxa din suma contestată după pct. ${b.pct} (${A.money2(b.tax)} lei) × ${Math.round(t.share * 100)}% (pct. ${t.pct}).` : `Anexa nr. 1 LTS, pct. ${b.pct}${t.pct === '1.1' ? '' : ' (prin trimitere de la pct. ' + t.pct + ')'}.`}</p><p class="faint">${b.how}</p>`;
+  };
+  A.$$('select, input', view).forEach(e => { e.oninput = calc; e.onchange = calc; });
+  calc();
+};
+
+/* ======================= SPEȚE (deblocate și rezolvate) ======================= */
+A.spetePage = async (view, id) => {
+  const ST = A.study, all = ST.bank.spete, sp = id && all.find(x => x.id === decodeURIComponent(id));
+  if (sp) {
+    const root = document.createElement('div'); root.className = 'quiz'; view.innerHTML = ''; view.appendChild(root);
+    A.game.addXP(0);
+    return A.play.speta(root, sp, res => {
+      let msg = res.ok ? 'Speță rezolvată corect.' : res.score > 0 ? 'Speță rezolvată parțial.' : 'Speța nu a fost rezolvată.';
+      if (res.ok) { A.game.addXP(res.first ? 30 : 10); if (res.first) { A.S.points.spete++; msg += ' +1 punct-speță (prima rezolvare).'; } else msg += ' Punctul-speță se acordă doar la prima rezolvare.'; A.store.save(); A.hud(); }
+      root.innerHTML = `<div class="qcard summary"><div class="big">${res.ok ? '✓' : '·'}</div><p>${A.esc(msg)}</p><div style="display:flex;gap:10px;justify-content:center;margin-top:14px"><a class="btn primary" href="#/antrenament/spete">Lista de spețe</a><a class="btn" href="#/antrenament/spete/${encodeURIComponent(sp.id)}" onclick="setTimeout(()=>A.render(),0)">Din nou</a></div></div>`;
+    });
+  }
+  const un = ST.unlockedSpete(), rec = x => A.S.spete[x.id] || {};
+  const solved = all.filter(x => rec(x).ok), todo = un.filter(x => !rec(x).ok);
+  const row = x => { const r = rec(x), mi = ST.microById[x.m]; return `<a class="mode sprow" href="#/antrenament/spete/${encodeURIComponent(x.id)}"><span><b>${A.esc(x.tip || 'Speță civilă')}</b><small>${A.esc(mi ? mi.name.slice(0, 80) : '')}</small></span><span class="cnt">${r.ok ? '✓ ×' + r.ok : 'de rezolvat'}</span></a>`; };
+  view.innerHTML = `<div class="train"><a class="backlink" href="#/antrenament">‹ Antrenament</a><h1>Spețe</h1>
+    <p class="muted">Punctul-speță se primește doar la prima rezolvare corectă a unei spețe. O poți reface oricând, fără punct.</p>
+    <h2 style="margin:18px 0 8px">Rezolvate · ${solved.length}</h2><div class="modes">${solved.map(row).join('') || '<p class="muted">Nicio speță rezolvată încă.</p>'}</div>
+    <h2 style="margin:22px 0 8px">Deblocate, nerezolvate · ${todo.length}</h2><div class="modes">${todo.map(row).join('') || `<p class="muted">${un.length ? 'Toate spețele deblocate sunt rezolvate.' : 'Încă nu ai nicio speță deblocată: parcurge (citește și treci grilele) o micro-secțiune.'}</p>`}</div></div>`;
+};
+
 /* ======================= ANTRENAMENT ======================= */
 A.route('antrenament', async (view, [mode, scope]) => {
+  if (mode === 'calculator') return A.taxCalc(view);
+  if (mode === 'spete') return A.spetePage(view, scope);
   if (mode) {
     const cfg = {
       grila: { title: 'Grilă rapidă', n: 10 },
@@ -543,6 +625,8 @@ A.route('antrenament', async (view, [mode, scope]) => {
     ['termene', 'Sprint de termene', '60 de secunde, doar termene.', Object.keys(A.S.album).length + ' în album', 'M12 7v5l3 3M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18', '#B98A12'],
     ['definitii', 'Definiții', 'Noțiunile din articolele de definiții.', '', 'M5 4h10l4 4v12H5zM9 12h6M9 16h6', '#5A3F8F'],
     ['taxa', 'Taxa de stat', 'Calculezi taxa după anexa nr. 1.', A.S.quiz.taxOk ? A.S.quiz.taxOk + ' corecte' : '', 'M6 4h12v16H6zM9 8h6M9 12h6M9 16h3', '#1F7A74'],
+    ['calculator', 'Calculator taxă de stat', 'Calculează taxa pentru orice cerere, după anexa nr. 1.', '', 'M6 3h12v18H6zM9 7h6M9 12h2M13 12h2M9 16h2M13 16h2', '#1F7A74'],
+    ['spete', 'Spețe', 'Spețele deblocate și cele rezolvate.', Object.values(A.S.spete || {}).filter(x => x.ok).length + ' rezolvate', 'M7 3h8l4 4v14H7zM10 12h6M10 16h6', '#8A4B2A'],
   ];
   view.innerHTML = `<div class="train"><div class="head"><div><h1>Antrenament</h1><p class="muted" style="margin:6px 0 0">Fiecare răspuns corect aduce XP și onorarii; combo-urile le înmulțesc.</p></div>
     <label class="scope"><span class="muted">Din</span><select id="scope">${opts.map(([v, l]) => `<option value="${v}" ${v === sel ? 'selected' : ''}>${A.esc(l)}</option>`).join('')}</select></label></div>
@@ -577,6 +661,13 @@ A.route('profil', async view => {
 
 /* ======================= UPDATE (istoricul modificărilor) ======================= */
 A.CHANGELOG = [
+  { v: '1 noiembrie 2026 · deschidere cu puncte-speță, spețe, calculator', items: [
+    'Dosarele: apeși pe un dosar închis sau în curs de deblocare și alegi „Deschide cu puncte-speță” (simplu 1, argint 2, aur 3, magic 4, legendar 5) sau „Așteaptă”. Dosarul gata de deschis se deschide gratuit.',
+    'Testul de 15 grile pentru deschiderea rapidă a fost scos complet.',
+    'Punctul-speță se primește doar la prima rezolvare corectă a unei spețe.',
+    'Antrenament › Spețe: lista spețelor rezolvate și a celor deblocate, nerezolvate; le poți rezolva sau reface de acolo.',
+    'Antrenament › Calculator taxă de stat: calculezi taxa după anexa nr. 1 pentru orice tip de cerere, inclusiv apel, recurs și revizuire.',
+  ] },
   { v: '1 noiembrie 2026 · dosare și interfață', items: [
     'Dosarele se primesc acum din jocul rapid (PLAY), doar cu toate răspunsurile corecte (3/3 la grile, 4/4 dacă ai și speță): simplu 63,5%, argint 20%, aur 15%, magic 1%, legendar 0,5%. Au rămas premiile speciale (mini-boși, serii de zile, misiuni, magazin).',
     'Bara de sus (telefon): doar cercul nivelului; apasă-l ca să vezi XP-ul (de exemplu 143/1.430 XP). Romburile de puncte arată acum corect denumirea la apăsare.',
@@ -584,7 +675,7 @@ A.CHANGELOG = [
     'Lectură: antetul secțiunii nu mai iese din ecran, iar bara de grile are o linie roșie până la care trebuie obligatoriu trecute grile pentru mini-boss.',
   ] },
   { v: '1 noiembrie 2026 · puncte-speță', items: [
-    'Dosarele costă puncte-speță la deschidere: dosar simplu 1, de argint 2, de aur 3, magic 4, legendar 5. Dosarul gratuit de la CNAJGS nu costă nimic. Costul se vede pe butonul de deschidere.',
+    'Costul în puncte-speță pe tip de dosar: simplu 1, argint 2, aur 3, magic 4, legendar 5. Se plătește la deschiderea imediată (vezi intrarea de mai sus), nu la deschiderea normală.',
     'Două tipuri noi de dosare: Dosar magic (violet) și Dosar legendar (portocaliu, fostul Dosar al Decanului). Magicul se primește la mini-bossul ultimului capitol, la seria de 14 zile și pe Calea Atlasului; legendarul, la cucerirea unui raion.',
     'Magazinul zilei: în fiecare zi are un dosar rar de cumpărat cu puncte-speță (magic 6, legendar 12).',
     'Îmbunătățirea angajaților: avocații seniori și partenerii cer puncte-speță, la fel orice angajat de la nivelul 4 în sus.',

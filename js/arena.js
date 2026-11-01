@@ -266,12 +266,7 @@ R.init = () => {
     const s = Eo.s(); let type;
     const left0 = Eo.chestsLocked(); if (left0) { A.toast(`Dosarele se deschid după etapa de începător: mai citește ${left0} ${left0 === 1 ? 'articol' : 'articole'}.`); A.sound('warn'); return; }
     if (free) { if (s.freeStock < 1) return; s.freeStock--; if (s.freeStock < 2 && s.freeAt < Date.now()) s.freeAt = Date.now() + Eo.FREE_EVERY; type = 'simplu'; }
-    else {
-      const c = s.slots[i]; if (!c || !c.unlockEnd || c.unlockEnd > Date.now()) return;
-      const sp = Eo.CHESTS[c.type].sp || 0;
-      if ((A.S.points.spete || 0) < sp) { A.toast(`Pentru ${Eo.CHESTS[c.type].name.toLowerCase()} îți trebuie ${sp} ${sp === 1 ? 'punct-speță' : 'puncte-speță'}. Ai ${A.S.points.spete || 0}. Rezolvă spețe în jocul rapid.`, 4500); A.sound('warn'); return; }
-      A.S.points.spete -= sp; type = c.type; s.slots[i] = null; A.hud();
-    }
+    else { const c = s.slots[i]; if (!c || !c.unlockEnd || c.unlockEnd > Date.now()) return; type = c.type; s.slots[i] = null; }
     A.store.save();
     const reveal = mult => { const loot = Eo.scaleLoot(Eo.rollChest(type), mult); Eo.applyLoot(loot);
       R.lootShow(type, (free ? Eo.FREE_NAME : Eo.CHESTS[type].name) + (mult > 1 ? ' · dublat' : ''), R.lootItems(loot, mult), () => A.render()); };
