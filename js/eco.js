@@ -573,6 +573,14 @@ E.goldenBonus = (onDone) => {
 E.PASSIVE_CAP = 8 * 3600e3;
 E.passiveRateRaw = () => { const s = E.s(); return s.branches.reduce((x, u) => x + 120 + 800 * E.unitMastery(u), 0) * (1 + 0.08 * s.staff.length) * E.perkMult('filiala', .15); };
 E.passiveRaw = () => E.s().passiveBank || 0;
+/* cât s-a pierdut cât timp filialele au fost oprite (nu ai studiat în ultimele 30 de minute) */
+E.idleInfo = () => {
+  const s = E.s(), a = A.S.activity; if (!s || !s.started || !s.branches.length || A.active()) return null;
+  if (!a.lastStudy) return { never: true };
+  const rate = E.passiveRateRaw(), since = a.lastStudy + A.AFK_MS, ms = Math.max(0, Date.now() - since);
+  const room = Math.max(0, rate * E.PASSIVE_CAP / 3600e3 - (s.passiveBank || 0));
+  return { since, ms, lost: Math.round(Math.min(rate * ms / 3600e3, room) * E.feeMult()) };
+};
 E.collectPassive = at => { const s = E.s(), v = s.passiveBank || 0; if (v < 1) return; s.passiveBank = 0; const got = E.earn(v, at); A.sound('coin'); A.toast(`Încasări din filiale: +${A.lei(got)}`); };
 
 /* ---------------- ceasul jocului ---------------- */
@@ -580,6 +588,11 @@ E.tick = () => {
   const s = E.s(); if (!s || !s.started) return;
   const now = Date.now(), dt = Math.min(5000, now - (E._lastTick || now)); E._lastTick = now;
   // anti-AFK: filialele produc doar dacă ai studiat în ultimele 30 de minute
+  if (!A.active()) { if (!s.idleSince && A.S.activity.lastStudy) s.idleSince = A.S.activity.lastStudy + A.AFK_MS; }
+  else if (s.idleSince) {
+    const rate = E.passiveRateRaw(), ms = Math.max(0, now - s.idleSince), lost = Math.round(Math.min(rate * ms / 3600e3, rate * E.PASSIVE_CAP / 3600e3) * E.feeMult()); s.idleSince = 0;
+    if (lost >= 10 && s.branches.length) { A.toast(`<b>Filialele au reluat producția.</b>&nbsp;În pauză (${E.shortDur(ms)}) ai pierdut ~${A.lei(lost)}.`, 6000); A.store.save(); }
+  }
   if (A.active() && document.visibilityState === 'visible') s.passiveBank = Math.min(E.passiveRateRaw() * E.PASSIVE_CAP / 3600e3, (s.passiveBank || 0) + E.passiveRateRaw() * dt / 3600e3);
   if (!E._lastPay || now - E._lastPay > 60e3) { E._lastPay = now; E.paySalaries(); }
   if (s.freeStock < 2 && now >= s.freeAt) { s.freeStock++; s.freeAt = now + E.FREE_EVERY; A.toast(`Un ${E.FREE_NAME.toLowerCase()} te așteaptă la birou.`); A.store.save(); }

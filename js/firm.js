@@ -16,6 +16,14 @@ A.GEAR = GEAR;
 const head = (title, sub) => { const s = E.s(); return `<div class="fhead" style="--firm:${s.firm.color}">${GEAR}<div class="fh1">${logo()}<div><div class="faint" style="font-size:13px">${A.esc(s.firm.name)}</div><h1>${title}</h1>${sub ? `<p class="muted">${sub}</p>` : ''}</div></div>
   <div class="purse"><b class="${s.money < 0 ? 'neg' : ''}">${A.lei(s.money)}</b><small>◆ ${A.fmt(A.S.points.grile)} puncte-grilă · ✦ ${A.fmt(A.S.points.spete)} puncte-speță · putere juridică ${A.fmt(E.power())} · bonus onorarii +${Math.round((E.feeMult() - 1) * 100)}% · salarii ${A.lei(E.dailyCost())}/zi</small></div></div>`; };
 const prog = (a, b) => `<div class="bar thin"><i data-prog="${a},${b}" style="width:${(A.clamp((Date.now() - a) / (b - a), 0, 1) * 100).toFixed(1)}%"></i></div>`;
+const idleHTML = () => {
+  const i = E.idleInfo();
+  if (!i) return '<span class="faint">Filialele produc: continuă să studiezi (pauza maximă: 30 de minute).</span>';
+  if (i.never) return '<span style="color:var(--seal)">Oprit: nu ai studiat încă. Filialele produc cât timp studiezi.</span>';
+  const d = new Date(i.since), same = d.toDateString() === new Date().toDateString();
+  const t = d.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
+  return `<span style="color:var(--seal)">Oprit de la ${same ? '' : 'ieri, '}${t} (acum ${E.shortDur(i.ms)}) · pierdut ~${A.lei(i.lost)}. Studiază ca să reiei producția.</span>`;
+};
 const until = t => `<span class="num" data-until="${t}">${A.dur(t - Date.now())}</span>`;
 const at = el => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top }; };
 const watch = ends => { const n = Date.now(), nx = Math.min(...ends.filter(t => t > n)); if (isFinite(nx)) A.every(1000, () => { if (Date.now() >= nx && !A.$('#overlay').innerHTML) A.render(); }); };
@@ -193,7 +201,7 @@ A.route('firma', async (view, [sub]) => {
     ${A.arena.shopHTML()}
     <div class="fgrid">
       <section class="fsec"><div class="sh"><h2>De încasat</h2></div>
-        <div class="income"><div><b>${A.lei(pas)}</b><small>din ${s.branches.length} ${s.branches.length === 1 ? 'filială' : 'filiale'} · ${A.lei(rate)} pe oră${A.active() ? '' : ' · <span style="color:var(--seal)">oprit: studiază ca filialele să producă</span>'}</small></div><button class="btn primary" data-do="passive" ${pas < 1 ? 'disabled' : ''}>Încasează</button></div>
+        <div class="income"><div><b>${A.lei(pas)}</b><small>din ${s.branches.length} ${s.branches.length === 1 ? 'filială' : 'filiale'} · ${A.lei(rate)} pe oră</small><small class="idle-note" style="display:block">${idleHTML()}</small></div><button class="btn primary" data-do="passive" ${pas < 1 ? 'disabled' : ''}>Încasează</button></div>
         ${readyC.map(c => `<div class="income"><div><b>${A.esc(c.client.title)}</b><small>consultație terminată de ${A.esc(roleName(s.staff.find(m => m.id === c.staff) || { name: '?', role: 'jurist' }))}</small></div><button class="btn primary" data-do="cc:${c.id}">Colectează</button></div>`).join('')}
         ${readyP.map(p => `<div class="income"><div><b>${A.esc(p.title)}</b><small>avocatul s-a întors de la ${A.esc(A.unitById[p.unit].name)}</small></div><button class="btn primary" data-do="cp:${p.id}">Află verdictul</button></div>`).join('')}
         ${!readyC.length && !readyP.length ? `<p class="faint" style="margin:10px 0 0">Nicio consultație sau proces terminat încă.</p>` : ''}
@@ -216,6 +224,7 @@ A.route('firma', async (view, [sub]) => {
     cc: (b, id) => { E.collectConsult(+id, at(b)); A.render(); }, cp: (b, id) => { E.collectProc(+id, at(b)); A.render(); },
   });
   A.arena.bindBiroul(view);
+  A.every(5000, () => { const n = A.$('.idle-note', view); if (n) n.innerHTML = idleHTML(); });
   watch(nextTimes);
 });
 
