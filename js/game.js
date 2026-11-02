@@ -25,7 +25,7 @@ G.addXP = (n, at) => {
   if (A.eco && A.eco.perk) n = Math.round(n * A.eco.perkMult('scoala', .10));
   n = Math.max(1, Math.round(n * G.boostMult()));
   const before = G.level(A.S.xp);
-  A.S.xp += n;
+  A.S.xp += n; if (A.eco && A.eco.quest) A.eco.quest('xp', n);
   const d = A.today(); A.S.days[d] = (A.S.days[d] || 0) + n;
   const after = G.level(A.S.xp);
   if (at) A.fly('+' + n + ' XP', at.x, at.y);

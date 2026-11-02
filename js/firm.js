@@ -208,7 +208,7 @@ A.route('firma', async (view, [sub]) => {
         <div class="kv"><span>Flota</span><b>${s.fleet.length ? s.fleet.length + ' mașini' : 'doar autobuzul'} · nitro ${s.nitro}</b></div>
         ${Object.values(s.buffs).filter(b => b.until > n).map(b => `<div class="kv"><span>${A.esc(b.label)}</span><b>${until(b.until)}</b></div>`).join('')}
       </section>
-    </div></div>`;
+    </div>${A.arena.cardsHTML()}</div>`;
   bind(view, {
     open: (b, i) => E.openChest(+i), free: () => E.openChest(0, true),
     unlock: (b, i) => { E.startUnlock(+i); A.render(); }, now: (b, i) => E.openNow(+i),
@@ -227,14 +227,14 @@ function team(view) {
     <section class="fsec office"><div><div class="faint" style="font-size:13px">Sediul</div><h2>${office[0]}</h2><p class="muted" style="margin:4px 0 0">${s.staff.length} oameni · limita ta: ${E.staffLimit()} (sediul are ${office[1]} locuri; +1 loc la fiecare 30 de articole rezumate)</p></div>
       ${nx ? `<button class="btn primary" data-do="move">Mută-te: ${nx[0]} (${nx[1]} locuri) · ${A.lei(nx[2])}</button>` : '<span class="faint">Ai cel mai mare sediu.</span>'}</section>
     <section class="fsec"><div class="sh"><h2>Angajări</h2><span class="faint">${block ? A.esc(block) : 'Poți angaja acum.'}</span></div><div class="roles">
-      ${E.ROLE_ORDER.map(r => { const R = E.ROLES[r]; return `<div class="rolecard"><div class="rt"><b>${R.name}</b><span class="faint">${s.staff.filter(m => m.role === r).length} în echipă</span></div><p>${A.esc(R.desc)}</p>
+      ${E.ROLE_ORDER.map(r => { const R = E.ROLES[r]; return `<div class="rolecard"><div class="rimg"><img src="img/staff/${r}.jpg" alt=""></div><div class="rt"><b>${R.name}</b><span class="faint">${s.staff.filter(m => m.role === r).length} în echipă</span></div><p>${A.esc(R.desc)}</p>
         <div class="rstats"><span>Angajare ${A.lei(R.cost)}</span><span>Salariu ${A.lei(R.sal)}/zi</span>${R.base ? `<span>Consultație ~${A.lei(R.base)}</span>` : ''}${R.court ? '<span>Merge în instanță</span>' : ''}</div>
         <div class="ra"><input class="nm" id="nm-${r}" maxlength="24" placeholder="Numele angajatului"><button class="btn" data-do="hire:${r}" ${block ? 'disabled' : ''}>Angajează</button></div></div>`; }).join('')}
     </div></section>
     ${fired.length ? `<section class="fsec"><div class="sh"><h2>Foști angajați</h2><span class="faint">Reangajare cu reducere, timp de ${E.REHIRE_DAYS} zile de la concediere</span></div>
       ${fired.map((f, i) => `<div class="tier"><div><b>${A.esc(f.name)}</b><small>${E.ROLES[f.role].name} · nivelul ${f.lvl} · reducere ${Math.round(E.ROLES[f.role].disc * 100)}% · încă ${A.dur(f.at + E.REHIRE_DAYS * 864e5 - Date.now())}</small></div><button class="btn small" data-do="rehire:${i}" ${block ? 'disabled' : ''}>Reangajează · ${A.lei(Math.round(E.ROLES[f.role].cost * (1 - E.ROLES[f.role].disc)))}</button></div>`).join('')}</section>` : ''}
     <section class="fsec"><div class="sh"><h2>Oamenii firmei</h2><span class="faint">Cartonașe: ${E.ROLE_ORDER.filter(r => s.cards[r]).map(r => `${E.ROLES[r].name} ${s.cards[r]}`).join(' · ') || 'niciunul'} · grile disponibile: ${A.fmt(A.S.points.grile)}</span></div><table class="staff"><tbody>
-      ${s.staff.map(m => { const need = E.upgradeNeed(m); return `<tr><td><b>${A.esc(nameOf(m))}</b>${m.me ? '' : ` <button class="lnk" data-do="ren:${m.id}">redenumește</button>`}</td><td>${E.ROLES[m.role].name}</td><td class="num">nivelul ${m.lvl || 1}</td><td class="${E.busy(m.id) || m.strike ? '' : 'free'}">${st(m)}</td>
+      ${s.staff.map(m => { const need = E.upgradeNeed(m); return `<tr><td><span class="av"><img src="img/staff/${m.role}.jpg" alt=""></span><b>${A.esc(nameOf(m))}</b>${m.me ? '' : ` <button class="lnk" data-do="ren:${m.id}">redenumește</button>`}</td><td>${E.ROLES[m.role].name}</td><td class="num">nivelul ${m.lvl || 1}</td><td class="${E.busy(m.id) || m.strike ? '' : 'free'}">${st(m)}</td>
         <td class="ups"><button class="btn small" data-do="up:${m.id}" title="${A.lei(need.money)} · ${need.cards} cartonașe · ${need.grile} grile${need.spete ? ' · ' + need.spete + ' puncte-speță' : ''}">Nivelul ${(m.lvl || 1) + 1}: ${A.lei(need.money)} + ${need.cards} cart. + ${need.grile} grile${need.spete ? ' + ' + need.spete + ' ' + E.spGem : ''}</button>
         ${m.strike ? `<button class="btn small primary" data-do="pay:${m.id}">Plătește ${A.lei(E.ROLES[m.role].sal)}</button>` : ''}${m.me ? '' : `<button class="btn small ghost" data-do="fire:${m.id}" ${E.busy(m.id) ? 'disabled' : ''}>Concediază</button>`}</td></tr>`; }).join('')}
     </tbody></table></section></div>`;
@@ -513,7 +513,7 @@ function miniDuel(view, c) {
     }
     A.S.study.chapters[cid] = A.today();
     const prize = E.earn(E.miniPrize(c)); A.game.addXP(60); E.grantChest(c.ci >= 8 ? 'magic' : c.ci >= 6 ? 'aur' : 'argint', 'Mini-boss învins'); A.S.points.grile += 5;
-    const got = E.grantPerk(perk.id, 'Trofeu: ' + c.boss);
+    const got = E.grantPerk(perk.id, 'Trofeu: ' + c.boss); A.fx.celebrate('boss', 'Mini-boss învins!', c.boss);
     A.store.save(); A.game.checkStamps();
     const next = ST.chapters(c.unit)[c.ci + 1], lives = Math.max(0, E.MINI.lives - (res.answered - res.ok)), [rk, rn] = A.arena.rarity(c.ci); root.innerHTML = '';
     A.arena.victory({ win: true, crowns: lives, title: `${c.boss} a fost învins`, sub: `<span class="rar ${rk}">${rn}</span> Capitolul ${c.ci + 1} · ${lives} ${lives === 1 ? 'viață rămasă' : 'vieți rămase'}<br>${next ? `S-a deschis capitolul ${c.ci + 2}: ${A.esc(next.name)}.` : `Toți mini-boșii au căzut: dosarul bossului, ${A.esc(A.raion(c.unit).boss)}, te așteaptă.`}`,
@@ -544,7 +544,7 @@ function duel(view, unit) {
       const prize = E.earn(decan ? 500000 : Math.round(r.n * 150 * (1 + 0.2 * k) * (score >= .95 ? 1.25 : 1)));
       if (!decan && s.started && !s.branches.includes(unit)) s.branches.push(unit);
       A.game.addXP(decan ? 1000 : 250); A.S.points.spete += 5;
-      const lg = s.started ? E.grantChest('decan', decan ? 'Decanul' : 'Raion cucerit') : false;
+      const lg = s.started ? E.grantChest('decan', decan ? 'Decanul' : 'Raion cucerit') : false; A.fx.celebrate('raion', decan ? 'Decanul a căzut!' : 'Raion cucerit!', '');
       A.store.save(); A.game.checkStamps();
       const next = decan ? null : A.raion(ST.current());
       const marks = E.MARKERS(Math.min(14, k)); let picked = 0;

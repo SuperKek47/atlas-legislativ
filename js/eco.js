@@ -68,10 +68,29 @@ E.BUFFS = [
   { kind: 'speed', mult: 1.5, min: 60, label: 'Procese și consultații cu 50% mai rapide' },
   { kind: 'money', mult: 2, min: 30, label: 'Onorarii duble' },
 ];
+E.BUFFS_RARE = [
+  { kind: 'money', mult: 10, min: 30, label: 'Onorarii ×10' },
+  { kind: 'speed', mult: 2, min: 30, label: 'Toți lucrează de 2 ori mai repede' },
+];
+/* cartonașe boost: se păstrează în inventar și se folosesc la alegere */
+E.bkey = b => `${b.kind}|${b.mult}|${b.min}`;
+E.boosts = () => { const s = E.s(); return s.boosts = s.boosts || {}; };
+E.addBoost = (b, n = 1) => { const B = E.boosts(), k = E.bkey(b); B[k] = B[k] || { kind: b.kind, mult: b.mult, min: b.min, label: b.label, n: 0 }; B[k].n += n; };
+E.useBoost = key => {
+  const s = E.s(), B = E.boosts(), b = B[key]; if (!b || b.n < 1) return false;
+  b.n--; if (b.n <= 0) delete B[key];
+  const cur = s.buffs[b.kind];
+  s.buffs[b.kind] = { kind: b.kind, mult: b.mult, until: Math.max(Date.now(), (cur || {}).until || 0) + b.min * 60e3, label: b.label };
+  E.quest('boost', 1); A.store.save(); return true;
+};
+E.dropBoost = key => { const B = E.boosts(); if (!B[key]) return; B[key].n--; if (B[key].n <= 0) delete B[key]; A.store.save(); };
 E.QUESTS = [
   ['read', 'Citește {n} articole', [8, 12, 20]], ['und', 'Rezumă {n} articole', [3, 5, 8]], ['correct', 'Răspunde corect la {n} întrebări', [10, 15, 25]],
   ['consult', 'Termină {n} consultații', [2, 3, 5]], ['won', 'Câștigă {n} procese', [1, 2, 3]],
   ['chest', 'Deschide {n} dosare-cufăr', [1, 2]], ['refs', 'Deschide {n} trimiteri', [5, 10]],
+  ['spete', 'Rezolvă {n} spețe', [1, 2, 3]], ['play', 'Joacă {n} runde PLAY', [1, 2, 3]], ['perfect', 'Termină {n} runde PLAY cu toate răspunsurile corecte', [1, 2]],
+  ['xp', 'Adună {n} XP', [60, 100, 150]], ['sect', 'Termină {n} micro-secțiuni', [1, 2]], ['lei', 'Câștigă {n} lei în birou', [1500, 3000, 6000]],
+  ['up', 'Îmbunătățește {n} angajat', [1]], ['boost', 'Folosește {n} cartonaș boost', [1]],
 ];
 
 /* ---------------- stare ---------------- */
@@ -124,7 +143,7 @@ E.feeMult = () => E.perkMult('onorarii', .06) * (1 + A.game.stampBonus()) * (1 +
 E.earn = (n, at) => {
   const s = E.s(); if (!s) return 0;
   n = Math.round(n * E.feeMult());
-  s.money += n; s.earned += n;
+  s.money += n; s.earned += n; if (n > 0) E.quest('lei', n);
   if (at) A.fly('+' + A.lei(n), at.x, at.y);
   A.store.save(); A.hud();
   return n;
@@ -176,7 +195,7 @@ E.upgrade = id => {
   if ((A.S.points.grile || 0) < need.grile) { A.toast(`Îți lipsesc ${need.grile - (A.S.points.grile || 0)} grile rezolvate. Joacă sau antrenează-te.`); A.sound('warn'); return; }
   if ((A.S.points.spete || 0) < need.spete) { A.toast(`Îți lipsesc ${need.spete - (A.S.points.spete || 0)} puncte-speță. Rezolvă spețe.`); A.sound('warn'); return; }
   if (!E.spend(need.money)) return;
-  s.cards[m.role] -= need.cards; A.S.points.grile -= need.grile; A.S.points.spete -= need.spete; m.lvl = (m.lvl || 1) + 1;
+  s.cards[m.role] -= need.cards; A.S.points.grile -= need.grile; A.S.points.spete -= need.spete; m.lvl = (m.lvl || 1) + 1; E.quest('up', 1);
   A.sound('level'); A.toast(`${A.esc(m.me ? 'Tu' : m.name)}: nivelul ${m.lvl}.`); A.store.save();
 };
 E.lvlMult = m => 1 + 0.1 * ((m.lvl || 1) - 1);
@@ -389,7 +408,7 @@ E.rollChest = type => {
   for (let k = 0; k < nC; k++) { const st = type === 'simplu' ? 1 : type === 'argint' ? A.pick([1, 2, 2]) : type === 'aur' ? A.pick([2, 3]) : 3; out.clients.push(E.newClient(st)); }
   const nCards = A.randi(...C.cards);
   for (let k = 0; k < nCards; k++) { const r = A.pick(C.roles); out.cards[r] = (out.cards[r] || 0) + 1; }
-  if (Math.random() < C.buff) out.buff = A.pick(E.BUFFS);
+  if (Math.random() < C.buff) out.buff = Math.random() < .12 ? A.pick(E.BUFFS_RARE) : A.pick(E.BUFFS);
   if (Math.random() < C.cosm) {
     const s = E.s(); const paints = E.PAINTS.filter(p => !s.owned.paints.includes(p[1])), vin = E.VINYLS.filter(v => !s.owned.vinyls.includes(v[1]));
     const opts = [...paints.map(p => ({ k: 'paint', v: p[1], n: 'Vopsea: ' + p[0] })), ...vin.map(v => ({ k: 'vinyl', v: v[1], n: 'Colantare: ' + v[0] }))];
@@ -403,7 +422,7 @@ E.applyLoot = (loot, at) => {
   E.earn(loot.money / E.feeMult(), at);
   s.clients.push(...loot.clients); s.clients = s.clients.slice(-12);
   for (const [r, n] of Object.entries(loot.cards)) s.cards[r] = (s.cards[r] || 0) + n;
-  if (loot.buff) { const b = loot.buff; s.buffs[b.kind] = { kind: b.kind, mult: b.mult, until: Math.max(Date.now(), (s.buffs[b.kind] || {}).until || 0) + b.min * 60e3, label: b.label }; }
+  if (loot.buff) E.addBoost(loot.buff);
   if (loot.cosm) { if (loot.cosm.k === 'paint') s.owned.paints.push(loot.cosm.v); else s.owned.vinyls.push(loot.cosm.v); }
   s.nitro += loot.nitro;
   s.stats.chests++; E.quest('chest', 1);
@@ -495,14 +514,25 @@ E.freeHTML = () => {
 E.ensureDaily = () => {
   const s = E.s(), d = A.today();
   if (s.daily && s.daily.date === d) return;
-  const picks = A.shuffle(E.QUESTS).slice(0, 3).map(([id, t, ns]) => { const n = A.pick(ns); return { id, t: t.replace('{n}', n), n, p: 0, done: false }; });
+  const old = s.daily, prev = old ? old.quests.map(q => q.id) : [];
+  const pool = E.QUESTS.filter(q => !prev.includes(q[0]));
+  const picks = A.shuffle(pool.length >= 3 ? pool : E.QUESTS).slice(0, 3).map(([id, t, ns]) => { const n = A.pick(ns); return { id, t: t.replace('{n}', n.toLocaleString('ro-RO')), n, p: 0, done: false }; });
   s.daily = { date: d, quests: picks, claimed: false };
+  E.autoClaim(old, 'd');
   A.store.save();
 };
+/* misiunile îndeplinite, dar neîncasate, se încasează singure la reînnoire */
+E.autoClaim = (old, kind) => {
+  if (!old) return; let n = 0; for (const q of old.quests) if (q.done && !q.cl) { q.cl = 1; n++; }
+  if (!n || !A.arena) return;
+  const r = A.arena.QREW[kind]; E.earn(n * r.lei / E.feeMult()); A.game.addXP(n * r.xp);
+  A.toast(`${n} ${n === 1 ? 'misiune îndeplinită a fost încasată' : 'misiuni îndeplinite au fost încasate'} automat.`, 4500);
+};
+
 E.quest = (id, n) => {
   const s = E.s(); if (!s || !s.daily) return; E.ensureDaily();
   for (const q of s.daily.quests) if (q.id === id && !q.done) { q.p += n; if (q.p >= q.n) { q.done = true; A.toast(`Misiune îndeplinită: ${A.esc(q.t)}`); } }
-  if (!s.daily.claimed && s.daily.quests.every(q => q.done)) { s.daily.claimed = true; E.grantChest('aur', 'Misiunile zilei'); A.toast('<b>Toate misiunile zilei sunt îndeplinite.</b>&nbsp;Ai primit un dosar de aur.', 5000); }
+  if (!s.daily.claimed && s.daily.quests.every(q => q.done)) { s.daily.claimed = true; E.grantChest('aur', 'Misiunile zilei'); A.toast('<b>Toate misiunile zilei sunt îndeplinite.</b>&nbsp;Ai primit un dosar de aur.', 5000); A.fx.celebrate('daily', 'Toate misiunile zilei!', 'dosar de aur'); }
   A.store.save();
 };
 

@@ -83,7 +83,7 @@ R.lootShow = (type, title, items, onClose) => {
     if (busy) return;
     if (stage === 0) {
       stage = 1; busy = true; hint.textContent = ''; chest.classList.add('shake'); A.sound('chest'); A.buzz([15, 30, 15, 30, 40]);
-      setTimeout(() => { chest.querySelector('svg').classList.add('open'); el.classList.add('burst'); }, 650);
+      setTimeout(() => { chest.querySelector('svg').classList.add('open'); el.classList.add('burst'); const tr = A.fx.tier(type); A.sound('fan' + tr); if (tr >= 3) A.fx.confetti(tr >= 5 ? 'mega' : tr >= 4 ? 'big' : 'gold'); A.buzz([20, 30, 20 + tr * 10]); }, 650);
       setTimeout(() => { chest.classList.add('gone'); busy = false; if (items.length) showCard(); else el.onclick(); }, 1050);
       return;
     }
@@ -92,20 +92,22 @@ R.lootShow = (type, title, items, onClose) => {
       stage = 2; card.hidden = true; left.textContent = ''; hint.textContent = '';
       sum.hidden = false; sum.innerHTML = `<div class="ls-grid">${items.map(it => `<div class="ls ${it.rare ? 'rare' : ''}">${it.ico}<b>${A.esc(it.big)}</b><small>${A.esc(it.label)}</small></div>`).join('')}</div><button class="btn primary" data-ok>Gata</button>`;
       A.$('[data-ok]', sum).onclick = e => { e.stopPropagation(); el.close(); onClose && onClose(); };
+      const tiles = A.$$('.ls', sum); setTimeout(() => A.fx.rewards(items.map((it, ix) => ({ k: it.k, n: it.n, img: it.img, from: tiles[ix] }))), 350);
     }
   };
   return el;
 };
 R.lootItems = (loot, mult) => {
   const it = [];
-  if (loot.money) it.push({ ico: ICO.lei, big: A.lei(loot.money), label: mult > 1 ? 'onorarii · dublat' : 'onorarii' });
+  if (loot.money) it.push({ k: 'lei', n: loot.money, ico: ICO.lei, big: A.lei(loot.money), label: mult > 1 ? 'onorarii · dublat' : 'onorarii' });
   if (loot.clients.length) it.push({ ico: ICO.client, big: '× ' + loot.clients.length, label: loot.clients.length === 1 ? 'client nou: ' + '★'.repeat(loot.clients[0].stars) : 'clienți noi: ' + loot.clients.map(c => '★'.repeat(c.stars)).join(' · ') });
-  for (const [r, n] of Object.entries(loot.cards)) it.push({ ico: ICO.card, big: '× ' + n, label: 'cartonașe: ' + E().ROLES[r].name.toLowerCase() });
-  if (loot.buff) it.push({ ico: ICO.buff, big: loot.buff.min + ' min', label: loot.buff.label, rare: true });
+  for (const [r, n] of Object.entries(loot.cards)) it.push({ k: 'card', n, img: 'img/staff/' + r + '.jpg', ico: `<img class="cimg" src="img/staff/${r}.jpg" alt="">`, big: '× ' + n, label: 'cartonașe: ' + E().ROLES[r].name.toLowerCase() });
+  if (loot.buff) it.push({ k: 'boost', n: 1, ico: ICO.buff, big: loot.buff.min + ' min', label: 'cartonaș boost: ' + loot.buff.label, rare: true });
   if (loot.cosm) it.push({ ico: ICO.paint, big: 'Nou', label: loot.cosm.n, rare: true });
-  if (loot.nitro) it.push({ ico: ICO.nitro, big: '× ' + loot.nitro, label: 'nitro' });
+  if (loot.nitro) it.push({ k: 'nitro', n: loot.nitro, ico: ICO.nitro, big: '× ' + loot.nitro, label: 'nitro' });
   return it;
 };
+
 
 /* ================= NIVEL NOU ================= */
 R.levelUp = (L, rank, promo, nextRank, chest) => {
@@ -144,7 +146,7 @@ R.checkStreak = () => {
   for (const [d, chest, lei] of R.STREAK) if (n >= d && !a.streakPaid[d]) {
     a.streakPaid[d] = A.today(); if (lei && E().s().started) E().earn(lei / E().feeMult());
     const got = E().grantChest(chest, `Seria de ${d} zile`);
-    A.toast(`${ICO.buff}<span><b>Serie de ${d} zile!</b> ${got ? E().CHESTS[chest].name : ''}${lei ? ' · +' + A.lei(lei) : ''}</span>`, 6000); A.store.save();
+    A.fx.celebrate('streak', `Serie de ${d} zile!`, got ? E().CHESTS[chest].name : ''); A.toast(`${ICO.buff}<span><b>Serie de ${d} zile!</b> ${got ? E().CHESTS[chest].name : ''}${lei ? ' · +' + A.lei(lei) : ''}</span>`, 6000); A.store.save();
   }
 };
 R.nextStreak = () => { const n = A.game.streak(); const x = R.STREAK.find(([d]) => d > n); return x ? x[0] : null; };
@@ -184,7 +186,7 @@ const roadRec = unit => { const a = st(); a.roadR = a.roadR || {}; return (a.roa
 R.roadReadyIn = unit => { if (!A.study.unitOpen(unit)) return []; const n = R.raionUnd(unit), rec = roadRec(unit); return R.roadFor(unit).filter(m => m.th <= n && !rec[m.i]); };
 R.roadReady = () => R.roadUnits().flatMap(u => R.roadReadyIn(u));
 R.roadCheck = () => { const r = R.roadReady(); if (r.length && !st()._roadToast) { st()._roadToast = 1; A.toast(`${ICO.xp}<span><b>Calea Atlasului:</b> o recompensă te așteaptă în Lectură.</span>`); setTimeout(() => { delete st()._roadToast; }, 60e3); } };
-R.roadClaim = (unit, i) => {
+R.roadClaim = (unit, i, from) => {
   const m = R.roadFor(unit)[i], rec = roadRec(unit); if (!m || rec[i] || !A.study.unitOpen(unit) || R.raionUnd(unit) < m.th) return false;
   const e = E(), s = e.s();
   if (m.real.some(p => !['gr', 'sp', 'en', 'medal'].includes(p.k)) && !s.started) { A.toast('Înființează biroul ca să primești această recompensă.'); return false; }
@@ -201,7 +203,8 @@ R.roadClaim = (unit, i) => {
     else if (p.k === 'medal') { const a = st(); a.medals = a.medals || []; if (!a.medals.includes(unit)) a.medals.push(unit); }
     else if (p.k === 'paint') { const free = e.PAINTS.filter(x => !s.owned.paints.includes(x[1])); if (free.length) { const x = free[hashOf(unit) % free.length]; s.owned.paints.push(x[1]); got.push('Vopsea: ' + x[0]); } else e.earn(5000 / e.feeMult()); }
   }
-  rec[i] = A.today(); A.store.save(); A.sound('chest'); A.buzz([20, 40, 20]); A.hud();
+  rec[i] = A.today(); A.store.save(); A.sound('claim'); A.buzz([20, 40, 20]); A.hud();
+  A.fx.rewards(m.real.filter(p => ['lei', 'gr', 'sp', 'nitro'].includes(p.k)).map(p => ({ k: p.k, n: p.v, from })).concat(m.real.filter(p => p.k === 'card').map(p => ({ k: 'card', n: p.v, from, img: 'img/staff/' + p.role + '.jpg' }))));
   if (m.mystery) A.toast(`<b>Plic sigilat:</b>&nbsp;${A.esc(m.real.map(R.partLabel).join(' + '))}`, 5000);
   if (got.length) A.toast(A.esc(got.join(' · ')), 4000);
   if (chest) e.openChest(null, false, chest);   // dosarele de pe cale se deschid imediat, fără slot și fără așteptare
@@ -224,7 +227,7 @@ A.route('calea', async (view, [u0]) => {
     ${open ? '' : '<div class="lockbar"><b>Raion încă blocat.</b> Poți vedea premiile, dar le deschizi abia când ajungi aici.</div>'}
     <div class="cl-list"><div class="cl-start">▲ Start · urci spre marele premiu</div>${ms.map(m => { const got = rec[m.i], ok = open && n >= m.th;
       return `<div class="cl ${got ? 'got' : ok ? 'ready' : 'far'} ${m.grand ? 'grand' : ''}"><span class="cl-th">${m.th}</span><span class="cl-ic">${R.partIco(m.parts[0])}</span><span class="cl-t"><b>${m.grand ? 'Marele premiu · ' : ''}${A.esc(R.roadLabel(m))}</b><small>${got ? 'primită' : ok ? 'gata de luat' : `încă ${Math.max(0, m.th - n)} articole`}</small></span>${ok && !got ? `<button class="btn primary small" data-i="${m.i}">Ia</button>` : got ? '<span class="cl-ok">✓</span>' : ''}</div>`; }).join('')}</div></div>`;
-  A.$$('[data-i]', view).forEach(b => b.onclick = () => { if (R.roadClaim(unit, +b.dataset.i)) A.render(); });
+  A.$$('[data-i]', view).forEach(b => b.onclick = () => { if (R.roadClaim(unit, +b.dataset.i, b)) A.render(); });
   const first = A.$('.cl.ready, .cl.far', view); first && first.scrollIntoView({ block: 'center' });
 });
 
@@ -241,7 +244,7 @@ R.OFFERS = [
   { id: 'carti', t: '4 cartonașe de jurist', lei: 1200, ico: () => ICO.card, give: () => { const s = E().s(); s.cards.jurist = (s.cards.jurist || 0) + 4; return true; } },
   { id: 'speed', t: 'Procese mai rapide · 60 min', gr: 12, ico: () => ICO.buff, give: () => R.buff('speed', 1.5, 60, 'Procese și consultații cu 50% mai rapide') },
 ];
-R.buff = (kind, mult, min, label) => { const s = E().s(); s.buffs[kind] = { kind, mult, until: Math.max(Date.now(), (s.buffs[kind] || {}).until || 0) + min * 60e3, label }; return true; };
+R.buff = (kind, mult, min, label) => { E().addBoost({ kind, mult, min, label }); A.fx.fly('boost', 1, null, { delay: 250 }); return true; };
 R.todayOffers = () => { const d = A.today(); let h = 0; for (const c of d) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   const rare = R.OFFERS.filter(o => o.sp), pool = R.OFFERS.filter(o => !o.sp), out = [rare[(parseInt(d.slice(-2), 10) || 0) % rare.length]]; while (out.length < 3) { h = (h * 1103515245 + 12345) >>> 0; out.push(pool.splice(h % pool.length, 1)[0]); } return out; };
 R.shopHTML = () => {
@@ -263,18 +266,23 @@ R.buy = id => {
 
 /* ================= MISIUNI: zilnice (cu revendicare) și săptămânale ================= */
 R.week = () => A.addDays(A.today(), -((new Date().getDay() + 6) % 7));
+R.WK = { read: 5, und: 5, correct: 5, consult: 5, won: 2, chest: 3, refs: 5, spete: 4, play: 5, perfect: 3, xp: 5, sect: 4, lei: 4, up: 2, boost: 2 };
 R.ensureWeekly = () => {
-  const s = E().s(); if (!s || !s.started) return;
+  const e = E(), s = e.s(); if (!s || !s.started) return;
   if (s.weekly && s.weekly.week === R.week()) return;
-  s.weekly = { week: R.week(), quests: A.shuffle(E().QUESTS).slice(0, 3).map(([id, t, ns]) => { const n = A.pick(ns) * 5; return { id, t: t.replace('{n}', n), n, p: 0, done: false }; }), claimed: false };
+  const old = s.weekly, prev = old ? old.quests.map(q => q.id) : [];
+  const pool = e.QUESTS.filter(q => !prev.includes(q[0]));
+  s.weekly = { week: R.week(), quests: A.shuffle(pool.length >= 3 ? pool : e.QUESTS).slice(0, 3).map(([id, t, ns]) => { const n = A.pick(ns) * (R.WK[id] || 5); return { id, t: t.replace('{n}', n.toLocaleString('ro-RO')), n, p: 0, done: false }; }), claimed: false };
+  e.autoClaim(old, 'w');
   A.store.save();
 };
+
 R.QREW = { d: { lei: 400, xp: 15 }, w: { lei: 3000, xp: 80 } };
 R.claimable = () => { const s = E().s(); if (!s || !s.started) return 0; R.ensureWeekly(); let c = 0;
   for (const q of (s.daily ? s.daily.quests : [])) if (q.done && !q.cl) c++; for (const q of s.weekly.quests) if (q.done && !q.cl) c++; return c; };
-R.claim = (kind, i) => {
+R.claim = (kind, i, from) => {
   const s = E().s(), q = (kind === 'w' ? s.weekly : s.daily).quests[i]; if (!q || !q.done || q.cl) return;
-  q.cl = 1; const r = R.QREW[kind]; E().earn(r.lei / E().feeMult()); A.game.addXP(r.xp); A.sound('coin'); A.buzz(20);
+  q.cl = 1; const r = R.QREW[kind]; E().earn(r.lei / E().feeMult()); A.game.addXP(r.xp); A.sound('claim'); A.buzz(20); A.fx.rewards([{ k: 'lei', n: r.lei, from }, { k: 'xp', n: r.xp, from }]);
   if (kind === 'w' && s.weekly.quests.every(x => x.cl) && !s.weekly.claimed) { s.weekly.claimed = true; E().grantChest('aur', 'Misiunile săptămânii'); A.toast('<b>Toate misiunile săptămânii:</b>&nbsp;dosar de aur.', 5000); }
   A.store.save(); A.render();
 };
@@ -289,9 +297,57 @@ R.questsHTML = () => {
     <div class="mq-h"><b>Săptămâna aceasta</b><small>toate trei revendicate: dosar de aur · încă ${E().shortDur(wEnd - Date.now())}</small></div>
     ${s.weekly.quests.map((q, i) => row(q, i, 'w')).join('')}</section>`;
 };
+/* ================= CARTONAȘELE MELE ================= */
+R.RCOL = { secretar: '#9A7B4F', stagiar: '#8C98A6', jurist: '#3B82C4', avocat: '#7B4BD6', senior: '#C99A1E', partener: '#E4572E' };
+R.BCOL = { xp: '#3B82C4', money: '#C99A1E', speed: '#E4572E' };
+R.cardsHTML = () => {
+  const e = E(), s = e.s(); if (!s || !s.started) return '';
+  const tab = st().cardTab === 'boost' ? 'boost' : 'team';
+  const team = e.ROLE_ORDER.filter(r => (s.cards[r] || 0) > 0), B = Object.entries(e.boosts()).filter(([, b]) => b.n > 0);
+  const nB = B.reduce((x, [, b]) => x + b.n, 0) + (s.nitro > 0 ? s.nitro : 0), nT = team.reduce((x, r) => x + s.cards[r], 0);
+  const roleCard = r => `<button type="button" class="gcard" data-card="r:${r}" style="--rc:${R.RCOL[r]}"><span class="gimg"><img src="img/staff/${r}.jpg" alt=""></span><b>${A.esc(e.ROLES[r].name)}</b><i class="gcount">×${s.cards[r]}</i></button>`;
+  const ICOK = { xp: ICO.xp, money: ICO.lei, speed: ICO.buff };
+  const boostCard = ([k, b]) => `<button type="button" class="gcard boost ${b.mult >= 10 || b.mult >= 2 && b.kind === 'speed' && b.min <= 30 ? 'rare' : ''}" data-card="b:${k}" style="--rc:${R.BCOL[b.kind] || '#3B82C4'}"><span class="gimg gico">${ICOK[b.kind] || ICO.buff}</span><b>${A.esc(b.label)}</b><small>${b.min} min</small><i class="gcount">×${b.n}</i></button>`;
+  const nitroCard = s.nitro > 0 ? `<button type="button" class="gcard boost" data-card="n:0" style="--rc:#2B8FCF"><span class="gimg gico">${ICO.nitro}</span><b>Nitro</b><small>procese −50%</small><i class="gcount">×${s.nitro}</i></button>` : '';
+  const body = tab === 'team' ? (team.length ? team.map(roleCard).join('') : '<p class="faint gempty">Nu ai cartonașe de echipă. Le primești din dosare.</p>')
+    : (B.length || nitroCard ? B.map(boostCard).join('') + nitroCard : '<p class="faint gempty">Nu ai cartonașe boost. Le primești din dosare și din magazin.</p>');
+  return `<section class="fsec mycards"><div class="sh"><h2>Cartonașele mele</h2></div>
+    <div class="ctabs"><button type="button" class="${tab === 'team' ? 'on' : ''}" data-ctab="team">Echipă <em>${nT}</em></button><button type="button" class="${tab === 'boost' ? 'on' : ''}" data-ctab="boost">Boost <em>${nB}</em></button></div>
+    <div class="gcards">${body}</div></section>`;
+};
+R.cardModal = (key, view) => {
+  const e = E(), s = e.s(), [t, id] = [key[0], key.slice(2)];
+  if (t === 'r') {
+    const r = e.ROLES[id], m = A.modal(`<div class="cardbig" style="--rc:${R.RCOL[id]}"><img src="img/staff/${id}.jpg" alt=""><i class="gcount">×${s.cards[id] || 0}</i></div><h2>${A.esc(r.name)}</h2>
+      <p class="muted">${A.esc(r.desc)}</p><p class="faint">Cartonașele de acest rol se folosesc la îmbunătățirea angajaților tăi de același rol.</p>
+      <div class="mbtns"><a class="btn use" href="#/firma/echipa" data-close>Mergi la Echipă</a><button class="btn" data-close>Închide</button></div>`, () => A.render());
+    A.sound('pop'); return m;
+  }
+  const isN = t === 'n', b = isN ? { kind: 'nitro', label: 'Nitro', min: 0, n: s.nitro, mult: 0 } : e.boosts()[id];
+  if (!b) return;
+  const desc = isN ? 'Scurtează cu 50% un proces aflat în curs la Instanță.' : `${A.esc(b.label)} timp de ${b.min} minute. Dacă același efect e deja activ, timpul se adaugă.`;
+  const m = A.modal(`<div class="cardbig boostbig" style="--rc:${R.BCOL[b.kind] || '#2B8FCF'}"><span class="gico">${isN ? ICO.nitro : ({ xp: ICO.xp, money: ICO.lei, speed: ICO.buff })[b.kind] || ICO.buff}</span><i class="gcount">×${b.n}</i></div>
+    <h2>${A.esc(b.label)}</h2><p class="muted">${desc}</p>
+    <div class="mbtns"><button class="btn use" id="cUse">Folosește</button><button class="btn danger" id="cDrop">Renunță</button></div>`, () => A.render());
+  const use = A.$('#cUse', m.el), drop = A.$('#cDrop', m.el); let armed = false;
+  use.onclick = () => {
+    if (isN) { m.close(); A.go('#/firma/instanta'); return; }
+    if (!e.useBoost(id)) return;
+    use.classList.add('on'); use.textContent = 'Activat ✓'; use.disabled = true; drop.disabled = true;
+    A.sound('boost'); A.buzz([20, 30, 40]); A.fx.confetti('small'); A.hud();
+    setTimeout(() => m.close(), 900);
+  };
+  drop.onclick = () => {
+    if (!armed) { armed = true; drop.textContent = 'Sigur? Apasă din nou'; A.sound('warn'); setTimeout(() => { armed = false; if (drop.isConnected) drop.textContent = 'Renunță'; }, 3000); return; }
+    if (isN) { s.nitro = Math.max(0, s.nitro - 1); A.store.save(); } else e.dropBoost(id);
+    A.sound('ko'); m.close();
+  };
+};
 R.bindBiroul = view => {
-  A.$$('[data-claim]', view).forEach(b => b.onclick = () => { const [k, i] = b.dataset.claim.split(':'); R.claim(k, +i); });
+  A.$$('[data-claim]', view).forEach(b => b.onclick = () => { const [k, i] = b.dataset.claim.split(':'); R.claim(k, +i, b); });
   A.$$('[data-buy]', view).forEach(b => b.onclick = () => R.buy(b.dataset.buy));
+  A.$$('[data-ctab]', view).forEach(b => b.onclick = () => { st().cardTab = b.dataset.ctab; A.store.save(); A.sound('click'); A.render(); });
+  A.$$('[data-card]', view).forEach(b => b.onclick = () => R.cardModal(b.dataset.card, view));
 };
 
 /* ================= RARITATEA MINI-BOȘILOR ================= */

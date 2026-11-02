@@ -1,0 +1,51 @@
+/* efecte: zborul recompenselor, bannere, cartonașe */
+.fxp { position: fixed; z-index: 3000; pointer-events: none; will-change: transform, opacity; filter: drop-shadow(0 2px 3px rgba(0,0,0,.45)); }
+.fxp svg, .fxp img { width: 100%; height: 100%; display: block; }
+.fxcard { border-radius: 6px; overflow: hidden; border: 2px solid #fff; box-shadow: 0 3px 8px rgba(0,0,0,.5); background: #14233b; }
+.fxcard img { object-fit: cover; object-position: top; }
+@keyframes fxpulse { 0% { transform: scale(1); } 40% { transform: scale(1.22); filter: brightness(1.4); } 100% { transform: scale(1); } }
+.fxpulse { animation: fxpulse .4s ease-out; }
+.confetti { position: fixed; inset: 0; pointer-events: none; z-index: 3100; }
+.fxbanner { position: fixed; left: 50%; top: 18%; z-index: 3200; transform: translate(-50%, -30px) scale(.8); opacity: 0; pointer-events: none; text-align: center;
+  padding: 12px 26px; border-radius: 16px; color: #fff; background: linear-gradient(180deg, #4C7DD6, #2B4E9B); border: 3px solid #0B1424; box-shadow: 0 8px 24px rgba(0,0,0,.5), 0 0 30px rgba(120,170,255,.5);
+  transition: transform .35s cubic-bezier(.2,1.4,.4,1), opacity .3s; max-width: 86vw; width: max-content; }
+.fxbanner.in { transform: translate(-50%, 0) scale(1); opacity: 1; }
+.fxbanner.out { transform: translate(-50%, -20px) scale(.9); opacity: 0; }
+.fxbanner b { display: block; font-size: 22px; letter-spacing: .02em; text-shadow: 0 2px 0 rgba(0,0,0,.4); }
+.fxbanner small { display: block; font-size: 13px; opacity: .9; margin-top: 2px; }
+.fxbanner.daily, .fxbanner.streak { background: linear-gradient(180deg, #F2C230, #D9930A); color: #3A2300; box-shadow: 0 8px 24px rgba(0,0,0,.5), 0 0 34px rgba(255,200,60,.6); }
+.fxbanner.boss, .fxbanner.raion { background: linear-gradient(180deg, #B95CE8, #6B2BA8); box-shadow: 0 8px 24px rgba(0,0,0,.5), 0 0 36px rgba(190,110,255,.6); }
+
+/* cartonașele mele */
+.mycards { grid-column: 1 / -1; }
+.ctabs { display: flex; gap: 8px; margin: 4px 0 12px; }
+.ctabs button { flex: 1; padding: 9px 10px; border-radius: 12px; border: 2px solid var(--line, #2c3f5c); background: transparent; color: inherit; font: inherit; font-weight: 700; cursor: pointer; }
+.ctabs button.on { background: linear-gradient(180deg, #4C8FE0, #2B63B0); border-color: #0B1424; color: #fff; }
+.ctabs em { font-style: normal; opacity: .85; margin-left: 4px; }
+.gcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
+.gempty { grid-column: 1 / -1; margin: 6px 0; }
+.gcard { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 6px 8px; border-radius: 12px; cursor: pointer; font: inherit; color: #fff;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--rc) 85%, #fff 0%), color-mix(in srgb, var(--rc) 55%, #000 45%)); border: 3px solid #0B1424; box-shadow: 0 3px 0 rgba(0,0,0,.35); transition: transform .15s; }
+.gcard:active { transform: scale(.96); }
+.gcard .gimg { width: 100%; aspect-ratio: 4 / 5; border-radius: 8px; overflow: hidden; background: #14233b; display: block; }
+.gcard .gimg img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+.gcard .gico { display: grid; place-items: center; background: rgba(0,0,0,.28); }
+.gcard .gico svg, .cardbig .gico svg { width: 54%; height: 54%; }
+.gcard b { font-size: 13px; line-height: 1.15; text-align: center; text-shadow: 0 1px 0 rgba(0,0,0,.5); }
+.gcard small { font-size: 11px; opacity: .9; }
+.gcount { position: absolute; top: -8px; right: -8px; min-width: 28px; padding: 2px 7px; border-radius: 12px; font-style: normal; font-weight: 800; font-size: 13px; color: #3A2300; text-align: center;
+  background: linear-gradient(180deg, #FFE08A, #F2A100); border: 2px solid #0B1424; }
+.gcard.rare { box-shadow: 0 0 14px rgba(255,210,80,.85), 0 3px 0 rgba(0,0,0,.35); }
+.cardbig { position: relative; width: 170px; aspect-ratio: 4 / 5; margin: 6px auto 12px; border-radius: 14px; border: 4px solid #0B1424; overflow: visible;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--rc) 85%, #fff 0%), color-mix(in srgb, var(--rc) 55%, #000 45%)); box-shadow: 0 8px 24px rgba(0,0,0,.5), 0 0 24px color-mix(in srgb, var(--rc) 60%, transparent); }
+.cardbig img { width: 100%; height: 100%; object-fit: cover; object-position: top; border-radius: 10px; display: block; }
+.cardbig .gico { position: absolute; inset: 0; display: grid; place-items: center; }
+.cardbig .gcount { top: -12px; right: -12px; font-size: 16px; }
+.btn.use { background: linear-gradient(180deg, #4C9BEA, #2B6DC2 60%, #1F57A3); color: #fff; border-color: #0B1424; text-shadow: 0 1px 0 rgba(0,0,0,.4); }
+.btn.use.on, .btn.use:disabled.on { background: linear-gradient(180deg, #FFE08A, #F2A100); color: #3A2300; text-shadow: none; opacity: 1; }
+.lt-card .cimg, .ls .cimg { width: 56px; height: 70px; object-fit: cover; object-position: top; border-radius: 6px; border: 2px solid #0B1424; }
+.lt-card .ic .cimg { width: 90px; height: 112px; }
+.rolecard .rimg { float: right; width: 62px; height: 78px; margin: 0 0 6px 10px; border-radius: 8px; overflow: hidden; border: 2px solid #0B1424; }
+.rolecard .rimg img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+table.staff .av { display: inline-block; width: 30px; height: 36px; border-radius: 6px; overflow: hidden; vertical-align: middle; margin-right: 8px; border: 2px solid #0B1424; }
+table.staff .av img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }

@@ -101,7 +101,7 @@ P.examRun = async (root, list, title, perQ, onDone, onEach) => {
       A.$$('.opt', root).forEach((x, k) => { x.disabled = true; if (g.opts[k].ok) x.classList.add('right'); });
       if (!good && b) b.classList.add('wrong');
       A.S.quiz.answered++; if (good) { ok++; A.S.quiz.correct++; A.S.points.grile++; } A.studied();
-      A.sound(good ? 'ok' : 'ko'); onEach && onEach(good, g);
+      A.sound(good ? 'ok' : 'ko'); A.fx.combo(good); onEach && onEach(good, g);
       const r = (g.r || [])[0];
       A.$('#fb', root).innerHTML = `<div class="feedback ${good ? 'ok' : 'ko'}"><div><b>${why || (good ? 'Corect. +1 grilă' : 'Greșit.')}</b>${g.e ? `<div class="why">${A.esc(g.e)}</div>` : ''}${r ? `<div class="why">${refLink(r)}</div>` : ''}</div><button class="btn primary" id="nx">Continuă</button></div>`;
       A.$('#nx', root).onclick = next; A.store.save();
@@ -142,7 +142,7 @@ A.route('joc', async (view, [mode, arg]) => {
     const roll = Math.random() * 100;
     const type = total < n ? null : roll < 63.5 ? 'simplu' : roll < 83.5 ? 'argint' : roll < 98.5 ? 'aur' : roll < 99.5 ? 'magic' : 'decan';
     const got = type && E.grantChest(type, 'Joc rapid');
-    A.S.quiz.farm = (A.S.quiz.farm || 0) + 1; A.store.save(); A.game.checkStamps();
+    A.S.quiz.farm = (A.S.quiz.farm || 0) + 1; E.quest('play', 1); if (total >= n) E.quest('perfect', 1); if (res && res.ok) E.quest('spete', 1); A.store.save(); A.game.checkStamps();
     const R = A.arena, crowns = total >= n ? 3 : total >= n - 1 ? 2 : total >= 2 ? 1 : 0;
     root.innerHTML = '';
     R.victory({ win: total >= 2, crowns, title: `${total} din ${n} corecte`, sub: `${gok}/3 grile · ${A.esc(spMsg)}<br>${type ? (got ? `Ai primit un ${E.CHESTS[type].name.toLowerCase()}.` : 'Sloturile de dosare sunt pline: deschide un dosar ca să primești altele.') : 'Fără dosar: ai nevoie de cel puțin 2 răspunsuri corecte.'}`,

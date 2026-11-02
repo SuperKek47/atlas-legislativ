@@ -83,7 +83,7 @@ ST.checkMicro = m => {
     A.S.study.micro[m.id] = A.today();
     const g = (ST.gByMicro[m.id] || []).length, sp = (ST.sByMicro[m.id] || []).length;
     A.toast(`<b>Micro-secțiune parcursă:</b>&nbsp;${A.esc(m.name.slice(0, 60))}${g || sp ? ` · s-au deblocat ${g} grile și ${sp} spețe` : ''}`, 4500);
-    A.game.addXP(20); A.sound('chest');
+    A.game.addXP(20); A.sound('chest'); if (A.eco && A.eco.quest) A.eco.quest('sect', 1); if (A.fx) A.fx.celebrate('section');
     const c = ST.chapOf(m);
     if (ST.chapStats(c).done) A.toast(`<b>Capitol încheiat.</b>&nbsp;Mini-bossul ${A.esc(c.boss)} te așteaptă.`, 5000);
     A.store.save();

@@ -572,7 +572,7 @@ A.spetePage = async (view, id) => {
     A.game.addXP(0);
     return A.play.speta(root, sp, res => {
       let msg = res.ok ? 'Speță rezolvată corect.' : res.score > 0 ? 'Speță rezolvată parțial.' : 'Speța nu a fost rezolvată.';
-      if (res.ok) { A.game.addXP(res.first ? 30 : 10); if (res.first) { A.S.points.spete++; msg += ' +1 punct-speță (prima rezolvare).'; } else msg += ' Punctul-speță se acordă doar la prima rezolvare.'; A.store.save(); A.hud(); }
+      if (res.ok) { A.game.addXP(res.first ? 30 : 10); if (res.first) { A.S.points.spete++; msg += ' +1 punct-speță (prima rezolvare).'; A.fx.fly('sp', 1, null, { delay: 300 }); } if (A.eco && A.eco.quest) A.eco.quest('spete', 1); else msg += ' Punctul-speță se acordă doar la prima rezolvare.'; A.store.save(); A.hud(); }
       root.innerHTML = `<div class="qcard summary"><div class="big">${res.ok ? '✓' : '·'}</div><p>${A.esc(msg)}</p><div style="display:flex;gap:10px;justify-content:center;margin-top:14px"><a class="btn primary" href="#/antrenament/spete">Lista de spețe</a><a class="btn" href="#/antrenament/spete/${encodeURIComponent(sp.id)}" onclick="setTimeout(()=>A.render(),0)">Din nou</a></div></div>`;
     });
   }
@@ -661,6 +661,16 @@ A.route('profil', async view => {
 
 /* ======================= UPDATE (istoricul modificărilor) ======================= */
 A.CHANGELOG = [
+  { v: '2 noiembrie 2026 · Cartonașe, sunete și efecte', items: [
+    'Personaje ilustrate pentru fiecare rol (secretar, avocat stagiar, jurist, avocat, avocat senior, partener): în cartonașe, la angajare și în tabelul echipei.',
+    'Birou: secțiune nouă „Cartonașele mele”, sub misiuni, cu filele Echipă și Boost. Cartonașele identice se strâng într-unul singur, cu numărul în colț (de exemplu ×5).',
+    'Cartonașele boost (XP dublu, onorarii duble, procese mai rapide, onorarii ×10) se păstrează acum în inventar. Apeși pe ele și alegi „Folosește” (albastru, apoi galben) sau „Renunță” (roșu).',
+    'Tot ce primești din dosare iese din cufăr și zboară spre bara de sus: monedele cu clinchet, punctele-grilă și punctele-speță spre romburile lor, XP spre nivel, cartonașele spre butonul Birou. Numărul de monede crește cu suma, dar are un plafon.',
+    'Sunete noi, generate în aplicație: fanfară diferită pentru fiecare tip de dosar (simplu, argint, aur, magic, legendar), clinchet de monede, sunet la cartonașe, la încasarea misiunilor și la boost.',
+    'Confetti la nivel nou, la o micro-secțiune terminată, la toate cele 3 misiuni ale zilei, la serii de zile, la mini-boși, la cucerirea raionului și la serii de 5, 10, 20 de răspunsuri corecte la rând.',
+    'Misiuni: 15 tipuri în loc de 7, nu se repetă cu ziua sau săptămâna precedentă. Cele neîncasate la reînnoire se încasează automat. Cele săptămânale se reînnoiesc luni.',
+    'Setări: volumul sunetelor și „Efecte vizuale” (Complete sau Reduse).',
+  ] },
   { v: '2 noiembrie 2026 · Calea Atlasului pe raioane', items: [
     'Fiecare raion are acum propria Cale a Atlasului (Chișinău, Ialoveni, Strășeni, Criuleni, Orhei, Telenești, Rezina, Hîncești, Leova, Călărași, Anenii Noi, Căușeni, Nisporeni, Ștefan Vodă). Treci de la un raion la altul din chip-urile de sus.',
     'Calea are 12 trepte, calculate din numărul de articole al raionului, și se urcă de jos în sus, până la marele premiu din vârf.',
@@ -712,6 +722,8 @@ A.route('setari', async view => {
   view.innerHTML = `<div class="settings"><a class="backlink" href="#/firma">‹ Biroul</a><h1>Setări</h1>
     <div class="row"><div><b>Obiectivul zilnic</b><small>Câte XP vrei să aduni în fiecare zi.</small></div><select id="goal">${[30, 60, 100, 150, 250].map(g => `<option ${g === st.goal ? 'selected' : ''}>${g}</option>`).join('')}</select></div>
     <div class="row"><div><b>Sunet</b><small>Efecte scurte la XP, monede și ștampile.</small></div><select id="snd"><option value="1" ${st.sound ? 'selected' : ''}>Pornit</option><option value="0" ${!st.sound ? 'selected' : ''}>Oprit</option></select></div>
+    <div class="row"><div><b>Volum</b><small>Cât de tare sunt sunetele jocului.</small></div><select id="vol">${[[.3, 'Mic'], [.6, 'Mediu'], [.8, 'Normal'], [1, 'Maxim']].map(([v, n]) => `<option value="${v}" ${Math.abs((st.volume == null ? .8 : st.volume) - v) < .05 ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+    <div class="row"><div><b>Efecte vizuale</b><small>Confetti, monede și cartonașe care zboară spre bara de sus. „Reduse” le oprește.</small></div><select id="fxs"><option value="1" ${st.fx !== false ? 'selected' : ''}>Complete</option><option value="0" ${st.fx === false ? 'selected' : ''}>Reduse</option></select></div>
     <div class="row"><div><b>Vibrații</b><small>Vibrație scurtă la dosare, victorii și nivel nou, pe telefoanele care o permit. iPhone nu permite vibrații aplicațiilor web.</small></div><select id="vib"><option value="1" ${st.vib !== false ? 'selected' : ''}>Pornite</option><option value="0" ${st.vib === false ? 'selected' : ''}>Oprite</option></select></div>
     <div class="row"><div><b>Temă</b><small>Luminoasă, întunecată sau după sistem.</small></div><select id="theme"><option value="auto">După sistem</option><option value="light">Luminoasă</option><option value="dark">Întunecată</option></select></div>
     <div class="row"><div><b>Update</b><small>Ce s-a adăugat și ce s-a schimbat în aplicație, pe versiuni.</small></div><a class="btn" href="#/update">Vezi</a></div>
@@ -729,7 +741,9 @@ A.route('setari', async view => {
     A.$('#quitapp', view).onclick = async () => { await A.store.flush(); window.stratiev.quit(); };
   }
   A.$('#goal', view).onchange = e => { st.goal = +e.target.value; A.store.save(); A.hud(); };
-  A.$('#snd', view).onchange = e => { st.sound = e.target.value === '1'; A.store.save(); };
+  A.$('#snd', view).onchange = e => { st.sound = e.target.value === '1'; A.store.save(); A.sound('ok'); };
+  A.$('#vol', view).onchange = e => { st.volume = +e.target.value; A.store.save(); A.sound('claim'); };
+  A.$('#fxs', view).onchange = e => { st.fx = e.target.value === '1'; A.store.save(); if (st.fx) A.fx.confetti('small'); };
   A.$('#vib', view).onchange = e => { st.vib = e.target.value === '1'; A.store.save(); A.buzz(30); };
   A.$('#theme', view).onchange = e => { st.theme = e.target.value; A.applyTheme(); A.store.save(); };
   A.$('#exp', view).onclick = () => { const b = new Blob([JSON.stringify(A.S, null, 1)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `atlas-progres-${A.today()}.json`; a.click(); };

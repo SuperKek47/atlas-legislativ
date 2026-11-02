@@ -38,7 +38,7 @@ const bindAsk = (host, q, done) => {
     const ok = !!q.options[+b.dataset.i].ok;
     A.$$('.opt', host).forEach((x, i) => { x.disabled = true; if (q.options[i].ok) x.classList.add('right'); });
     if (!ok) b.classList.add('wrong');
-    A.S.quiz.answered++; if (ok) { A.S.quiz.correct++; A.S.points.grile++; }
+    A.S.quiz.answered++; if (ok) { A.S.quiz.correct++; A.S.points.grile++; } A.fx.combo(ok);
     A.studied(); A.sound(ok ? 'ok' : 'ko'); A.guardStop();
     A.$('.fb', host).innerHTML = `<div class="feedback ${ok ? 'ok' : 'ko'}"><div><b>${ok ? 'Excepție respinsă.' : 'Excepția a fost admisă împotriva ta.'}</b>${q.explainExtra ? `<div class="why">${A.esc(q.explainExtra)}</div>` : ''}${q.src ? `<div class="why">${refLink({ act: q.src.act, art: q.src.art })}</div>` : ''}</div></div>`;
     A.store.save();

@@ -325,7 +325,7 @@ Q.run = async (view, opt) => {
       if (cur.kind === 'bank') { A.S.points.grile++; gained += ' +1 grilă.'; }
       if (cur.study && A.study && A.study.credit) A.study.credit(cur.study.m, cur.study.id);
       if (crit) A.fly('Lovitură critică!', r.left + 40, r.top - 10, true);
-      A.sound(crit ? 'level' : 'ok');
+      A.sound(crit ? 'claim' : 'ok'); A.fx.combo(true);
       if (cur.key) A.game.review(cur.key, true);
       if (cur.card && !A.S.album[cur.card]) { A.S.album[cur.card] = cur.cardLabel; gained = ' Termen nou în album.'; }
       if (cur.kind === 'tax') A.S.quiz.taxOk++;
@@ -334,7 +334,7 @@ Q.run = async (view, opt) => {
     } else {
       st.combo = 0; if (opt.lives) st.lives--;
       if (el && el.classList) el.classList.add('wrong');
-      A.sound('ko');
+      A.sound('ko'); A.fx.combo(false);
       if (cur.key) { A.game.review(cur.key, false); st.wrong.push(cur.key); }
     }
     A.store.save();
@@ -378,7 +378,7 @@ Q.mini = async (scope, title, onAnswer, kinds, fixedKey) => {
     if (!ok && b) b.classList.add('wrong');
     A.S.quiz.answered++; if (ok) { A.S.quiz.correct++; if (q.kind === 'bank') A.S.points.grile++; }
     A.studied();
-    if (q.key) A.game.review(q.key, ok); A.sound(ok ? 'ok' : 'ko'); A.store.save();
+    if (q.key) A.game.review(q.key, ok); A.sound(ok ? 'ok' : 'ko'); A.fx.combo(ok); A.store.save();
     A.$('#mfb', m.el).innerHTML = `<div class="feedback ${ok ? 'ok' : 'ko'}"><b>${left ? 'Ai ieșit din aplicație: răspuns pierdut.' : ok ? 'Corect.' : 'Greșit.'}</b><button class="btn primary" id="mok">Continuă</button></div>`;
     A.$('#mok', m.el).onclick = () => { m.close(); onAnswer(ok); };
   };
