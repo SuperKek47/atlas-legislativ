@@ -346,7 +346,7 @@ A.route('act', async (view, args) => {
       <div class="art" style="grid-template-columns:1fr"><div class="body">${anx.blocks.map(b => { const lvl = b.k === 'pct' ? Math.min(4, b.lvl) : 1; return A.blockHTML(Object.assign({}, b, { lvl, k: b.k === 'pct' ? 'pct' : b.k }), id, b.head ? 'head' : ''); }).join('')}</div></div>`;
   }
   // citirea vocală a articolelor (motorul dispozitivului)
-  if (A.tts.supported()) A.tts.bind(view, act);
+  if (A.tts.supported()) A.tts.bind(view);
   // acțiuni pe articole
   A.$$('.art', view).forEach(el => {
     const aid = el.dataset.a; if (!aid) return;
@@ -673,6 +673,7 @@ A.CHANGELOG = [
     'Confetti la nivel nou, la o micro-secțiune terminată, la toate cele 3 misiuni ale zilei, la serii de zile, la mini-boși, la cucerirea raionului și la serii de 5, 10, 20 de răspunsuri corecte la rând.',
     'Misiuni: 15 tipuri în loc de 7, nu se repetă cu ziua sau săptămâna precedentă. Cele neîncasate la reînnoire se încasează automat. Cele săptămânale se reînnoiesc luni.',
     'Setări: volumul sunetelor și „Efecte vizuale” (Complete sau Reduse).',
+    'Citirea articolelor: cuvântul citit acum este evidențiat, iar în Setări poți alege limba vocii (română sau italiană).',
     'Mesajele de sus: mai mari, colorate după tip (roșu pentru erori, verde pentru încasări, mov pentru evenimente, albastru pentru informații), stau între 4 și 8 secunde după lungime, până la 3 deodată. Le ții apăsat ca să rămână sau le atingi scurt ca să dispară. Clopoțelul și Setări → Mesaje recente arată ultimele 30.',
     'Orice încasare de bani, puncte-grilă sau puncte-speță, din orice loc (consultații, procese, PLAY, antrenament, mini-boși, filiale), pornește acum monedele sau rombul spre bara de sus, cu clinchet.',
     'Birou, De încasat: când filialele sunt oprite (nu ai studiat de 30 de minute), vezi de la ce oră și cât ai pierdut. Când studiezi din nou, primești un mesaj cu suma pierdută.',
@@ -730,6 +731,7 @@ A.route('setari', async view => {
   view.innerHTML = `<div class="settings"><a class="backlink" href="#/firma">‹ Biroul</a><h1>Setări</h1>
     <div class="row"><div><b>Obiectivul zilnic</b><small>Câte XP vrei să aduni în fiecare zi.</small></div><select id="goal">${[30, 60, 100, 150, 250].map(g => `<option ${g === st.goal ? 'selected' : ''}>${g}</option>`).join('')}</select></div>
     <div class="row"><div><b>Sunet</b><small>Efecte scurte la XP, monede și ștampile.</small></div><select id="snd"><option value="1" ${st.sound ? 'selected' : ''}>Pornit</option><option value="0" ${!st.sound ? 'selected' : ''}>Oprit</option></select></div>
+    ${A.tts.supported() ? `<div class="row"><div><b>Limba vocii</b><small>Română pentru articole. Italiana e pentru vocile italiene instalate pe dispozitiv.</small></div><select id="ttsl"><option value="ro" ${(st.ttsLang || "ro") === "ro" ? "selected" : ""}>Română</option><option value="it" ${st.ttsLang === "it" ? "selected" : ""}>Italiană</option></select></div>` : ""}
     <div class="row"><div><b>Viteza vocii</b><small>Pentru citirea articolelor (butonul 🔊).</small></div><select id="ttsr">${[[.5, '×0,5'], [.75, '×0,75'], [1, '×1'], [1.25, '×1,25'], [1.5, '×1,5'], [2, '×2']].map(([v, n]) => `<option value="${v}" ${Math.abs((st.ttsRate || 1) - v) < .01 ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
     ${A.tts.supported() ? `<div class="row"><div><b>Vocea</b><small>Vocile românești instalate pe dispozitiv. Pe iPhone: Setări → Accesibilitate → Conținut rostit → Voci.</small></div><select id="ttsv">${A.tts.voices().map(v => `<option value="${A.esc(v.voiceURI)}" ${st.ttsVoice === v.voiceURI ? 'selected' : ''}>${A.esc(v.name)}</option>`).join('') || '<option value="">Nu există voci românești</option>'}</select></div>` : ''}
     <div class="row"><div><b>Volum</b><small>Cât de tare sunt sunetele jocului.</small></div><select id="vol">${[[.3, 'Mic'], [.6, 'Mediu'], [.8, 'Normal'], [1, 'Maxim']].map(([v, n]) => `<option value="${v}" ${Math.abs((st.volume == null ? .8 : st.volume) - v) < .05 ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
@@ -754,6 +756,7 @@ A.route('setari', async view => {
   A.$('#goal', view).onchange = e => { st.goal = +e.target.value; A.store.save(); A.hud(); };
   A.$('#snd', view).onchange = e => { st.sound = e.target.value === '1'; A.store.save(); A.sound('ok'); };
   A.$('#notifs', view).onclick = () => A.fx.notifs();
+  const tl = A.$('#ttsl', view); if (tl) tl.onchange = e => { st.ttsLang = e.target.value; st.ttsVoice = ''; A.store.save(); A.render(); };
   A.$('#ttsr', view).onchange = e => { st.ttsRate = +e.target.value; A.store.save(); };
   const tv = A.$('#ttsv', view); if (tv) tv.onchange = e => { st.ttsVoice = e.target.value; A.store.save(); };
   A.$('#vol', view).onchange = e => { st.volume = +e.target.value; A.store.save(); A.sound('claim'); };
