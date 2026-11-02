@@ -3,6 +3,8 @@
 'use strict';
 A.tts = {};
 const TT = A.tts;
+TT.ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9.5h3.6L12 5.2v13.6l-5.4-4.3H3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M15.5 8.8a4.6 4.6 0 0 1 0 6.4M18.6 5.7a9 9 0 0 1 0 12.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+TT.STOP = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg>';
 const synth = () => window.speechSynthesis || null;
 TT.supported = () => !!synth() && typeof SpeechSynthesisUtterance !== 'undefined';
 const cfg = () => A.S.settings;
@@ -120,7 +122,7 @@ TT.speak = (root, id, done) => {
   };
   TT.paint(); next();
 };
-TT.paint = () => A.$$('[data-tts]').forEach(b => { const on = !!SP && b.dataset.tts === SP.id; b.classList.toggle('on', on); b.textContent = on ? '■ Oprește' : '🔊 Ascultă'; });
+TT.paint = () => A.$$('[data-tts]').forEach(b => { const on = !!SP && b.dataset.tts === SP.id; b.classList.toggle('on', on); b.innerHTML = on ? TT.STOP : TT.ICON; b.setAttribute('aria-label', on ? 'Oprește citirea' : 'Ascultă articolul'); });
 /* la schimbarea paginii sau la ecran blocat, citirea se oprește */
 addEventListener('hashchange', () => TT.stop());
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') TT.stop(); });

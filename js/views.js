@@ -305,14 +305,13 @@ A.route('act', async (view, args) => {
     const k = A.key(id, a.id), rec = A.S.arts[k] || {}, dots = A.levelDots(rec), lk = !a.abrogat && lockedArt(a);
     return `<article class="art ${a.abrogat ? 'abrog' : ''} ${lk ? 'locked' : ''}" id="art-${a.id}" data-a="${a.id}">
       <div class="gut"><div class="n">Art. ${A.esc(a.num)}</div>${a.abrogat ? '' : `<div class="lvl" title="citit · înțeles · reținut · aplicat">${dots.map(d => `<i class="${d ? 'on' : ''}"></i>`).join('')}</div>`}</div>
-      <div><h3>${A.esc(a.title || (a.abrogat ? 'Abrogat' : ''))}</h3>
+      <div>${A.tts.supported() && !a.abrogat ? `<button type="button" class="tts-ico" data-tts="${a.id}" aria-label="Ascultă articolul" title="Ascultă articolul">${A.tts.ICON}</button>` : ''}<h3>${A.esc(a.title || (a.abrogat ? 'Abrogat' : ''))}</h3>
         <div class="body">${a.blocks.map(b => A.blockHTML(b, id)).join('')}</div>
         ${comm && comm.arts && comm.arts[a.id] ? `<div class="comm">${A.esc(comm.arts[a.id])}</div>` : ''}
         ${a.abrogat || lk ? '' : `<div class="tools">
           <button class="btn read ${rec.r ? 'on' : ''}" data-act="read">${rec.r ? 'Citit' : 'Marchează citit'}</button>
           <button class="btn und ${rec.u ? 'on' : ''}" data-act="und">${rec.u ? 'Înțeles · rezumat' : 'Am înțeles'}</button>
           <button class="btn star ${rec.st ? 'on' : ''}" data-act="star" aria-label="Marcaj">★</button>
-          ${A.tts.supported() ? `<button class="btn tts" data-tts="${a.id}" aria-label="Ascultă articolul">🔊 Ascultă</button>` : ''}
           <button class="btn" data-act="note">${rec.n ? 'Notă' : 'Adaugă notă'}</button>
           <button class="btn appl ${rec.ap ? 'on' : ''}" data-act="appl">${rec.ap ? 'Aplicat · cazul' : 'Aplicat la un caz'}</button></div>
           ${rec.sum ? `<div class="mysum"><small>Rezumatul tău</small>${A.esc(rec.sum)}</div>` : ''}
