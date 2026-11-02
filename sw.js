@@ -1,7 +1,7 @@
 /* Atlasul legislativ — lucrul fără internet.
    Codul aplicației (pagini, scripturi, stiluri) se ia mereu întâi din rețea, ca o versiune nouă să apară imediat;
    din cache doar când nu e internet. Textele legilor se iau din cache și se reîmprospătează în fundal. */
-const V = 'atlas-v18';
+const V = 'atlas-v19';
 const SHELL = [
   './', './index.html', './menu.html', './app.css', './phone.css', './clash.css', './fx.css', './manifest.webmanifest',
   './data/moldova.js',
