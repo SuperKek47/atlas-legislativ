@@ -106,13 +106,14 @@ const pointOf = f => {
 const pulse = el => { if (!el) return; el.classList.remove('fxpulse'); void el.offsetWidth; el.classList.add('fxpulse'); setTimeout(() => el.classList.remove('fxpulse'), 420); };
 const pieces = (k, n) => {
   n = Math.max(1, Math.round(n || 1));
-  if (k === 'lei') return Math.max(3, Math.min(16, Math.round(Math.log10(n + 1) * 3.2)));
+  if (k === 'lei') return n < 30 ? 1 : n < 100 ? 2 : n < 300 ? 3 : Math.max(4, Math.min(16, Math.round(Math.log10(n + 1) * 3.2)));
   if (k === 'xp') return Math.max(2, Math.min(10, Math.ceil(n / 12)));
   if (k === 'card') return Math.min(n, 6);
   return Math.min(n, k === 'gr' || k === 'sp' ? 10 : 5);
 };
 /* k: lei|gr|sp|xp|card|boost|nitro|chest; n: cantitatea; from: element sau {x,y}; o: {img, delay, done} */
 F.fly = (k, n, from, o = {}) => {
+  if (!o.auto && (k === 'lei' || k === 'gr' || k === 'sp')) F.cover(k, n);
   const tgt = targetFor(k), tp = tgt ? pointOf(tgt) : { x: innerWidth / 2, y: 28 }, sp = pointOf(from);
   const cnt = pieces(k, n), delay = o.delay || 0;
   if (reduced()) { setTimeout(() => { pulse(tgt); A.sound(k === 'card' ? 'card' : 'coinhit', 0); o.done && o.done(); }, delay + 200); return; }
@@ -203,3 +204,88 @@ F.combo = ok => {
   if ([5, 10, 15, 20, 30, 50].includes(F.run)) F.celebrate('combo', `Serie de ${F.run}!`, 'răspunsuri corecte la rând');
 };
 F.tier = type => ({ simplu: 1, argint: 2, aur: 3, magic: 4, decan: 5 })[type] || 1;
+
+/* ================= MESAJELE DE SUS (toast) ================= */
+const plain = h => String(h).replace(/<svg[\s\S]*?<\/svg>/g, '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+const ERR = /nu ai destui|nu ai bani|îți lipsesc|îți trebuie|sunt pline|nu poți|limita ta|grevă|se deschid după|înființează|blocat|nu ai |lipsesc/i;
+const EVT = /nivel|serie|mini-boss|raion|obiectivul|decan|promov|ștampilă|medalia|capitol|trofeu|filialele au reluat/i;
+const REW = /\+\s?[\d.,]+|încasat|ai primit|primit|ai prins|îndeplinit|cumpărat|vândut|câștigat|client generos|onorariu/i;
+const kindOf = t => ERR.test(t) ? 'err' : EVT.test(t) ? 'evt' : REW.test(t) ? 'rew' : 'inf';
+const TI = {
+  err: '<svg viewBox="0 0 24 24"><path d="M12 3 22 20H2Z" fill="#FF6B6B" stroke="#2A0A0C" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v5M12 16.5v.5" stroke="#2A0A0C" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  rew: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#2DBF8A" stroke="#06281D" stroke-width="1.8"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#06281D" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  evt: '<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z" fill="#B28CFF" stroke="#1E0F40" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+  inf: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#5CA8FF" stroke="#0B2547" stroke-width="1.8"/><path d="M12 11v6M12 7.5v.5" stroke="#0B2547" stroke-width="2.4" stroke-linecap="round"/></svg>',
+};
+const note = (text, kind) => {
+  const L = (A.S.notifs = A.S.notifs || []);
+  L.push({ t: Date.now(), x: text, k: kind }); while (L.length > 30) L.shift();
+  F.unread = (F.unread || 0) + 1; F.lastToast = Date.now(); bellUpdate();
+};
+A.toast = (html, ms = 3200, type) => {
+  const host = A.$('#toasts'), key = String(html), text = plain(html), kind = type || kindOf(text);
+  const dur = Math.min(8000, Math.max(4000, 1800 + 70 * text.length, Math.min(ms, 8000)));
+  const same = A.$$('.toast', host).find(t => t.dataset.k === key && !t.classList.contains('out'));
+  if (same) { clearTimeout(same._t); same.classList.remove('bump'); void same.offsetWidth; same.classList.add('bump'); same._t = setTimeout(() => A.toastOut(same), dur); return same; }
+  const el = document.createElement('div'); el.className = 'toast t-' + kind; el.dataset.k = key;
+  const hasIco = key.includes('<svg') || key.includes('<img');
+  el.innerHTML = hasIco ? key : `<i class="ti">${TI[kind]}</i><span>${key}</span>`;
+  host.appendChild(el); note(text, kind);
+  el._t = setTimeout(() => A.toastOut(el), dur);
+  /* cât ții degetul pe mesaj, rămâne; o atingere scurtă îl închide */
+  let t0 = 0;
+  el.addEventListener('pointerdown', () => { t0 = Date.now(); clearTimeout(el._t); });
+  const up = () => { if (!t0) return; const short = Date.now() - t0 < 350; t0 = 0; if (short) A.toastOut(el); else el._t = setTimeout(() => A.toastOut(el), 2500); };
+  el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up); el.addEventListener('pointerleave', up);
+  let live = A.$$('.toast:not(.out)', host);
+  while (live.length > 3) { A.toastOut(live[0]); live = A.$$('.toast:not(.out)', host); }
+  return el;
+};
+A.toastOut = el => { if (el.classList.contains('out')) return; clearTimeout(el._t); el.classList.add('out'); setTimeout(() => el.remove(), 650); };
+
+/* istoricul mesajelor: clopoțel + listă */
+const ago = t => { const m = Math.round((Date.now() - t) / 60e3); return m < 1 ? 'acum' : m < 60 ? `acum ${m} min` : `acum ${Math.round(m / 60)} h`; };
+F.notifs = () => {
+  const L = (A.S.notifs || []).slice().reverse(); F.unread = 0; bellUpdate();
+  const m = A.modal(`<h2>Mesaje recente</h2><div class="nlist">${L.length ? L.map(n => `<div class="ni t-${n.k}"><i class="ti">${TI[n.k] || TI.inf}</i><span>${A.esc(n.x)}</span><small>${ago(n.t)}</small></div>`).join('') : '<p class="faint">Niciun mesaj încă.</p>'}</div>
+    <div class="mbtns"><button class="btn" id="nclr">Șterge lista</button><button class="btn use" data-close>Închide</button></div>`);
+  const c = A.$('#nclr', m.el); c.onclick = () => { A.S.notifs = []; A.store.save(); m.close(); };
+};
+let bellEl = null;
+const bellUpdate = () => {
+  if (!bellEl) {
+    bellEl = document.createElement('button'); bellEl.type = 'button'; bellEl.className = 'fxbell'; bellEl.setAttribute('aria-label', 'Mesaje recente');
+    bellEl.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0-6 6v4l-2 3h16l-2-3V9a6 6 0 0 0-6-6zM10 19a2 2 0 0 0 4 0" fill="#FFE08A" stroke="#0B1424" stroke-width="1.6" stroke-linejoin="round"/></svg><b></b>';
+    bellEl.onclick = () => F.notifs(); document.body.appendChild(bellEl);
+  }
+  const show = F.unread > 0 && Date.now() - (F.lastToast || 0) < 120e3;
+  bellEl.classList.toggle('on', show); A.$('b', bellEl).textContent = F.unread > 9 ? '9+' : F.unread || '';
+};
+setInterval(() => { if (bellEl) bellUpdate(); }, 10e3);
+
+/* ================= EFECTUL DE MONEDE LA ORICE ÎNCASARE ================= */
+/* urmărește banii și punctele-grilă/speță: orice creștere, din orice loc, pornește zborul spre bara de sus */
+{
+  let seen = null, flushT = null, pt = { x: 0, y: 0, t: 0 }, covT = 0;
+  const pend = { lei: 0, gr: 0, sp: 0 }, cov = { lei: 0, gr: 0, sp: 0 };
+  addEventListener('pointerdown', e => { pt = { x: e.clientX, y: e.clientY, t: Date.now() }; }, true);
+  F.cover = (k, n) => { cov[k] += n; covT = Date.now(); };
+  const read = () => { const e = A.eco && A.eco.s && A.eco.s(); return { lei: e && e.started ? e.money : 0, gr: A.S.points.grile || 0, sp: A.S.points.spete || 0 }; };
+  const flush = () => {
+    flushT = null;
+    if (document.querySelector('.fx')) { flushT = setTimeout(flush, 400); return; }   // pe ecran întreg zborul așteaptă să se închidă
+    if (Date.now() - covT > 6000) { cov.lei = cov.gr = cov.sp = 0; }
+    const from = Date.now() - pt.t < 3000 ? { x: pt.x, y: pt.y } : null; let d = 0;
+    for (const k of ['lei', 'gr', 'sp']) {
+      let n = pend[k]; pend[k] = 0; const c = Math.min(cov[k], n); cov[k] -= c; n -= c;
+      if (n > 0) { F.fly(k, n, from, { auto: true, delay: d }); d += 250; }
+    }
+  };
+  setInterval(() => {
+    if (!A.S || !A.S.points) return; const v = read();
+    if (!seen) { seen = v; return; }
+    let any = false; for (const k of ['lei', 'gr', 'sp']) { const d = v[k] - seen[k]; if (d > 0 && !(k === 'lei' && seen.lei === 0 && d > 1500 && !seen._ok)) { pend[k] += d; any = true; } }
+    seen = v; seen._ok = true;
+    if (any && !flushT) flushT = setTimeout(flush, 150);
+  }, 250);
+}

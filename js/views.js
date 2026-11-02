@@ -670,6 +670,8 @@ A.CHANGELOG = [
     'Confetti la nivel nou, la o micro-secțiune terminată, la toate cele 3 misiuni ale zilei, la serii de zile, la mini-boși, la cucerirea raionului și la serii de 5, 10, 20 de răspunsuri corecte la rând.',
     'Misiuni: 15 tipuri în loc de 7, nu se repetă cu ziua sau săptămâna precedentă. Cele neîncasate la reînnoire se încasează automat. Cele săptămânale se reînnoiesc luni.',
     'Setări: volumul sunetelor și „Efecte vizuale” (Complete sau Reduse).',
+    'Mesajele de sus: mai mari, colorate după tip (roșu pentru erori, verde pentru încasări, mov pentru evenimente, albastru pentru informații), stau între 4 și 8 secunde după lungime, până la 3 deodată. Le ții apăsat ca să rămână sau le atingi scurt ca să dispară. Clopoțelul și Setări → Mesaje recente arată ultimele 30.',
+    'Orice încasare de bani, puncte-grilă sau puncte-speță, din orice loc (consultații, procese, PLAY, antrenament, mini-boși, filiale), pornește acum monedele sau rombul spre bara de sus, cu clinchet.',
     'Birou, De încasat: când filialele sunt oprite (nu ai studiat de 30 de minute), vezi de la ce oră și cât ai pierdut. Când studiezi din nou, primești un mesaj cu suma pierdută.',
     'Harta: Ungheni va fi Dreptul afacerilor, iar Cimișlia Insolvența (în locul Avocaturii și Filosofiei dreptului).',
     'Runda PLAY: testul e trecut de la 3 răspunsuri corecte; dosarul se primește doar la câștig complet (3 coroane). Dosarele din celelalte surse (nivel, misiuni, CNAJGS, Calea Atlasului) rămân.',
@@ -729,6 +731,7 @@ A.route('setari', async view => {
     <div class="row"><div><b>Efecte vizuale</b><small>Confetti, monede și cartonașe care zboară spre bara de sus. „Reduse” le oprește.</small></div><select id="fxs"><option value="1" ${st.fx !== false ? 'selected' : ''}>Complete</option><option value="0" ${st.fx === false ? 'selected' : ''}>Reduse</option></select></div>
     <div class="row"><div><b>Vibrații</b><small>Vibrație scurtă la dosare, victorii și nivel nou, pe telefoanele care o permit. iPhone nu permite vibrații aplicațiilor web.</small></div><select id="vib"><option value="1" ${st.vib !== false ? 'selected' : ''}>Pornite</option><option value="0" ${st.vib === false ? 'selected' : ''}>Oprite</option></select></div>
     <div class="row"><div><b>Temă</b><small>Luminoasă, întunecată sau după sistem.</small></div><select id="theme"><option value="auto">După sistem</option><option value="light">Luminoasă</option><option value="dark">Întunecată</option></select></div>
+    <div class="row"><div><b>Mesaje recente</b><small>Ultimele 30 de mesaje de pe ecran, ca să recitești ce ai ratat.</small></div><button class="btn" id="notifs">Vezi</button></div>
     <div class="row"><div><b>Update</b><small>Ce s-a adăugat și ce s-a schimbat în aplicație, pe versiuni.</small></div><a class="btn" href="#/update">Vezi</a></div>
     <div class="row"><div><b>Exportă progresul</b><small>Salvează un fișier cu tot progresul tău (copie de siguranță).</small></div><button class="btn" id="exp">Exportă</button></div>
     <div class="row"><div><b>Importă progresul</b><small>Înlocuiește progresul curent cu cel dintr-un fișier exportat.</small></div><label class="btn">Alege fișierul<input type="file" id="imp" accept=".json" hidden></label></div>
@@ -745,6 +748,7 @@ A.route('setari', async view => {
   }
   A.$('#goal', view).onchange = e => { st.goal = +e.target.value; A.store.save(); A.hud(); };
   A.$('#snd', view).onchange = e => { st.sound = e.target.value === '1'; A.store.save(); A.sound('ok'); };
+  A.$('#notifs', view).onclick = () => A.fx.notifs();
   A.$('#vol', view).onchange = e => { st.volume = +e.target.value; A.store.save(); A.sound('claim'); };
   A.$('#fxs', view).onchange = e => { st.fx = e.target.value === '1'; A.store.save(); if (st.fx) A.fx.confetti('small'); };
   A.$('#vib', view).onchange = e => { st.vib = e.target.value === '1'; A.store.save(); A.buzz(30); };
