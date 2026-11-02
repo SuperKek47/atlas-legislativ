@@ -164,11 +164,13 @@ R.roadCheck = () => { const r = R.roadReady(); if (r.length && !st()._roadToast)
 R.roadClaim = th => {
   const x = R.ROAD.find(y => y[0] === th), a = st(); if (!x || a.road[th] || R.understoodCount() < th) return false;
   const [, k, v] = x;
-  if (k === 'chest') { if (!E().s().started) { A.toast('Înființează biroul ca să primești dosare.'); return false; } if (!E().grantChest(v, 'Calea Atlasului')) return false; }
+  if (k === 'chest') { if (!E().s().started) { A.toast('Înființează biroul ca să primești dosare.'); return false; } }
   if (k === 'lei') { if (!E().s().started) { A.toast('Înființează biroul ca să primești onorarii.'); return false; } E().earn(v / E().feeMult()); }
   if (k === 'gr') A.S.points.grile += v; if (k === 'sp') A.S.points.spete += v;
   if (k === 'en') { a.energy.n = R.EMAX; a.energy.at = Date.now(); }
-  a.road[th] = A.today(); A.store.save(); A.sound('chest'); A.buzz([20, 40, 20]); A.hud(); return true;
+  a.road[th] = A.today(); A.store.save(); A.sound('chest'); A.buzz([20, 40, 20]); A.hud();
+  if (k === 'chest') E().openChest(null, false, v);   // dosarele din Calea Atlasului se deschid imediat, fără slot și fără așteptare
+  return true;
 };
 R.roadStrip = () => {
   const n = R.understoodCount(), a = st(), nextI = R.ROAD.findIndex(x => x[0] > n), ready = R.roadReady().length;
@@ -262,10 +264,11 @@ R.init = () => {
   Eo.quest = (id, n) => { q0(id, n); const s = Eo.s(); if (!s || !s.started) return; R.ensureWeekly();
     for (const q of s.weekly.quests) if (q.id === id && !q.done) { q.p += n; if (q.p >= q.n) { q.done = true; A.toast(`Misiune săptămânală îndeplinită: ${A.esc(q.t)}`); } } A.store.save(); };
   /* deschiderea dosarului: secvența pe tot ecranul */
-  Eo.openChest = (i, free) => {
+  Eo.openChest = (i, free, direct) => {
     const s = Eo.s(); let type;
-    const left0 = Eo.chestsLocked(); if (left0) { A.toast(`Dosarele se deschid după etapa de începător: mai citește ${left0} ${left0 === 1 ? 'articol' : 'articole'}.`); A.sound('warn'); return; }
-    if (free) { if (s.freeStock < 1) return; s.freeStock--; if (s.freeStock < 2 && s.freeAt < Date.now()) s.freeAt = Date.now() + Eo.FREE_EVERY; type = 'simplu'; }
+    const left0 = direct ? 0 : Eo.chestsLocked(); if (left0) { A.toast(`Dosarele se deschid după etapa de începător: mai citește ${left0} ${left0 === 1 ? 'articol' : 'articole'}.`); A.sound('warn'); return; }
+    if (direct) type = direct;
+    else if (free) { if (s.freeStock < 1) return; s.freeStock--; if (s.freeStock < 2 && s.freeAt < Date.now()) s.freeAt = Date.now() + Eo.FREE_EVERY; type = 'simplu'; }
     else { const c = s.slots[i]; if (!c || !c.unlockEnd || c.unlockEnd > Date.now()) return; type = c.type; s.slots[i] = null; }
     A.store.save();
     const reveal = mult => { const loot = Eo.scaleLoot(Eo.rollChest(type), mult); Eo.applyLoot(loot);

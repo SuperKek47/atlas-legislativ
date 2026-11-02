@@ -661,6 +661,9 @@ A.route('profil', async view => {
 
 /* ======================= UPDATE (istoricul modificărilor) ======================= */
 A.CHANGELOG = [
+  { v: '2 noiembrie 2026 · Calea Atlasului', items: [
+    'Dosarele primite de pe Calea Atlasului se deschid imediat la apăsarea „ia”, fără slot, fără așteptare și fără puncte-speță.',
+  ] },
   { v: '1 noiembrie 2026 · deschidere cu puncte-speță, spețe, calculator', items: [
     'Dosarele: apeși pe un dosar închis sau în curs de deblocare și alegi „Deschide cu puncte-speță” (simplu 1, argint 2, aur 3, magic 4, legendar 5) sau „Așteaptă”. Dosarul gata de deschis se deschide gratuit.',
     'Testul de 15 grile pentru deschiderea rapidă a fost scos complet.',
