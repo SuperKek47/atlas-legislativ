@@ -143,9 +143,9 @@ A.route('joc', async (view, [mode, arg]) => {
     const type = total < n ? null : roll < 63.5 ? 'simplu' : roll < 83.5 ? 'argint' : roll < 98.5 ? 'aur' : roll < 99.5 ? 'magic' : 'decan';
     const got = type && E.grantChest(type, 'Joc rapid');
     A.S.quiz.farm = (A.S.quiz.farm || 0) + 1; E.quest('play', 1); if (total >= n) E.quest('perfect', 1); if (res && res.ok) E.quest('spete', 1); A.store.save(); A.game.checkStamps();
-    const R = A.arena, crowns = total >= n ? 3 : total >= n - 1 ? 2 : total >= 2 ? 1 : 0;
+    const R = A.arena, crowns = total >= n ? 3 : total >= n - 1 ? 2 : total >= 3 ? 1 : 0;
     root.innerHTML = '';
-    R.victory({ win: total >= 2, crowns, title: `${total} din ${n} corecte`, sub: `${gok}/3 grile · ${A.esc(spMsg)}<br>${type ? (got ? `Ai primit un ${E.CHESTS[type].name.toLowerCase()}.` : 'Sloturile de dosare sunt pline: deschide un dosar ca să primești altele.') : 'Fără dosar: ai nevoie de cel puțin 2 răspunsuri corecte.'}`,
+    R.victory({ win: total >= 3, crowns, title: `${total} din ${n} corecte`, sub: `${gok}/3 grile · ${A.esc(spMsg)}<br>${type ? (got ? `Ai primit un ${E.CHESTS[type].name.toLowerCase()}.` : 'Sloturile de dosare sunt pline: deschide un dosar ca să primești altele.') : 'Fără dosar: ai nevoie de cel puțin 2 răspunsuri corecte.'}`,
       rewards: [{ ico: R.ICO.lei, n: Math.round(money), label: 'lei' }, { ico: R.ICO.xp, n: xp, label: 'XP' }, { ico: R.ICO.gr, n: gok, label: 'puncte-grilă' }].concat(type && got ? [{ ico: R.ICO.chest(type), label: E.CHESTS[type].name }] : []),
       primary: { t: 'Încă o rundă', fn: () => { if (A.arena.useEnergy()) A.render(); else A.go('#/harta'); } }, secondary: { t: 'Harta', href: '#/harta' } });
   };

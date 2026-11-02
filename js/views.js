@@ -670,6 +670,7 @@ A.CHANGELOG = [
     'Confetti la nivel nou, la o micro-secțiune terminată, la toate cele 3 misiuni ale zilei, la serii de zile, la mini-boși, la cucerirea raionului și la serii de 5, 10, 20 de răspunsuri corecte la rând.',
     'Misiuni: 15 tipuri în loc de 7, nu se repetă cu ziua sau săptămâna precedentă. Cele neîncasate la reînnoire se încasează automat. Cele săptămânale se reînnoiesc luni.',
     'Setări: volumul sunetelor și „Efecte vizuale” (Complete sau Reduse).',
+    'Runda PLAY: testul e trecut de la 3 răspunsuri corecte; dosarul se primește doar la câștig complet (3 coroane). Dosarele din celelalte surse (nivel, misiuni, CNAJGS, Calea Atlasului) rămân.',
   ] },
   { v: '2 noiembrie 2026 · Calea Atlasului pe raioane', items: [
     'Fiecare raion are acum propria Cale a Atlasului (Chișinău, Ialoveni, Strășeni, Criuleni, Orhei, Telenești, Rezina, Hîncești, Leova, Călărași, Anenii Noi, Căușeni, Nisporeni, Ștefan Vodă). Treci de la un raion la altul din chip-urile de sus.',
