@@ -149,41 +149,82 @@ R.checkStreak = () => {
 };
 R.nextStreak = () => { const n = A.game.streak(); const x = R.STREAK.find(([d]) => d > n); return x ? x[0] : null; };
 
-/* ================= CALEA ATLASULUI ================= */
-/* praguri pe articole rezumate (înțelese) */
-R.ROAD = [
-  [5, 'lei', 1000], [10, 'chest', 'argint'], [20, 'gr', 10], [35, 'lei', 3000], [50, 'chest', 'aur'], [75, 'en', 5], [100, 'lei', 8000], [130, 'chest', 'magic'],
-  [170, 'gr', 30], [220, 'lei', 15000], [280, 'chest', 'decan'], [350, 'sp', 10], [430, 'lei', 25000], [520, 'chest', 'aur'], [620, 'gr', 60], [750, 'chest', 'decan'],
-  [900, 'lei', 50000], [1100, 'chest', 'decan'], [1350, 'sp', 30], [1650, 'lei', 100000], [2000, 'chest', 'decan'], [2400, 'lei', 250000],
-];
-R.understoodCount = () => { let n = 0; for (const r of Object.values(A.S.arts)) if (r.r && r.u) n++; return n; };
-R.roadLabel = ([, k, v]) => k === 'lei' ? A.lei(v) : k === 'chest' ? E().CHESTS[v].name : k === 'gr' ? `${v} puncte-grilă` : k === 'sp' ? `${v} puncte-speță` : k === 'en' ? 'energie plină' : '';
-R.roadIco = ([, k, v]) => k === 'chest' ? ICO.chest(v) : ICO[k === 'lei' ? 'lei' : k === 'gr' ? 'gr' : k === 'sp' ? 'sp' : 'en'];
-R.roadReady = () => { const n = R.understoodCount(), a = st(); return R.ROAD.filter(x => x[0] <= n && !a.road[x[0]]); };
+/* ================= CALEA ATLASULUI (pe raioane) ================= */
+/* Fiecare raion are propria cale: 12 trepte pe care le urci de jos în sus, cu marele premiu în vârf.
+   Pragurile depind de numărul de articole al raionului, iar premiile cresc cu etapa jocului (rangul raionului în ordinea de cucerire). */
+R.ROADFR = [.04, .09, .15, .22, .30, .38, .46, .55, .64, .74, .85, 1];
+ICO.medal = '<svg viewBox="0 0 24 24"><path d="M7 2h4l1 6H6zM17 2h-4l-1 6h6z" fill="#E05A5A" stroke="#0B1424" stroke-width="1.3" stroke-linejoin="round"/><circle cx="12" cy="15" r="6.5" fill="#FFD54A" stroke="#0B1424" stroke-width="1.5"/><path d="M12 11.5l1.1 2.3 2.5.3-1.8 1.7.5 2.5-2.3-1.2-2.3 1.2.5-2.5-1.8-1.7 2.5-.3z" fill="#C98F00"/></svg>';
+ICO.mystery = '<svg viewBox="0 0 24 24"><rect x="3.5" y="6" width="17" height="13" rx="2.5" fill="#B9A7FF" stroke="#0B1424" stroke-width="1.5"/><path d="M3.5 9l8.5 5 8.5-5" fill="none" stroke="#0B1424" stroke-width="1.5"/><circle cx="12" cy="14.5" r="2.6" fill="#FF6B8A" stroke="#0B1424" stroke-width="1.3"/></svg>';
+R.roadUnits = () => A.study.order.filter(u => A.raion(u) && A.study.chapters(u).length);
+R.raionArts = unit => { let n = 0; for (const c of A.study.chapters(unit)) for (const m of c.micro) n += m.arts.length; return n; };
+R.raionUnd = unit => { let n = 0; for (const c of A.study.chapters(unit)) for (const m of c.micro) for (const x of m.arts) { const r = A.S.arts[m.act + ':' + x]; if (r && r.r && r.u) n++; } return n; };
+const hashOf = str => { let h = 0; for (const ch of String(str)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; };
+R.roadFor = unit => {
+  const N = R.raionArts(unit), k = Math.max(0, A.study.order.indexOf(unit)), vol = N / 250, mult = Math.pow(1.3, k) * vol;
+  const money = b => Math.max(100, Math.round(b * mult / 100) * 100);
+  const role = k < 3 ? 'stagiar' : k < 6 ? 'jurist' : k < 9 ? 'avocat' : 'senior';
+  const gr = 8 + 3 * k, spn = 1 + Math.floor(k / 4), bmin = Math.min(120, 30 + 6 * k);
+  const myst = [[{ k: 'lei', v: money(9000) }], [{ k: 'chest', v: 'magic' }], [{ k: 'card', role, v: 6 + k }], [{ k: 'sp', v: spn + 2 }], [{ k: 'nitro', v: 4 }, { k: 'buff', kind: 'xp', min: bmin }], [{ k: 'lei', v: money(5000) }, { k: 'gr', v: gr * 2 }]][hashOf(unit) % 6];
+  const defs = [
+    [{ k: 'lei', v: money(600) }], [{ k: 'chest', v: 'simplu' }], [{ k: 'gr', v: gr }], [{ k: 'en', v: 5 }],
+    [{ k: 'card', role, v: 2 + Math.floor(k / 2) }], [{ k: 'chest', v: 'argint' }], [{ k: 'buff', kind: k % 2 ? 'money' : 'xp', min: bmin }],
+    [{ k: 'lei', v: money(4000) }, { k: 'nitro', v: 2 }], [{ k: 'sp', v: spn }], [{ k: 'chest', v: 'aur' }], [{ k: 'mystery' }],
+    [{ k: 'chest', v: 'decan' }, { k: 'medal' }, { k: 'lei', v: money(12000) }, { k: 'paint' }],
+  ];
+  return defs.map((parts, i) => ({ i, th: Math.max(i + 1, Math.ceil(R.ROADFR[i] * N)), parts, real: parts[0].k === 'mystery' ? myst : parts, grand: i === defs.length - 1, mystery: parts[0].k === 'mystery' }));
+};
+R.partLabel = p => ({
+  lei: () => A.lei(p.v), chest: () => E().CHESTS[p.v].name, gr: () => `${p.v} puncte-grilă`, sp: () => `${p.v} ${p.v === 1 ? 'punct-speță' : 'puncte-speță'}`,
+  en: () => 'energie plină', card: () => `${p.v} cartonașe de ${E().ROLES[p.role].name.toLowerCase()}`, buff: () => `${p.kind === 'xp' ? 'XP dublu' : 'Onorarii duble'} · ${p.min} min`,
+  nitro: () => `${p.v} × nitro`, medal: () => 'Medalia raionului (+2% onorarii, pentru totdeauna)', paint: () => 'o vopsea nouă pentru mașini', mystery: () => 'Plic sigilat · surpriză',
+}[p.k])();
+R.partIco = p => p.k === 'chest' ? ICO.chest(p.v) : ICO[({ lei: 'lei', gr: 'gr', sp: 'sp', en: 'en', card: 'card', buff: 'buff', nitro: 'nitro', paint: 'paint', medal: 'medal', mystery: 'mystery' })[p.k]];
+R.roadLabel = m => m.parts.map(R.partLabel).join(' + ');
+const roadRec = unit => { const a = st(); a.roadR = a.roadR || {}; return (a.roadR[unit] = a.roadR[unit] || {}); };
+R.roadReadyIn = unit => { if (!A.study.unitOpen(unit)) return []; const n = R.raionUnd(unit), rec = roadRec(unit); return R.roadFor(unit).filter(m => m.th <= n && !rec[m.i]); };
+R.roadReady = () => R.roadUnits().flatMap(u => R.roadReadyIn(u));
 R.roadCheck = () => { const r = R.roadReady(); if (r.length && !st()._roadToast) { st()._roadToast = 1; A.toast(`${ICO.xp}<span><b>Calea Atlasului:</b> o recompensă te așteaptă în Lectură.</span>`); setTimeout(() => { delete st()._roadToast; }, 60e3); } };
-R.roadClaim = th => {
-  const x = R.ROAD.find(y => y[0] === th), a = st(); if (!x || a.road[th] || R.understoodCount() < th) return false;
-  const [, k, v] = x;
-  if (k === 'chest') { if (!E().s().started) { A.toast('Înființează biroul ca să primești dosare.'); return false; } }
-  if (k === 'lei') { if (!E().s().started) { A.toast('Înființează biroul ca să primești onorarii.'); return false; } E().earn(v / E().feeMult()); }
-  if (k === 'gr') A.S.points.grile += v; if (k === 'sp') A.S.points.spete += v;
-  if (k === 'en') { a.energy.n = R.EMAX; a.energy.at = Date.now(); }
-  a.road[th] = A.today(); A.store.save(); A.sound('chest'); A.buzz([20, 40, 20]); A.hud();
-  if (k === 'chest') E().openChest(null, false, v);   // dosarele din Calea Atlasului se deschid imediat, fără slot și fără așteptare
+R.roadClaim = (unit, i) => {
+  const m = R.roadFor(unit)[i], rec = roadRec(unit); if (!m || rec[i] || !A.study.unitOpen(unit) || R.raionUnd(unit) < m.th) return false;
+  const e = E(), s = e.s();
+  if (m.real.some(p => !['gr', 'sp', 'en', 'medal'].includes(p.k)) && !s.started) { A.toast('Înființează biroul ca să primești această recompensă.'); return false; }
+  let chest = null; const got = [];
+  for (const p of m.real) {
+    if (p.k === 'lei') e.earn(p.v / e.feeMult());
+    else if (p.k === 'chest') chest = p.v;
+    else if (p.k === 'gr') A.S.points.grile += p.v;
+    else if (p.k === 'sp') A.S.points.spete += p.v;
+    else if (p.k === 'en') { st().energy.n = R.EMAX; st().energy.at = Date.now(); }
+    else if (p.k === 'card') s.cards[p.role] = (s.cards[p.role] || 0) + p.v;
+    else if (p.k === 'buff') R.buff(p.kind, 2, p.min, p.kind === 'xp' ? 'XP dublu' : 'Onorarii duble');
+    else if (p.k === 'nitro') s.nitro += p.v;
+    else if (p.k === 'medal') { const a = st(); a.medals = a.medals || []; if (!a.medals.includes(unit)) a.medals.push(unit); }
+    else if (p.k === 'paint') { const free = e.PAINTS.filter(x => !s.owned.paints.includes(x[1])); if (free.length) { const x = free[hashOf(unit) % free.length]; s.owned.paints.push(x[1]); got.push('Vopsea: ' + x[0]); } else e.earn(5000 / e.feeMult()); }
+  }
+  rec[i] = A.today(); A.store.save(); A.sound('chest'); A.buzz([20, 40, 20]); A.hud();
+  if (m.mystery) A.toast(`<b>Plic sigilat:</b>&nbsp;${A.esc(m.real.map(R.partLabel).join(' + '))}`, 5000);
+  if (got.length) A.toast(A.esc(got.join(' · ')), 4000);
+  if (chest) e.openChest(null, false, chest);   // dosarele de pe cale se deschid imediat, fără slot și fără așteptare
   return true;
 };
+R.roadUnit = () => { const a = st(), cur = A.study.current(), list = R.roadUnits(); return list.includes(a.roadSel) ? a.roadSel : (list.includes(cur) ? cur : list[list.length - 1] || list[0]); };
 R.roadStrip = () => {
-  const n = R.understoodCount(), a = st(), nextI = R.ROAD.findIndex(x => x[0] > n), ready = R.roadReady().length;
-  const prev = nextI <= 0 ? 0 : R.ROAD[nextI - 1][0], nx = nextI < 0 ? null : R.ROAD[nextI];
-  return `<a class="road" href="#/calea">${ready ? `<b class="nb">${ready}</b>` : ''}<div class="rd-h"><b>Calea Atlasului</b><small>${A.fmt(n)} articole rezumate</small></div>
-    ${nx ? `<div class="rd-next">${R.roadIco(nx)}<span><small>la ${nx[0]}</small><b>${A.esc(R.roadLabel(nx))}</b></span></div><span class="rd-bar"><i style="width:${Math.round((n - prev) / (nx[0] - prev) * 100)}%"></i></span>` : '<div class="rd-next"><b>Ai parcurs toată calea.</b></div>'}</a>`;
+  const unit = R.roadUnit(); if (!unit) return '';
+  const n = R.raionUnd(unit), ms = R.roadFor(unit), ready = R.roadReady().length, nx = ms.find(x => x.th > n), prev = ms.filter(x => x.th <= n).pop();
+  const pre = prev ? prev.th : 0;
+  return `<a class="road" href="#/calea/${unit}">${ready ? `<b class="nb">${ready}</b>` : ''}<div class="rd-h"><b>Calea Atlasului</b><small>${A.esc(A.raion(unit).name)} · ${A.fmt(n)}/${A.fmt(R.raionArts(unit))} articole înțelese</small></div>
+    ${nx ? `<div class="rd-next">${R.partIco(nx.parts[0])}<span><small>la ${nx.th}</small><b>${A.esc(R.roadLabel(nx))}</b></span></div><span class="rd-bar"><i style="width:${Math.round((n - pre) / (nx.th - pre) * 100)}%"></i></span>` : '<div class="rd-next"><b>Ai parcurs toată calea raionului.</b></div>'}</a>`;
 };
-A.route('calea', async view => {
-  const n = R.understoodCount(), a = st();
-  view.innerHTML = `<div class="calea"><a class="backlink" href="#/lectura">‹ Lectură</a><h1>Calea Atlasului</h1><p class="muted">Fiecare articol rezumat te duce mai departe. Ai ${A.fmt(n)}.</p>
-    <div class="cl-list">${R.ROAD.map(x => { const [th] = x, got = a.road[th], ok = n >= th;
-      return `<div class="cl ${got ? 'got' : ok ? 'ready' : 'far'}"><span class="cl-th">${th}</span><span class="cl-ic">${R.roadIco(x)}</span><span class="cl-t"><b>${A.esc(R.roadLabel(x))}</b><small>${got ? 'primită' : ok ? 'gata de luat' : `încă ${th - n} articole`}</small></span>${ok && !got ? `<button class="btn primary small" data-th="${th}">Ia</button>` : got ? '<span class="cl-ok">✓</span>' : ''}</div>`; }).join('')}</div></div>`;
-  A.$$('[data-th]', view).forEach(b => b.onclick = () => { if (R.roadClaim(+b.dataset.th)) A.render(); });
+A.route('calea', async (view, [u0]) => {
+  const units = R.roadUnits(), a = st(); if (u0 && units.includes(u0)) { a.roadSel = u0; A.store.save(); }
+  const unit = R.roadUnit(), ra = A.raion(unit), n = R.raionUnd(unit), N = R.raionArts(unit), rec = roadRec(unit), ms = R.roadFor(unit), open = A.study.unitOpen(unit), med = (a.medals || []).length;
+  view.innerHTML = `<div class="calea"><a class="backlink" href="#/lectura">‹ Lectură</a><h1>Calea Atlasului</h1>
+    <div class="cl-chips">${units.map(x => { const rd = R.roadReadyIn(x).length, lock = !A.study.unitOpen(x); return `<a class="cl-chip ${x === unit ? 'on' : ''} ${lock ? 'lock' : ''}" href="#/calea/${x}">${lock ? '🔒 ' : ''}${A.esc(A.raion(x).name)}${rd ? `<b>${rd}</b>` : ''}</a>`; }).join('')}</div>
+    <p class="muted">${A.esc(ra.name)}: ${A.fmt(n)} din ${A.fmt(N)} articole înțelese.${med ? ` Medalii: ${med} (+${med * 2}% onorarii).` : ''}</p>
+    ${open ? '' : '<div class="lockbar"><b>Raion încă blocat.</b> Poți vedea premiile, dar le deschizi abia când ajungi aici.</div>'}
+    <div class="cl-list"><div class="cl-start">▲ Start · urci spre marele premiu</div>${ms.map(m => { const got = rec[m.i], ok = open && n >= m.th;
+      return `<div class="cl ${got ? 'got' : ok ? 'ready' : 'far'} ${m.grand ? 'grand' : ''}"><span class="cl-th">${m.th}</span><span class="cl-ic">${R.partIco(m.parts[0])}</span><span class="cl-t"><b>${m.grand ? 'Marele premiu · ' : ''}${A.esc(R.roadLabel(m))}</b><small>${got ? 'primită' : ok ? 'gata de luat' : `încă ${Math.max(0, m.th - n)} articole`}</small></span>${ok && !got ? `<button class="btn primary small" data-i="${m.i}">Ia</button>` : got ? '<span class="cl-ok">✓</span>' : ''}</div>`; }).join('')}</div></div>`;
+  A.$$('[data-i]', view).forEach(b => b.onclick = () => { if (R.roadClaim(unit, +b.dataset.i)) A.render(); });
   const first = A.$('.cl.ready, .cl.far', view); first && first.scrollIntoView({ block: 'center' });
 });
 

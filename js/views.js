@@ -661,6 +661,13 @@ A.route('profil', async view => {
 
 /* ======================= UPDATE (istoricul modificărilor) ======================= */
 A.CHANGELOG = [
+  { v: '2 noiembrie 2026 · Calea Atlasului pe raioane', items: [
+    'Fiecare raion are acum propria Cale a Atlasului (Chișinău, Ialoveni, Strășeni, Criuleni, Orhei, Telenești, Rezina, Hîncești, Leova, Călărași, Anenii Noi, Căușeni, Nisporeni, Ștefan Vodă). Treci de la un raion la altul din chip-urile de sus.',
+    'Calea are 12 trepte, calculate din numărul de articole al raionului, și se urcă de jos în sus, până la marele premiu din vârf.',
+    'Premiile cresc cu etapa: cu cât raionul vine mai târziu în joc și are mai multe articole, cu atât banii, punctele, cartonașele și buff-urile sunt mai mari.',
+    'Noutăți: plic sigilat cu surpriză, cartonașe de angajați potrivite etapei, buff-uri XP dublu sau onorarii duble, nitro, o vopsea nouă pentru mașini și Medalia raionului (+2% onorarii pentru totdeauna) la marele premiu, împreună cu un dosar legendar.',
+    'Progresul vechi al căii globale a fost înlocuit de căile pe raioane.',
+  ] },
   { v: '2 noiembrie 2026 · Calea Atlasului', items: [
     'Dosarele primite de pe Calea Atlasului se deschid imediat la apăsarea „ia”, fără slot, fără așteptare și fără puncte-speță.',
   ] },

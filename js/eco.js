@@ -120,7 +120,7 @@ E.understood = () => A.memo('und', () => Object.values(A.S.arts).filter(r => r.r
 /* ---------------- bani și multiplicatori ---------------- */
 E.buffMult = kind => { let m = 1; for (const b of Object.values(E.s().buffs)) if (b.kind === kind && b.until > Date.now()) m *= b.mult; return m; };
 E.prestige = () => { const s = E.s(); return Math.max(0, ...s.fleet.map(c => E.CARS[c.tier][3])); };
-E.feeMult = () => E.perkMult('onorarii', .06) * (1 + A.game.stampBonus()) * (1 + 0.03 * A.raioane.filter(r => A.conquered(r.unit)).length + (A.S.conq && A.S.conq.__decan ? .1 : 0)) * (1 + E.prestige()) * E.buffMult('money');
+E.feeMult = () => E.perkMult('onorarii', .06) * (1 + A.game.stampBonus()) * (1 + 0.03 * A.raioane.filter(r => A.conquered(r.unit)).length + (A.S.conq && A.S.conq.__decan ? .1 : 0)) * (1 + E.prestige()) * (1 + 0.02 * ((A.S.arena && A.S.arena.medals) || []).length) * E.buffMult('money');
 E.earn = (n, at) => {
   const s = E.s(); if (!s) return 0;
   n = Math.round(n * E.feeMult());

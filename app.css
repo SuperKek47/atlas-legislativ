@@ -987,3 +987,17 @@ table.staff td.free { color: var(--forest); }
 .sprow { text-decoration: none; }
 .taxcalc .field[hidden] { display: none; }
 .taxcalc { padding: 16px; margin: 0 auto; }
+
+/* ---- Calea Atlasului pe raioane: de jos în sus ---- */
+.calea .cl-list { flex-direction: column-reverse; }
+.calea .cl-start { order: 0; text-align: center; font-size: 12px; color: var(--ink-3, #889); padding: 6px 0 0 56px; }
+.cl-chips { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0 12px; scrollbar-width: none; }
+.cl-chips::-webkit-scrollbar { display: none; }
+.cl-chip { position: relative; flex: none; padding: 8px 14px; border-radius: 999px; border: 2px solid var(--outline, #123); background: #14233C; color: #fff; text-decoration: none; font-weight: 700; font-size: 13.5px; white-space: nowrap; }
+.cl-chip.on { background: linear-gradient(180deg, #FFE27A, #FFB923); color: #3A2300; }
+.cl-chip.lock { opacity: .6; }
+.cl-chip b { position: absolute; top: -7px; right: -4px; min-width: 18px; height: 18px; line-height: 18px; text-align: center; border-radius: 9px; background: #E5484D; color: #fff; font-size: 11px; }
+.cl.grand { padding: 14px 12px 14px 0; border-radius: 16px; background: linear-gradient(90deg, rgba(255,200,58,.18), transparent); }
+.cl.grand .cl-th { background: linear-gradient(180deg, #FFE27A, #FFB923); color: #3A2300; }
+.cl.grand .cl-ic svg, .cl.grand .cl-ic .ich { transform: scale(1.35); transform-origin: center; }
+.cl.grand .cl-t b { font-size: 16px; color: #FFD54A; }
