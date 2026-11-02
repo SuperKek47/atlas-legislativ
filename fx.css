@@ -74,3 +74,6 @@ table.staff .av img { width: 100%; height: 100%; object-fit: cover; object-posit
 .nlist .ni.t-err { border-left-color: #FF6B6B; } .nlist .ni.t-rew { border-left-color: #2DBF8A; } .nlist .ni.t-evt { border-left-color: #B28CFF; }
 .nlist .ni .ti { width: 22px; height: 22px; flex: none; } .nlist .ni .ti svg { width: 100%; height: 100%; }
 .nlist .ni span { flex: 1; } .nlist .ni small { opacity: .6; white-space: nowrap; }
+
+.btn.tts { background: linear-gradient(180deg,#6FC3FF,#3C86D9); color:#fff; border-color:#0B1424; text-shadow:0 1px 0 rgba(0,0,0,.4); }
+.btn.tts.on { background: linear-gradient(180deg,#FFE08A,#F2A100); color:#3A2300; text-shadow:none; }

@@ -312,6 +312,7 @@ A.route('act', async (view, args) => {
           <button class="btn read ${rec.r ? 'on' : ''}" data-act="read">${rec.r ? 'Citit' : 'Marchează citit'}</button>
           <button class="btn und ${rec.u ? 'on' : ''}" data-act="und">${rec.u ? 'Înțeles · rezumat' : 'Am înțeles'}</button>
           <button class="btn star ${rec.st ? 'on' : ''}" data-act="star" aria-label="Marcaj">★</button>
+          ${A.tts.supported() ? `<button class="btn tts" data-tts="${a.id}" aria-label="Ascultă articolul">🔊 Ascultă</button>` : ''}
           <button class="btn" data-act="note">${rec.n ? 'Notă' : 'Adaugă notă'}</button>
           <button class="btn appl ${rec.ap ? 'on' : ''}" data-act="appl">${rec.ap ? 'Aplicat · cazul' : 'Aplicat la un caz'}</button></div>
           ${rec.sum ? `<div class="mysum"><small>Rezumatul tău</small>${A.esc(rec.sum)}</div>` : ''}
@@ -344,6 +345,8 @@ A.route('act', async (view, args) => {
     A.$('.page-inner', view).innerHTML = `<div class="chaphead"><div><div class="crumb">${A.esc(act.meta.name)}</div><h1>${A.esc(anx.label)}</h1>${anx.title ? `<div class="intro">${A.esc(anx.title)}</div>` : ''}</div></div>
       <div class="art" style="grid-template-columns:1fr"><div class="body">${anx.blocks.map(b => { const lvl = b.k === 'pct' ? Math.min(4, b.lvl) : 1; return A.blockHTML(Object.assign({}, b, { lvl, k: b.k === 'pct' ? 'pct' : b.k }), id, b.head ? 'head' : ''); }).join('')}</div></div>`;
   }
+  // citirea vocală a articolelor (motorul dispozitivului)
+  if (A.tts.supported()) A.tts.bind(view, act);
   // acțiuni pe articole
   A.$$('.art', view).forEach(el => {
     const aid = el.dataset.a; if (!aid) return;
@@ -727,6 +730,8 @@ A.route('setari', async view => {
   view.innerHTML = `<div class="settings"><a class="backlink" href="#/firma">‹ Biroul</a><h1>Setări</h1>
     <div class="row"><div><b>Obiectivul zilnic</b><small>Câte XP vrei să aduni în fiecare zi.</small></div><select id="goal">${[30, 60, 100, 150, 250].map(g => `<option ${g === st.goal ? 'selected' : ''}>${g}</option>`).join('')}</select></div>
     <div class="row"><div><b>Sunet</b><small>Efecte scurte la XP, monede și ștampile.</small></div><select id="snd"><option value="1" ${st.sound ? 'selected' : ''}>Pornit</option><option value="0" ${!st.sound ? 'selected' : ''}>Oprit</option></select></div>
+    <div class="row"><div><b>Viteza vocii</b><small>Pentru citirea articolelor (butonul 🔊).</small></div><select id="ttsr">${[[.5, '×0,5'], [.75, '×0,75'], [1, '×1'], [1.25, '×1,25'], [1.5, '×1,5'], [2, '×2']].map(([v, n]) => `<option value="${v}" ${Math.abs((st.ttsRate || 1) - v) < .01 ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+    ${A.tts.supported() ? `<div class="row"><div><b>Vocea</b><small>Vocile românești instalate pe dispozitiv. Pe iPhone: Setări → Accesibilitate → Conținut rostit → Voci.</small></div><select id="ttsv">${A.tts.voices().map(v => `<option value="${A.esc(v.voiceURI)}" ${st.ttsVoice === v.voiceURI ? 'selected' : ''}>${A.esc(v.name)}</option>`).join('') || '<option value="">Nu există voci românești</option>'}</select></div>` : ''}
     <div class="row"><div><b>Volum</b><small>Cât de tare sunt sunetele jocului.</small></div><select id="vol">${[[.3, 'Mic'], [.6, 'Mediu'], [.8, 'Normal'], [1, 'Maxim']].map(([v, n]) => `<option value="${v}" ${Math.abs((st.volume == null ? .8 : st.volume) - v) < .05 ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
     <div class="row"><div><b>Efecte vizuale</b><small>Confetti, monede și cartonașe care zboară spre bara de sus. „Reduse” le oprește.</small></div><select id="fxs"><option value="1" ${st.fx !== false ? 'selected' : ''}>Complete</option><option value="0" ${st.fx === false ? 'selected' : ''}>Reduse</option></select></div>
     <div class="row"><div><b>Vibrații</b><small>Vibrație scurtă la dosare, victorii și nivel nou, pe telefoanele care o permit. iPhone nu permite vibrații aplicațiilor web.</small></div><select id="vib"><option value="1" ${st.vib !== false ? 'selected' : ''}>Pornite</option><option value="0" ${st.vib === false ? 'selected' : ''}>Oprite</option></select></div>
@@ -749,6 +754,8 @@ A.route('setari', async view => {
   A.$('#goal', view).onchange = e => { st.goal = +e.target.value; A.store.save(); A.hud(); };
   A.$('#snd', view).onchange = e => { st.sound = e.target.value === '1'; A.store.save(); A.sound('ok'); };
   A.$('#notifs', view).onclick = () => A.fx.notifs();
+  A.$('#ttsr', view).onchange = e => { st.ttsRate = +e.target.value; A.store.save(); };
+  const tv = A.$('#ttsv', view); if (tv) tv.onchange = e => { st.ttsVoice = e.target.value; A.store.save(); };
   A.$('#vol', view).onchange = e => { st.volume = +e.target.value; A.store.save(); A.sound('claim'); };
   A.$('#fxs', view).onchange = e => { st.fx = e.target.value === '1'; A.store.save(); if (st.fx) A.fx.confetti('small'); };
   A.$('#vib', view).onchange = e => { st.vib = e.target.value === '1'; A.store.save(); A.buzz(30); };
