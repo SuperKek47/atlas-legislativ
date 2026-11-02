@@ -33,10 +33,6 @@
    "name": "Drept constituțional",
    "color": "#6B4A2B"
   },
-  "avocatura": {
-   "name": "Avocatură",
-   "color": "#4B4B4B"
-  },
   "proc-penal": {
    "name": "Procedură penală",
    "color": "#9A3B52"
@@ -61,10 +57,6 @@
    "name": "Dreptul mediului",
    "color": "#2E7D5B"
   },
-  "filosofie": {
-   "name": "Filosofia dreptului",
-   "color": "#5B4A7A"
-  },
   "fiscal": {
    "name": "Drept fiscal",
    "color": "#8C7A1C"
@@ -72,6 +64,14 @@
   "cedo": {
    "name": "CEDO și drepturile omului",
    "color": "#1F4E8C"
+  },
+  "afaceri": {
+   "name": "Dreptul afacerilor",
+   "color": "#2F6B5E"
+  },
+  "insolventa": {
+   "name": "Insolvență",
+   "color": "#6B4A5E"
   }
  },
  "raioane": [
@@ -440,13 +440,13 @@
   },
   {
    "unit": "cimislia",
-   "disc": "filosofie",
-   "title": "Filosofia dreptului"
+   "disc": "insolventa",
+   "title": "Insolvența"
   },
   {
    "unit": "ungheni",
-   "disc": "avocatura",
-   "title": "Avocatură"
+   "disc": "afaceri",
+   "title": "Dreptul afacerilor"
   },
   {
    "unit": "gagauzia",
