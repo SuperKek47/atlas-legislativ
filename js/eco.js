@@ -85,7 +85,7 @@ E.useBoost = key => {
 };
 E.dropBoost = key => { const B = E.boosts(); if (!B[key]) return; B[key].n--; if (B[key].n <= 0) delete B[key]; A.store.save(); };
 E.QUESTS = [
-  ['read', 'Citește {n} articole', [8, 12, 20]], ['und', 'Rezumă {n} articole', [3, 5, 8]], ['correct', 'Răspunde corect la {n} întrebări', [10, 15, 25]],
+  ['read', 'Citește {n} articole', [8, 12, 20]], ['und', 'Înțelege {n} articole (test de bloc)', [3, 5, 8]], ['correct', 'Răspunde corect la {n} întrebări', [10, 15, 25]],
   ['consult', 'Termină {n} consultații', [2, 3, 5]], ['won', 'Câștigă {n} procese', [1, 2, 3]],
   ['chest', 'Deschide {n} dosare-cufăr', [1, 2]], ['refs', 'Deschide {n} trimiteri', [5, 10]],
   ['spete', 'Rezolvă {n} spețe', [1, 2, 3]], ['play', 'Joacă {n} runde PLAY', [1, 2, 3]], ['perfect', 'Termină {n} runde PLAY cu toate răspunsurile corecte', [1, 2]],
@@ -154,13 +154,13 @@ E.staffXpMult = () => 1;
 
 /* ---------------- echipa ---------------- */
 E.capacity = () => E.OFFICES[E.s().office][1];
-/* limita de angajați: sediul și articolele înțelese (2 + câte unul la 30 de articole rezumate) */
+/* limita de angajați: sediul și articolele înțelese (2 + câte unul la 30 de articole înțelese) */
 E.staffLimit = () => Math.min(E.capacity() + E.perk('loc'), 2 + E.perk('loc') + Math.floor(E.understood() / 30));
 E.HIRE_GAP = 24 * 3600e3;   // cel mult o angajare pe zi reală
 E.hireBlock = () => {
   const s = E.s();
   if (s.staff.length >= E.capacity()) return `Biroul e plin (${E.capacity()} locuri). Mută-te într-un sediu mai mare.`;
-  if (s.staff.length >= E.staffLimit()) return `Limita ta e de ${E.staffLimit()} oameni. Rezumă încă ${30 - E.understood() % 30} articole ca să mai poți angaja unul.`;
+  if (s.staff.length >= E.staffLimit()) return `Limita ta e de ${E.staffLimit()} oameni. Înțelege încă ${30 - E.understood() % 30} articole (teste de bloc) ca să mai poți angaja unul.`;
   if (Date.now() - (s.lastHire || 0) < E.HIRE_GAP) return `Următoarea angajare peste ${A.dur(s.lastHire + E.HIRE_GAP - Date.now())}.`;
   return null;
 };

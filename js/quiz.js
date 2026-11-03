@@ -228,7 +228,12 @@ Q.run = async (view, opt) => {
   const root = document.createElement('div'); root.className = 'quiz'; view.innerHTML = ''; view.appendChild(root);
 
   const finish = () => {
+    if (st.paid) return; st.paid = true;
     A.guardStop();
+    /* recompensele jocului se dau acum, la sfârșit */
+    st.xp = st.xp > 0 ? Math.round(A.game.addXP(st.xp) || 0) : 0; st.money = st.money > 0 && A.eco ? Math.round(A.eco.earn(st.money, null, 'antrenament')) : 0;
+    if (st.gr) A.S.points.grile = (A.S.points.grile || 0) + st.gr;
+    if (st.nitro && A.eco) A.eco.addNitro(st.nitro);
     A.timers.forEach(t => clearInterval(t)); A.timers = [];
     const acc = st.answered ? st.ok / st.answered : 0;
     A.S.quiz.sessions++; A.store.save();
@@ -319,17 +324,15 @@ Q.run = async (view, opt) => {
       if (crit) { mult *= 3; A.S.quiz.crits[A.today()] = (A.S.quiz.crits[A.today()] || 0) + 1; }
       const r = el ? el.getBoundingClientRect() : { left: innerWidth / 2, top: innerHeight / 2, width: 0 };
       const hm = cur.hintMult || 1;
-      const xp = A.game.addXP(5 * mult * hm, { x: r.left + r.width - 60, y: r.top });
-      st.xp += xp;
-      const money = A.eco ? A.eco.earn(12 * mult * hm, null, 'antrenament') : 0; st.money += money;
-      if (cur.kind === 'bank') { A.S.points.grile++; gained += ' +1 grilă.'; }
+      st.xp += 5 * mult * hm; st.money += 12 * mult * hm;   // recompensele se acordă la sfârșitul jocului
+      if (cur.kind === 'bank') st.gr = (st.gr || 0) + 1;
       if (cur.study && A.study && A.study.credit) A.study.credit(cur.study.m, cur.study.id);
       if (crit) A.fly('Lovitură critică!', r.left + 40, r.top - 10, true);
       A.sound(crit ? 'claim' : 'ok'); A.fx.combo(true);
       if (cur.key) A.game.review(cur.key, true);
       if (cur.card && !A.S.album[cur.card]) { A.S.album[cur.card] = cur.cardLabel; gained = ' Termen nou în album.'; }
       if (cur.kind === 'tax') A.S.quiz.taxOk++;
-      if (st.combo > 0 && st.combo % 10 === 0 && A.eco) { A.eco.addNitro(1); gained += ' +1 nitro pentru combo.'; }
+      if (st.combo > 0 && st.combo % 10 === 0 && A.eco) { st.nitro = (st.nitro || 0) + 1; gained += ' Nitro pentru combo la final.'; }
       if (opt.lives && st.ok % 5 === 0) st.heat = Math.min(5, st.heat + 1);
     } else {
       st.combo = 0; if (opt.lives) st.lives--;

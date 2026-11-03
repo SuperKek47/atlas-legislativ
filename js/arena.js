@@ -41,7 +41,7 @@ R.ICO = ICO;
 R.victory = o => {
   const el = R.layer('victory ' + (o.win ? 'win' : 'lose'), `
     <div class="vbox">
-      <div class="vbanner"><span>${o.win ? 'VICTORIE' : 'ÎNFRÂNGERE'}</span></div>
+      <div class="vbanner"><span>${o.banner || (o.win ? 'VICTORIE' : 'ÎNFRÂNGERE')}</span></div>
       <div class="crowns">${[0, 1, 2].map(() => CROWN(false)).join('')}</div>
       ${o.title ? `<h2 class="vtitle">${A.esc(o.title)}</h2>` : ''}
       ${o.sub ? `<p class="vsub">${o.sub}</p>` : ''}
@@ -125,7 +125,7 @@ R.levelUp = (L, rank, promo, nextRank, chest) => {
 };
 
 /* ================= ENERGIA PENTRU PLAY ================= */
-R.EMAX = 5; R.EREGEN = 30 * 60e3; R.EPER_UND = 3;
+R.EMAX = 5; R.EREGEN = 30 * 60e3; R.EPER_UND = 5;
 R.energy = () => { const a = st(), e = a.energy, n = Date.now();
   if (e.n >= R.EMAX) { e.at = n; return { n: e.n, next: 0 }; }
   const k = Math.floor((n - e.at) / R.EREGEN); if (k > 0) { e.n = Math.min(R.EMAX, e.n + k); e.at += k * R.EREGEN; if (e.n >= R.EMAX) e.at = n; }
@@ -133,11 +133,11 @@ R.energy = () => { const a = st(), e = a.energy, n = Date.now();
 R.energyHTML = () => { const e = R.energy(); return `<div class="energy" title="Energie: fiecare PLAY consumă una">${ICO.en}<span class="pips">${Array.from({ length: R.EMAX }, (_, i) => `<i class="${i < e.n ? 'on' : ''}"></i>`).join('')}</span><small>${e.n >= R.EMAX ? 'plin' : '+1 în ' + E().shortDur(e.next)}</small></div>`; };
 R.useEnergy = () => {
   const e = R.energy(); if (e.n > 0) { st().energy.n--; if (st().energy.n === R.EMAX - 1) st().energy.at = Date.now(); A.store.save(); return true; }
-  const m = A.modal(`<div class="noen">${ICO.en}</div><h2>Fără energie</h2><p>Fiecare PLAY consumă o energie. Primești una la fiecare ${R.EPER_UND} articole rezumate sau una la 30 de minute. Următoarea vine peste ${E().shortDur(e.next)}.</p>
+  const m = A.modal(`<div class="noen">${ICO.en}</div><h2>Fără energie</h2><p>Fiecare PLAY consumă o energie. Primești una la fiecare ${R.EPER_UND} articole înțelese sau una la 30 de minute. Următoarea vine peste ${E().shortDur(e.next)}.</p>
     <div class="mbtns"><a class="btn primary" href="#/lectura" data-close>Mergi la lectură</a><button class="btn" data-close>Aștept</button></div>`);
   A.sound('warn'); return false;
 };
-R.onUnderstood = () => { const a = st(); a.undCnt++; if (a.undCnt % R.EPER_UND === 0) { const e = R.energy(); if (e.n < R.EMAX) { a.energy.n++; A.toast(`${ICO.en}<span><b>+1 energie</b> pentru ${R.EPER_UND} articole rezumate</span>`); } } R.roadCheck(); A.store.save(); };
+R.onUnderstood = () => { const a = st(); a.undCnt++; if (a.undCnt % R.EPER_UND === 0) { const e = R.energy(); if (e.n < R.EMAX) { a.energy.n++; A.toast(`${ICO.en}<span><b>+1 energie</b> pentru ${R.EPER_UND} articole înțelese</span>`); } } R.roadCheck(); A.store.save(); };
 
 /* ================= SERIA DE ZILE ================= */
 R.STREAK = [[3, 'argint', 0], [7, 'aur', 0], [14, 'magic', 5000], [30, 'decan', 0], [60, 'decan', 20000], [100, 'decan', 50000]];
@@ -159,7 +159,8 @@ ICO.medal = '<svg viewBox="0 0 24 24"><path d="M7 2h4l1 6H6zM17 2h-4l-1 6h6z" fi
 ICO.mystery = '<svg viewBox="0 0 24 24"><rect x="3.5" y="6" width="17" height="13" rx="2.5" fill="#B9A7FF" stroke="#0B1424" stroke-width="1.5"/><path d="M3.5 9l8.5 5 8.5-5" fill="none" stroke="#0B1424" stroke-width="1.5"/><circle cx="12" cy="14.5" r="2.6" fill="#FF6B8A" stroke="#0B1424" stroke-width="1.3"/></svg>';
 R.roadUnits = () => A.study.order.filter(u => A.raion(u) && A.study.chapters(u).length);
 R.raionArts = unit => { let n = 0; for (const c of A.study.chapters(unit)) for (const m of c.micro) n += m.arts.length; return n; };
-R.raionUnd = unit => { let n = 0; for (const c of A.study.chapters(unit)) for (const m of c.micro) for (const x of m.arts) { const r = A.S.arts[m.act + ':' + x]; if (r && r.r && r.u) n++; } return n; };
+/* steaua articolului: jumătate = citit, întreagă = înțeles (test de bloc trecut) */
+R.raionUnd = unit => { let n = 0; for (const c of A.study.chapters(unit)) for (const m of c.micro) for (const x of m.arts) { const r = A.S.arts[m.act + ':' + x]; if (r && r.r) n += r.u ? 1 : .5; } return Math.floor(n); };
 const hashOf = str => { let h = 0; for (const ch of String(str)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; };
 R.roadFor = unit => {
   const N = R.raionArts(unit), k = Math.max(0, A.study.order.indexOf(unit)), vol = N / 250, mult = Math.pow(1.3, k) * vol;
@@ -391,4 +392,33 @@ R.init = () => {
   } catch (e) { } };
 };
 R.init();
+
+/* ================= MENIUL PLAY: toate tipurile de joc într-un singur loc ================= */
+R.playMenu = () => {
+  const due = A.game.dueKeys().length, sel = A.S.settings.scope || 'citite';
+  const opts = [['citite', 'Articolele citite'], ['tot', 'Toată legislația'], ...A.raioane.filter(r => A.raionActs(r).length).map(r => ['raion:' + r.unit, `${r.name} · ${A.disc[r.disc].name}`]), ...Object.entries(A.index).map(([id, a]) => ['act:' + id, a.name])];
+  const modes = [
+    ['repetare', 'Repetare', 'Articolele scadente, la intervale tot mai mari.', due ? due + ' scadente' : '', 'M4 12a8 8 0 1 1 3 6.2M4 18v-4h4', '#2E7D5B'],
+    ['grila', 'Grilă rapidă', '10 întrebări din domeniul ales.', '', 'M5 6h14M5 12h14M5 18h9', '#2B5C8A'],
+    ['urmarire', 'Urmărire', 'Trei vieți, presiune crescândă.', A.S.quiz.survivalBest ? 'record ' + A.S.quiz.survivalBest : '', 'M12 3v4M12 17v4M3 12h4M17 12h4M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0', '#B23A2E'],
+    ['termene', 'Sprint de termene', '60 de secunde, doar termene.', '', 'M12 7v5l3 3M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18', '#B98A12'],
+    ['definitii', 'Definiții', 'Noțiunile din articolele de definiții.', '', 'M5 4h10l4 4v12H5zM9 12h6M9 16h6', '#5A3F8F'],
+    ['taxa', 'Taxa de stat', 'Calculezi taxa după anexa nr. 1.', A.S.quiz.taxOk ? A.S.quiz.taxOk + ' corecte' : '', 'M6 4h12v16H6zM9 8h6M9 12h6M9 16h3', '#1F7A74'],
+    ['calculator', 'Calculator taxă', 'Taxa pentru orice cerere.', '', 'M6 3h12v18H6zM9 7h6M9 12h2M13 12h2M9 16h2M13 16h2', '#1F7A74'],
+    ['spete', 'Spețe', 'Spețele deblocate și cele rezolvate.', Object.values(A.S.spete || {}).filter(x => x.ok).length + ' rezolvate', 'M7 3h8l4 4v14H7zM10 12h6M10 16h6', '#8A4B2A'],
+    ['duel', 'Dueluri cu rivalii', 'Lista neagră: înfrunți rivalii.', '', 'M5 19L19 5M14 5h5v5M5 5l14 14', '#7A2E2E'],
+  ];
+  const m = A.modal(`<div class="pmenu"><h2>Alege jocul</h2>
+    <button type="button" class="pquick" id="pquick"><span class="pq-t"><b>Joc rapid</b><small>3 grile de examen și o speță · dosar la câștig complet</small></span><span class="pq-e">${R.energyHTML()}</span></button>
+    <label class="pscope"><span class="muted">Antrenament din</span><select id="pscope">${opts.map(([v, l]) => `<option value="${v}" ${v === sel ? 'selected' : ''}>${A.esc(l)}</option>`).join('')}</select></label>
+    <div class="pgrid">${modes.map(([id, n, d, cnt, icon, col]) => `<button type="button" class="pcard" data-pm="${id}" style="--c:${col}"><span class="pi"><svg viewBox="0 0 24 24"><path d="${icon}"/></svg></span><b>${n}</b><small>${d}</small>${cnt ? `<em>${A.esc(cnt)}</em>` : ''}</button>`).join('')}</div>
+    <p class="faint pnote">Recompensele (lei, XP, puncte) se acordă la sfârșitul jocului, nu la fiecare răspuns.</p>
+    <div class="mbtns"><button class="btn" data-close>Închide</button></div></div>`);
+  m.el.classList.add('wide');
+  const scope = () => A.$('#pscope', m.el).value;
+  A.$('#pscope', m.el).onchange = e => { A.S.settings.scope = e.target.value; A.store.save(); };
+  A.$('#pquick', m.el).onclick = () => { if (!R.useEnergy()) return; m.close(); A.sound('level'); A.fadeGo('#/joc'); };
+  A.$$('[data-pm]', m.el).forEach(b => b.onclick = () => { const id = b.dataset.pm; m.close(); A.sound('click'); A.go(id === 'duel' ? '#/cariera' : id === 'calculator' || id === 'spete' ? '#/antrenament/' + id : '#/antrenament/' + id + '/' + scope()); });
+};
+
 })();

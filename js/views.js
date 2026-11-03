@@ -102,7 +102,7 @@ A.route('harta', async view => {
   </div>`;
   const tip = document.createElement('div'); tip.className = 'maptip'; tip.hidden = true; view.appendChild(tip);
   /* PLAY: sclipire, apoi jocul apare din estompare */
-  A.$('#play', view).onclick = e => { const b = e.currentTarget; if (b.classList.contains('go')) return; if (!A.arena.useEnergy()) return; b.classList.add('go'); A.buzz([20, 40, 60]); A.sound('level'); setTimeout(() => A.fadeGo('#/joc'), 520); };
+  A.$('#play', view).onclick = e => { const b = e.currentTarget; b.classList.add('go'); setTimeout(() => b.classList.remove('go'), 600); A.buzz([20, 40]); A.sound('click'); A.arena.playMenu(); };
   A.every(5000, () => { const w = A.$('.enwrap', view); if (w) w.innerHTML = A.arena.energyHTML(); });
   /* rândul de dosare și butoanele rotunde de pe hartă */
   const dock = A.$('.dockslots', view);
@@ -304,14 +304,13 @@ A.route('act', async (view, args) => {
   const artHTML = a => {
     const k = A.key(id, a.id), rec = A.S.arts[k] || {}, dots = A.levelDots(rec), lk = !a.abrogat && lockedArt(a);
     return `<article class="art ${a.abrogat ? 'abrog' : ''} ${lk ? 'locked' : ''}" id="art-${a.id}" data-a="${a.id}">
-      <div class="gut"><div class="n">Art. ${A.esc(a.num)}</div>${a.abrogat ? '' : `<div class="lvl" title="citit · înțeles · reținut · aplicat">${dots.map(d => `<i class="${d ? 'on' : ''}"></i>`).join('')}</div>`}</div>
+      <div class="gut"><div class="n">Art. ${A.esc(a.num)}</div>${a.abrogat ? '' : `<div class="starw" title="jumătate de stea = citit · stea întreagă = înțeles">${A.block.star(rec)}</div>`}</div>
       <div>${A.tts.supported() && !a.abrogat ? `<button type="button" class="tts-ico" data-tts="${a.id}" aria-label="Ascultă articolul" title="Ascultă articolul">${A.tts.ICON}</button>` : ''}<h3>${A.esc(a.title || (a.abrogat ? 'Abrogat' : ''))}</h3>
         <div class="body">${a.blocks.map(b => A.blockHTML(b, id)).join('')}</div>
         ${comm && comm.arts && comm.arts[a.id] ? `<div class="comm">${A.esc(comm.arts[a.id])}</div>` : ''}
         ${a.abrogat || lk ? '' : `<div class="tools">
           <button class="btn read ${rec.r ? 'on' : ''}" data-act="read">${rec.r ? 'Citit' : 'Marchează citit'}</button>
-          <button class="btn und ${rec.u ? 'on' : ''}" data-act="und">${rec.u ? 'Înțeles · rezumat' : 'Am înțeles'}</button>
-          <button class="btn star ${rec.st ? 'on' : ''}" data-act="star" aria-label="Marcaj">★</button>
+          <button class="btn star ${rec.st ? 'on' : ''}" data-act="star" aria-label="Marcaj" title="Marcaj"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M6 3h12v18l-6-4-6 4z" fill="${rec.st ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
           <button class="btn" data-act="note">${rec.n ? 'Notă' : 'Adaugă notă'}</button>
           <button class="btn appl ${rec.ap ? 'on' : ''}" data-act="appl">${rec.ap ? 'Aplicat · cazul' : 'Aplicat la un caz'}</button></div>
           ${rec.sum ? `<div class="mysum"><small>Rezumatul tău</small>${A.esc(rec.sum)}</div>` : ''}
@@ -336,7 +335,7 @@ A.route('act', async (view, args) => {
       ${anyLocked ? (() => { const a0 = group.arts.find(x => !act.artById[x].abrogat && lockedArt(act.artById[x])), u = A.unitOf(id, a0), lr = A.raion(u); return A.locked(u) ? `<div class="lockbar"><b>${A.esc(lr.name)} · ${A.esc(lr.short)} nu este raionul curent.</b> Raioanele se cuceresc pe rând; textul rămâne deschis pentru consultare, dar progresul nu se numără.</div>` : `<div class="lockbar"><b>Capitol încă închis.</b> Învinge mini-bossul capitolului anterior ca să numeri progresul aici. Textul rămâne deschis pentru consultare.</div>`; })() : ''}
       ${(group.intro || []).map(t => `<p class="intro">${A.esc(t)}</p>`).join('')}
       ${comm && comm.chapters && comm.chapters[group.id] ? `<div class="comm chap"><b>Comentariu la capitol</b>${A.esc(comm.chapters[group.id])}</div>` : ''}
-      ${group.arts.map(a => artHTML(act.artById[a])).join('')}
+      ${group.arts.map(a => artHTML(act.artById[a]) + (act.artById[a].abrogat || lockedArt(act.artById[a]) ? '' : A.block.barHTML(id, a))).join('')}
       <div class="chapnav">${prev ? `<a class="btn" href="#/act/${id}/g/${prev.id}">← ${A.esc(prev.label)} ${A.esc(prev.name).slice(0, 40)}</a>` : '<span></span>'}${next ? `<a class="btn primary" href="#/act/${id}/g/${next.id}">${A.esc(next.label)} ${A.esc(next.name).slice(0, 40)} →</a>` : ''}</div>`}
     </div></div></div>`;
   if (mode === 'anexa') {
@@ -346,6 +345,19 @@ A.route('act', async (view, args) => {
   }
   // citirea vocală a articolelor (motorul dispozitivului)
   if (A.tts.supported()) A.tts.bind(view);
+  // testul de bloc: după test se reîmprospătează articolele și bara blocului
+  const refreshBlock = (mid, bi) => {
+    const m = A.study.microById[mid]; if (!m) return;
+    for (const a of A.study.blocks(m)[bi]) {
+      const el = A.$('#art-' + a, view); if (!el || !act.artById[a]) continue;
+      const tmp = document.createElement('div'); tmp.innerHTML = artHTML(act.artById[a]); el.innerHTML = tmp.firstElementChild.innerHTML; bindNote(el);
+    }
+    const bar = A.$(`.blkbar[data-blk="${mid}"][data-bi="${bi}"]`, view);
+    if (bar) { const tmp = document.createElement('div'); tmp.innerHTML = A.block.barHTML(id, A.study.blocks(m)[bi].slice(-1)[0]); if (tmp.firstElementChild) bar.replaceWith(tmp.firstElementChild); }
+    const mS2 = A.study.microStats(m), cp = A.$('.curprog', view); if (cp && curM && curM.id === m.id) { const b = A.$('b', cp); if (b) b.textContent = `${mS2.und} din ${mS2.n} articole înțelese`; const f = A.$('.bar i', cp); if (f) f.style.width = (mS2.und / mS2.n * 100) + '%'; }
+  };
+  view._blkRefresh = refreshBlock;
+  if (!view._blkBound) { view._blkBound = true; A.block.bind(view, (mid, bi) => view._blkRefresh && view._blkRefresh(mid, bi)); }
   // acțiuni pe articole
   A.$$('.art', view).forEach(el => {
     const aid = el.dataset.a; if (!aid) return;
@@ -354,7 +366,6 @@ A.route('act', async (view, args) => {
       const r = b.getBoundingClientRect(), at = { x: r.left + r.width / 2, y: r.top };
       const k = b.dataset.act;
       if (k === 'read' && A.game.markRead(id, aid, at)) A.eco.quest('read', 1);
-      if (k === 'und') return summaryModal(aid, at, refreshArt);
       if (k === 'star') A.game.toggleStar(id, aid);
       if (k === 'note') { const box = A.$('.mynote', el); box.hidden = !box.hidden; if (!box.hidden) A.$('textarea', box).focus(); return; }
       if (k === 'appl') return caseModal(aid, refreshArt);
@@ -497,8 +508,6 @@ A.route('lectura', async view => {
       <span class="lbar"><i style="width:${Math.round(A.conqPct(cu) * 100)}%"></i></span><small>${cs.und}/${cs.n} articole înțelese în capitol · ${A.study.beatenCount(cu)}/9 mini-boși · ${Math.round(A.conqPct(cu) * 100)}% cucerit</small><span class="go">Continuă lectura ›</span></a>` : ''}
     <div class="ltiles">
       ${last ? `<a href="#/act/${last.act}/a/${last.art}"><svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6z M14 3v4h4 M9 12h6 M9 16h6"/></svg><b>Ultimul articol</b><small>${A.esc(A.actShort(last.act))}, art. ${A.idToNum(last.art)}</small></a>` : ''}
-      <a href="#/antrenament/repetare/citite">${due ? `<b class="nb">${due > 9 ? '9+' : due}</b>` : ''}<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3M18 3v4h-4M6 21v-4h4"/></svg><b>Repetare</b><small>${due ? `${due} ${due === 1 ? 'articol scadent' : 'articole scadente'}` : 'nimic scadent azi'}</small></a>
-      <a href="#/antrenament"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5.5L20 9.3l-4 4 1 5.7-5-2.8-5 2.8 1-5.7-4-4 5.5-.8z"/></svg><b>Antrenament</b><small>teme, termene, definiții</small></a>
     </div>
     <h2 class="lh">Raioane · ${nConq}/${A.raioane.length} cucerite</h2>
     <p class="faint lnote">Raioanele se cuceresc pe rând: următorul se deschide abia după ce l-ai cucerit integral pe cel curent.</p>
@@ -617,6 +626,7 @@ A.route('antrenament', async (view, [mode, scope]) => {
     };
     return A.quiz.run(view, opt);
   }
+  A.go('#/harta'); setTimeout(() => A.arena.playMenu(), 250); return;
   const due = A.game.dueKeys().length;
   const opts = [['citite', 'Articolele citite'], ['tot', 'Toată legislația'], ...A.raioane.filter(r => A.raionActs(r).length).map(r => ['raion:' + r.unit, `${r.name} · ${A.disc[r.disc].name}`]), ...Object.entries(A.index).map(([id, a]) => ['act:' + id, a.name])];
   const sel = A.S.settings.scope || 'citite';
@@ -663,6 +673,15 @@ A.route('profil', async view => {
 
 /* ======================= UPDATE (istoricul modificărilor) ======================= */
 A.CHANGELOG = [
+  { v: '3 noiembrie 2026 · Teste de bloc, meniu PLAY, carduri de echipă', items: [
+    'Rezumatul de 100 de caractere a dispărut. La fiecare 5 articole citite dintr-o micro-secțiune apare un buton galben „Testează-ți cunoștințele”: 5 grile, câte una pe articol.',
+    '5 din 5 corecte: blocul e înțeles (steaua întreagă), cu fanfară și confeti. 3–4 corecte: primești puncte-grilă, dar blocul rămâne nerezolvat și reiei testul cu toate articolele. Sub 3: nu primești nimic.',
+    'Fiecare articol are o stea: jumătate când e citit, întreagă când e înțeles. Articolele fără grilă primesc o întrebare generată automat.',
+    'Butonul PLAY deschide un meniu cu toate jocurile: joc rapid, repetare, grilă rapidă, urmărire, sprint de termene, definiții, taxa de stat, calculator, spețe și dueluri. Au dispărut din Lectură.',
+    'Lei, XP și puncte-grilă se acordă doar la sfârșitul unui joc, nu la fiecare răspuns corect. Cifrele din bara de sus cresc treptat, pe măsură ce sosesc monedele și punctele.',
+    'Birou: angajările și echipa sunt carduri câte 2 pe rând, ca în Clash Royale; apăsând pe un card vezi toate detaliile, costul și butonul de cumpărare sau îmbunătățire. Bara de departamente nu se mai resetează.',
+    'Grilele pentru Călărași au fost încărcate.',
+  ] },
   { v: '2 noiembrie 2026 · Cartonașe, sunete și efecte', items: [
     'Personaje ilustrate pentru fiecare rol (secretar, avocat stagiar, jurist, avocat, avocat senior, partener): în cartonașe, la angajare și în tabelul echipei.',
     'Birou: secțiune nouă „Cartonașele mele”, sub misiuni, cu filele Echipă și Boost. Cartonașele identice se strâng într-unul singur, cu numărul în colț (de exemplu ×5).',

@@ -100,10 +100,10 @@ P.examRun = async (root, list, title, perQ, onDone, onEach) => {
       if (answered) return; answered = true; A.guardStop();
       A.$$('.opt', root).forEach((x, k) => { x.disabled = true; if (g.opts[k].ok) x.classList.add('right'); });
       if (!good && b) b.classList.add('wrong');
-      A.S.quiz.answered++; if (good) { ok++; A.S.quiz.correct++; A.S.points.grile++; } A.studied();
+      A.S.quiz.answered++; if (good) { ok++; A.S.quiz.correct++; } A.studied();
       A.sound(good ? 'ok' : 'ko'); A.fx.combo(good); onEach && onEach(good, g);
       const r = (g.r || [])[0];
-      A.$('#fb', root).innerHTML = `<div class="feedback ${good ? 'ok' : 'ko'}"><div><b>${why || (good ? 'Corect. +1 grilă' : 'Greșit.')}</b>${g.e ? `<div class="why">${A.esc(g.e)}</div>` : ''}${r ? `<div class="why">${refLink(r)}</div>` : ''}</div><button class="btn primary" id="nx">Continuă</button></div>`;
+      A.$('#fb', root).innerHTML = `<div class="feedback ${good ? 'ok' : 'ko'}"><div><b>${why || (good ? 'Corect.' : 'Greșit.')}</b>${g.e ? `<div class="why">${A.esc(g.e)}</div>` : ''}${r ? `<div class="why">${refLink(r)}</div>` : ''}</div><button class="btn primary" id="nx">Continuă</button></div>`;
       A.$('#nx', root).onclick = next; A.store.save();
     };
     A.$$('.opt', root).forEach(b => b.onclick = () => answer(g.opts[+b.dataset.i].ok, b));
@@ -127,14 +127,15 @@ A.route('joc', async (view, [mode, arg]) => {
   const root = document.createElement('div'); root.className = 'quiz'; view.innerHTML = ''; view.appendChild(root);
   const list = A.shuffle(pool).slice(0, 3).map(g => Object.assign({}, g));
   const pw = E.power(), mult = 1 + pw / 300;
-  let money = 0, xp = 0, gok = 0;
+  let money = 0, xp = 0, gok = 0, pm = 0, px = 0;   // recompensele se acordă doar la sfârșitul jocului
   P.examRun(root, list, 'Joc rapid', 45, (ok) => {
     gok = ok;
     const sp = P.pickSpeta();
     if (!sp) return end(null);
     P.speta(root, sp, res => end(res));
-  }, good => { if (good) { money += E.earn(150 * mult); xp += A.game.addXP(8); } });
+  }, good => { if (good) { pm += 150 * mult; px += 8; } });
   const end = res => {
+    if (pm) money += E.earn(pm); if (px) xp += A.game.addXP(px); A.S.points.grile = (A.S.points.grile || 0) + gok;
     let spMsg = 'Nicio speță deblocată încă: parcurge micro-secțiuni ca să apară.';
     if (res) { if (res.ok) { if (res.first) A.S.points.spete++; money += E.earn(600 * mult); xp += A.game.addXP(30); spMsg = res.first ? 'Speță rezolvată pentru prima dată: +1 punct-speță.' : 'Speță rezolvată (punctul-speță se acordă doar la prima rezolvare).'; } else if (res.score > 0) { money += E.earn(250 * mult); xp += A.game.addXP(12); spMsg = 'Speță rezolvată parțial.'; } else spMsg = 'Speța nu a fost rezolvată.'; }
     const total = gok + (res && res.ok ? 1 : 0), n = 3 + (res ? 1 : 0);

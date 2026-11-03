@@ -96,7 +96,6 @@ A.migrate = d => {
   for (const [k, r] of Object.entries(d.arts || {})) {
     if (r.r) d.ledger['read:' + k] = { xp: 2, money: 0 };
     if (r.ap) d.ledger['appl:' + k] = { xp: 25, money: 0 };
-    if (r.u && !r.sum) delete r.u;   // „Am înțeles” cere acum un rezumat
   }
   d.v = A.STATE_V;
   return d;

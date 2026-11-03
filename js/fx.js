@@ -112,11 +112,31 @@ const pieces = (k, n) => {
   return Math.min(n, k === 'gr' || k === 'sp' ? 10 : 5);
 };
 /* k: lei|gr|sp|xp|card|boost|nitro|chest; n: cantitatea; from: element sau {x,y}; o: {img, delay, done} */
+/* ===== cifrele din bara de sus cresc treptat, pe măsură ce sosesc particulele ===== */
+F.hold = { lei: 0, gr: 0, sp: 0 }; F.holdAt = 0;
+const paintNow = () => {
+  const H = F.hold, e = A.eco && A.eco.s && A.eco.s();
+  const set = (sel, v, byB) => { const el = document.querySelector(sel); if (!el) return; const t = A.fmt(v);
+    if (byB) { const b = el.querySelector('b'); if (b && b.textContent !== t) b.textContent = t; }
+    else { const n = [...el.childNodes].filter(x => x.nodeType === 3).pop(); if (n && n.textContent !== t) n.textContent = t; } };
+  if (H.lei > 0 && e) set('.hud .chip.money', e.money - H.lei, false);
+  if (H.gr > 0) set('.hud [data-gem="grile"]', (A.S.points.grile || 0) - H.gr, true);
+  if (H.sp > 0) set('.hud [data-gem="spete"]', (A.S.points.spete || 0) - H.sp, true);
+};
+F.paintHold = () => { if (F.scan) F.scan(); paintNow(); };
+F.addHold = (k, n) => { F.hold[k] += n; F.holdAt = Date.now(); paintNow(); };
+F.release = (k, n) => { F.hold[k] = Math.max(0, F.hold[k] - n); F.holdAt = Date.now(); if (A.hud) A.hud(); };
+F.releaseAll = () => { F.hold.lei = F.hold.gr = F.hold.sp = 0; if (A.hud) A.hud(); };
+setInterval(() => {
+  const H = F.hold; if (!(H.lei || H.gr || H.sp)) return;
+  if (Date.now() - F.holdAt > 5000 && !document.querySelector('.fxp, .fx')) F.releaseAll();
+}, 1000);
+
 F.fly = (k, n, from, o = {}) => {
   if (!o.auto && (k === 'lei' || k === 'gr' || k === 'sp')) F.cover(k, n);
   const tgt = targetFor(k), tp = tgt ? pointOf(tgt) : { x: innerWidth / 2, y: 28 }, sp = pointOf(from);
   const cnt = pieces(k, n), delay = o.delay || 0;
-  if (reduced()) { setTimeout(() => { pulse(tgt); A.sound(k === 'card' ? 'card' : 'coinhit', 0); o.done && o.done(); }, delay + 200); return; }
+  if (reduced()) { setTimeout(() => { pulse(tgt); F.release(k, n); A.sound(k === 'card' ? 'card' : 'coinhit', 0); o.done && o.done(); }, delay + 200); return; }
   const isCard = k === 'card', w = isCard ? 38 : 28, h = isCard ? 48 : 28;
   let arrived = 0;
   for (let i = 0; i < cnt; i++) {
@@ -132,8 +152,9 @@ F.fly = (k, n, from, o = {}) => {
       { transform: `translate(${dx}px,${dy}px) scale(.42) rotate(0deg)`, opacity: .95 },
     ], { duration: isCard ? 1050 : 880, delay: d, easing: 'cubic-bezier(.25,.1,.25,1)', fill: 'both' });
     if (i === 0 || isCard) setTimeout(() => A.sound(isCard ? 'whoosh' : 'pop'), d);
+    const part = k === 'lei' || k === 'gr' || k === 'sp' ? (i === cnt - 1 ? n - Math.floor(n / cnt) * (cnt - 1) : Math.floor(n / cnt)) : 0;
     a.onfinish = () => {
-      el.remove(); pulse(tgt);
+      el.remove(); pulse(tgt); if (part) F.release(k, part);
       A.sound(isCard ? 'card' : k === 'xp' ? 'xp' : 'coinhit', i);
       if (++arrived === cnt) o.done && o.done();
     };
@@ -281,11 +302,25 @@ setInterval(() => { if (bellEl) bellUpdate(); }, 10e3);
       if (n > 0) { F.fly(k, n, from, { auto: true, delay: d }); d += 250; }
     }
   };
-  setInterval(() => {
+  const scan = () => {
     if (!A.S || !A.S.points) return; const v = read();
     if (!seen) { seen = v; return; }
-    let any = false; for (const k of ['lei', 'gr', 'sp']) { const d = v[k] - seen[k]; if (d > 0 && !(k === 'lei' && seen.lei === 0 && d > 1500 && !seen._ok)) { pend[k] += d; any = true; } }
+    let any = false; for (const k of ['lei', 'gr', 'sp']) { const d = v[k] - seen[k]; if (d > 0 && !(k === 'lei' && seen.lei === 0 && d > 1500 && !seen._ok)) { pend[k] += d; any = true; F.addHold(k, d); } }
     seen = v; seen._ok = true;
     if (any && !flushT) flushT = setTimeout(flush, 150);
-  }, 250);
+  };
+  F.scan = scan; setInterval(scan, 250);
+}
+
+/* ===== bara de departamente din Birou: își păstrează poziția la schimbarea secțiunii ===== */
+{
+  let left = 0;
+  addEventListener('scroll', e => { const t = e.target; if (t && t.classList && t.classList.contains('ftabs')) left = t.scrollLeft; }, true);
+  const fix = nav => {
+    nav.dataset.fx = 1; nav.scrollLeft = left;
+    const on = nav.querySelector('a.on');
+    if (on) { const l = on.offsetLeft, r = l + on.offsetWidth; if (l < nav.scrollLeft + 12 || r > nav.scrollLeft + nav.clientWidth - 12) nav.scrollLeft = Math.max(0, l - (nav.clientWidth - on.offsetWidth) / 2); }
+    left = nav.scrollLeft;
+  };
+  new MutationObserver(() => { const n = document.querySelector('.ftabs:not([data-fx])'); if (n) fix(n); }).observe(document.documentElement, { childList: true, subtree: true });
 }

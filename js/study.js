@@ -40,6 +40,16 @@ ST.beaten = cid => !!(A.S.study.chapters || {})[cid];
 ST.chapterOpen = c => A.conquered(c.unit) || (c.unit === ST.current() && (c.ci === 0 || ST.beaten(ST.chapters(c.unit)[c.ci - 1].id)));
 ST.microOf = (act, art) => ST.where[act + ':' + art] || null;
 ST.artOpen = (act, art) => { const m = ST.microOf(act, art); if (!m) return true; return ST.chapterOpen(ST.chapById[m.id.replace(/\.m\d+$/, '')]); };
+/* blocuri de câte 5 articole într-o micro-secțiune; un rest de 1–2 articole se alipește blocului dinainte */
+ST.BLOCK = 5;
+ST.blocks = m => {
+  if (m._blocks) return m._blocks;
+  const out = []; for (let i = 0; i < m.arts.length; i += ST.BLOCK) out.push(m.arts.slice(i, i + ST.BLOCK));
+  if (out.length > 1 && out[out.length - 1].length <= 2) { const last = out.pop(); out[out.length - 1] = out[out.length - 1].concat(last); }
+  return (m._blocks = out);
+};
+ST.blockOf = (act, art) => { const m = ST.microOf(act, art); if (!m) return null; const bs = ST.blocks(m); const bi = bs.findIndex(b => b.includes(art)); return bi < 0 ? null : { m, bi, arts: bs[bi], last: bs[bi][bs[bi].length - 1] === art }; };
+ST.blockState = (m, bi) => { const arts = ST.blocks(m)[bi] || [], rs = arts.map(a => A.S.arts[m.act + ':' + a] || {}); return { n: arts.length, read: rs.filter(r => r.r).length, und: rs.filter(r => r.u).length }; };
 ST.chapOf = m => ST.chapById[m.id.replace(/\.m\d+$/, '')];
 
 /* progres */

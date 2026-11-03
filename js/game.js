@@ -117,9 +117,18 @@ G.checkSummary = (txt, artText) => {
 G.markUnderstood = (actId, artId, summary, at) => {
   const k = A.key(actId, artId), rec = A.artRec(k);
   if (!rec.r) { rec.r = A.today(); G.grant('read:' + k, ...G.REWARD.read); }
-  rec.sum = summary.trim(); rec.u = rec.u || A.today(); A.studied();
+  if (summary) rec.sum = summary.trim(); rec.u = rec.u || A.today(); A.studied();
   G.grant('und:' + k, ...G.REWARD.und, at);
   A.study.onProgress(actId, artId); A.store.save(); G.checkStamps();
+};
+/* articol înțeles prin testul de bloc: fără rezumat; steaua întreagă */
+G.passArt = (actId, artId) => {
+  const k = A.key(actId, artId), rec = A.artRec(k), first = !rec.u;
+  if (!rec.r) { rec.r = A.today(); G.grant('read:' + k, ...G.REWARD.read); }
+  if (!rec.b) { rec.b = 0; rec.due = A.addDays(A.today(), 1); }
+  if (first) rec.u = A.today();
+  G.grant('und:' + k, ...G.REWARD.und);
+  A.study.onProgress(actId, artId); A.memoReset && A.memoReset(); return first;
 };
 G.unmarkUnderstood = (actId, artId) => {
   const k = A.key(actId, artId), rec = A.artRec(k);
@@ -148,7 +157,6 @@ G.review = (k, ok) => {
   if (ok) { rec.b = Math.min(6, rec.b + 1); rec.ok = (rec.ok || 0) + 1; }
   else { rec.b = 1; rec.ko = (rec.ko || 0) + 1; }
   rec.due = A.addDays(A.today(), G.INTERVALS[rec.b]);
-  if (ok && !rec.u && rec.b >= 2) rec.u = A.today();
 };
 G.dueKeys = () => { const t = A.today(); return Object.entries(A.S.arts).filter(([k, r]) => r.r && r.due && r.due <= t).map(([k]) => k); };
 
@@ -211,7 +219,7 @@ G.STAMPS = [
 G.STAMPS.push(
   ['mini-1', 'Primul mini-boss', 'Ai învins primul mini-boss.', 'mini-boss', 'I', s => Object.keys(s.study.chapters || {}).length >= 1],
   ['mini-9', 'Nouă capitole', 'Ai învins toți mini-bossii unui raion.', 'capitole', '9', s => A.raioane.some(r => A.study.chapters(r.unit).length && A.study.chapters(r.unit).every(c => (s.study.chapters || {})[c.id]))],
-  ['rezumate-50', 'Cu vorbele mele', '50 de articole rezumate.', 'rezumate', '50', s => Object.values(s.arts).filter(r => r.sum).length >= 50],
+  ['rezumate-50', 'Cu vorbele mele', '50 de articole înțelese.', 'înțelese', '50', s => Object.values(s.arts).filter(r => r.u).length >= 50],
   ['spete-10', 'Practicianul spețelor', '10 spețe rezolvate corect.', 'spețe', 'S10', s => Object.values(s.spete || {}).filter(x => x.ok).length >= 10],
   ['joc-25', 'Jucătorul', '25 de runde de joc încheiate.', 'joc', 'J25', s => (s.quiz.farm || 0) >= 25],
 );
@@ -278,6 +286,7 @@ A.hud = () => {
   el.prepend(lv);
   const xb = el.querySelector('.xpbar .track'); if (xb) xb.dataset.t = `${A.fmt(li.xp - li.lo)}/${A.fmt(li.hi - li.lo)}`;
   A.navBadges && A.navBadges();
+  if (A.fx && A.fx.paintHold) A.fx.paintHold();
 };
 
 G.init = () => { G.checkStamps(); };

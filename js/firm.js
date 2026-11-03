@@ -232,21 +232,50 @@ A.route('firma', async (view, [sub]) => {
 function team(view) {
   const s = E.s(), office = E.OFFICES[s.office], nx = E.OFFICES[s.office + 1], block = E.hireBlock(), fired = E.firedOpen();
   const st = m => { if (m.strike) return '<span style="color:var(--seal)">în grevă: plătește salariul</span>'; const c = s.consults.find(x => x.staff === m.id); if (c) return `consultă: ${A.esc(c.client.title)}`; const p = s.procs.find(x => x.staff === m.id); if (p) return `în instanță la ${A.esc(A.unitById[p.unit].name)}`; return 'liber'; };
+  /* ---------- carduri în stil Clash Royale: echipa și angajările ---------- */
+  const RCOL = { secretar: '#5C8A97', stagiar: '#4C7BB8', jurist: '#2E9B6A', avocat: '#7B5BD6', senior: '#D18A1C', partener: '#C0392B' };
+  const RRAR = { secretar: 'Comun', stagiar: 'Comun', jurist: 'Rar', avocat: 'Epic', senior: 'Legendar', partener: 'Mitic' };
+  const shortSt = m => m.strike ? ['Grevă', 'bad'] : E.busy(m.id) ? ['Ocupat', 'busy'] : ['Liber', 'free'];
+  const roleCard = r => { const R = E.ROLES[r], n = s.staff.filter(m => m.role === r).length, can = s.money >= R.cost;
+    return `<button type="button" class="tcard" data-role="${r}" style="--c:${RCOL[r]}"><span class="tc-rar">${RRAR[r]}</span><span class="tc-img"><img src="img/staff/${r}.jpg" alt=""></span>
+      <b class="tc-name">${R.name}</b><span class="tc-sub">${n ? n + ' în echipă' : 'nimeni încă'}</span><span class="tc-price ${can ? '' : 'lack'}"><i class="coin">L</i>${A.fmt(R.cost)}</span></button>`; };
+  const staffCard = m => { const R = E.ROLES[m.role], [stt, cls] = shortSt(m);
+    return `<button type="button" class="tcard" data-mid="${m.id}" style="--c:${RCOL[m.role]}"><span class="tc-lvl">${m.lvl || 1}</span><span class="tc-img"><img src="img/staff/${m.role}.jpg" alt=""></span>
+      <b class="tc-name">${A.esc(nameOf(m))}</b><span class="tc-sub">${R.name}</span><span class="tc-st ${cls}">${stt}</span></button>`; };
+  const facts = (r, lvl) => { const R = E.ROLES[r], k = 1 + .1 * (lvl - 1); return [['Angajare', A.lei(R.cost)], ['Salariu', A.lei(R.sal) + ' / zi'],
+    ...(R.base ? [['Consultație', '~' + A.lei(Math.round(R.base * k))]] : []), ...(R.speed ? [['Viteză', '×' + R.speed]] : []), ['Instanță', R.court ? 'Da' : 'Nu'], ...(R.disc ? [['Reangajare', '-' + Math.round(R.disc * 100) + '% după concediere']] : [])]; };
+  const detModal = (r, m) => {
+    const R = E.ROLES[r], lvl = m ? (m.lvl || 1) : 1, need = m ? E.upgradeNeed(m) : null;
+    const chip = (ok, ico, txt) => `<span class="rq ${ok ? 'ok' : 'no'}">${ico} ${txt}</span>`;
+    const maxed = m && lvl >= E.CARDS_FOR.length;
+    const up = m ? (maxed ? '<p class="faint" style="text-align:center">Nivel maxim.</p>' : `<div class="cd-req"><small>Pentru nivelul ${lvl + 1}</small><div>${chip(s.money >= need.money, '<i class="coin">L</i>', A.fmt(need.money))}${chip((s.cards[r] || 0) >= need.cards, '▮', `${s.cards[r] || 0}/${need.cards} cartonașe`)}${chip((A.S.points.grile || 0) >= need.grile, '◆', `${A.fmt(A.S.points.grile || 0)}/${need.grile} grile`)}${need.spete ? chip((A.S.points.spete || 0) >= need.spete, '✦', `${A.S.points.spete || 0}/${need.spete} spețe`) : ''}</div></div>
+      <button class="btn primary big" id="cd-up">Îmbunătățește la nivelul ${lvl + 1}</button>`) : `<input class="tin" id="cd-nm" maxlength="24" placeholder="Numele angajatului"><button class="btn primary big" id="cd-hire" ${block ? 'disabled' : ''}>Angajează · ${A.lei(R.cost)}</button>${block ? `<p class="faint" style="text-align:center;margin:6px 0 0">${A.esc(block)}</p>` : ''}`;
+    const sec = m ? `<div class="cd-sec">${m.me ? '' : '<button class="btn small" id="cd-ren">Redenumește</button>'}${m.strike ? `<button class="btn small primary" id="cd-pay">Plătește ${A.lei(R.sal)}</button>` : ''}${m.me ? '' : `<button class="btn small ghost" id="cd-fire" ${E.busy(m.id) ? 'disabled' : ''}>Concediază</button>`}</div>` : '';
+    const md = A.modal(`<div class="cdet" style="--c:${RCOL[r]}"><div class="cd-top"><div class="cd-img"><img src="img/staff/${r}.jpg" alt=""></div>
+      <div class="cd-info"><span class="cd-rar">${RRAR[r]}</span><h2>${m ? A.esc(nameOf(m)) : R.name}</h2><div class="cd-role">${R.name}${m ? ` · nivelul ${lvl}` : ''}</div>${m ? `<div class="cd-state">${st(m)}</div>` : ''}</div></div>
+      <p class="cd-desc">${A.esc(R.desc)}</p>
+      <div class="cd-stats">${facts(r, lvl).map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>
+      ${up}${sec}<div class="mbtns"><button class="btn" data-close>Închide</button></div></div>`);
+    const on = (id, fn) => { const b = A.$(id, md.el); if (b) b.onclick = fn; };
+    on('#cd-hire', () => { if (E.hire(r, A.$('#cd-nm', md.el).value)) { md.close(); A.render(); } });
+    on('#cd-up', () => { E.upgrade(m.id); md.close(); A.render(); });
+    on('#cd-ren', () => { md.close(); const md2 = A.modal(`<h2>Redenumește</h2><input id="rn" class="tin" maxlength="24" value="${A.esc(m.name)}"><div class="mbtns"><button class="btn primary" id="rok">Salvează</button><button class="btn" data-close>Renunță</button></div>`); A.$('#rok', md2.el).onclick = () => { E.rename(m.id, A.$('#rn', md2.el).value); md2.close(); A.render(); }; });
+    on('#cd-fire', () => { md.close(); const md2 = A.modal(`<h2>Concediezi pe ${A.esc(m.name)}?</h2><p>Banii investiți nu se întorc. Timp de ${E.REHIRE_DAYS} zile îl poți reangaja cu ${Math.round(R.disc * 100)}% reducere, la același nivel.</p><div class="mbtns"><button class="btn primary" id="fok">Concediază</button><button class="btn" data-close>Renunță</button></div>`); A.$('#fok', md2.el).onclick = () => { E.fire(m.id); md2.close(); A.render(); }; });
+    on('#cd-pay', () => { if (!E.spend(R.sal)) return; m.paidTo += 864e5; m.strike = false; A.store.save(); E.paySalaries(); md.close(); A.render(); });
+  };
   view.innerHTML = `<div class="firm">${head('Echipa', 'Fiecare angajat are plată de angajare și salariu pe zi reală. Îmbunătățirile cer bani, cartonașe din dosare și grile rezolvate.')}${tabs('echipa')}
     <section class="fsec office"><div><div class="faint" style="font-size:13px">Sediul</div><h2>${office[0]}</h2><p class="muted" style="margin:4px 0 0">${s.staff.length} oameni · limita ta: ${E.staffLimit()} (sediul are ${office[1]} locuri; +1 loc la fiecare 30 de articole rezumate)</p></div>
       ${nx ? `<button class="btn primary" data-do="move">Mută-te: ${nx[0]} (${nx[1]} locuri) · ${A.lei(nx[2])}</button>` : '<span class="faint">Ai cel mai mare sediu.</span>'}</section>
-    <section class="fsec"><div class="sh"><h2>Angajări</h2><span class="faint">${block ? A.esc(block) : 'Poți angaja acum.'}</span></div><div class="roles">
-      ${E.ROLE_ORDER.map(r => { const R = E.ROLES[r]; return `<div class="rolecard"><div class="rimg"><img src="img/staff/${r}.jpg" alt=""></div><div class="rt"><b>${R.name}</b><span class="faint">${s.staff.filter(m => m.role === r).length} în echipă</span></div><p>${A.esc(R.desc)}</p>
-        <div class="rstats"><span>Angajare ${A.lei(R.cost)}</span><span>Salariu ${A.lei(R.sal)}/zi</span>${R.base ? `<span>Consultație ~${A.lei(R.base)}</span>` : ''}${R.court ? '<span>Merge în instanță</span>' : ''}</div>
-        <div class="ra"><input class="nm" id="nm-${r}" maxlength="24" placeholder="Numele angajatului"><button class="btn" data-do="hire:${r}" ${block ? 'disabled' : ''}>Angajează</button></div></div>`; }).join('')}
+    <section class="fsec"><div class="sh"><h2>Angajări</h2><span class="faint">${block ? A.esc(block) : 'Atinge un card ca să vezi detaliile.'}</span></div><div class="tgrid">
+      ${E.ROLE_ORDER.map(r => roleCard(r)).join('')}
     </div></section>
     ${fired.length ? `<section class="fsec"><div class="sh"><h2>Foști angajați</h2><span class="faint">Reangajare cu reducere, timp de ${E.REHIRE_DAYS} zile de la concediere</span></div>
       ${fired.map((f, i) => `<div class="tier"><div><b>${A.esc(f.name)}</b><small>${E.ROLES[f.role].name} · nivelul ${f.lvl} · reducere ${Math.round(E.ROLES[f.role].disc * 100)}% · încă ${A.dur(f.at + E.REHIRE_DAYS * 864e5 - Date.now())}</small></div><button class="btn small" data-do="rehire:${i}" ${block ? 'disabled' : ''}>Reangajează · ${A.lei(Math.round(E.ROLES[f.role].cost * (1 - E.ROLES[f.role].disc)))}</button></div>`).join('')}</section>` : ''}
-    <section class="fsec"><div class="sh"><h2>Oamenii firmei</h2><span class="faint">Cartonașe: ${E.ROLE_ORDER.filter(r => s.cards[r]).map(r => `${E.ROLES[r].name} ${s.cards[r]}`).join(' · ') || 'niciunul'} · grile disponibile: ${A.fmt(A.S.points.grile)}</span></div><table class="staff"><tbody>
-      ${s.staff.map(m => { const need = E.upgradeNeed(m); return `<tr><td><span class="av"><img src="img/staff/${m.role}.jpg" alt=""></span><b>${A.esc(nameOf(m))}</b>${m.me ? '' : ` <button class="lnk" data-do="ren:${m.id}">redenumește</button>`}</td><td>${E.ROLES[m.role].name}</td><td class="num">nivelul ${m.lvl || 1}</td><td class="${E.busy(m.id) || m.strike ? '' : 'free'}">${st(m)}</td>
-        <td class="ups"><button class="btn small" data-do="up:${m.id}" title="${A.lei(need.money)} · ${need.cards} cartonașe · ${need.grile} grile${need.spete ? ' · ' + need.spete + ' puncte-speță' : ''}">Nivelul ${(m.lvl || 1) + 1}: ${A.lei(need.money)} + ${need.cards} cart. + ${need.grile} grile${need.spete ? ' + ' + need.spete + ' ' + E.spGem : ''}</button>
-        ${m.strike ? `<button class="btn small primary" data-do="pay:${m.id}">Plătește ${A.lei(E.ROLES[m.role].sal)}</button>` : ''}${m.me ? '' : `<button class="btn small ghost" data-do="fire:${m.id}" ${E.busy(m.id) ? 'disabled' : ''}>Concediază</button>`}</td></tr>`; }).join('')}
-    </tbody></table></section></div>`;
+    <section class="fsec"><div class="sh"><h2>Oamenii firmei</h2><span class="faint">Cartonașe: ${E.ROLE_ORDER.filter(r => s.cards[r]).map(r => `${E.ROLES[r].name} ${s.cards[r]}`).join(' · ') || 'niciunul'} · grile disponibile: ${A.fmt(A.S.points.grile)}</span></div><div class="tgrid">
+      ${s.staff.map(m => staffCard(m)).join('')}
+    </div></section></div>`;
+  A.$$('.tcard[data-role]', view).forEach(b => b.onclick = () => detModal(b.dataset.role, null));
+  A.$$('.tcard[data-mid]', view).forEach(b => b.onclick = () => { const m = s.staff.find(x => x.id === +b.dataset.mid); if (m) detModal(m.role, m); });
   bind(view, {
     move: () => { E.moveOffice(); A.render(); },
     hire: (b, r) => { if (E.hire(r, A.$('#nm-' + r, view).value)) A.render(); },
