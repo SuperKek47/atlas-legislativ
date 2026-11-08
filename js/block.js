@@ -49,6 +49,8 @@ const buildQuestions = async (m, bi) => {
   store()[m.id + '#' + bi] = now; return out;
 };
 
+B.build = buildQuestions;
+
 /* ---------- testul ---------- */
 B.open = async (mid, bi, done) => {
   const m = ST.microById[mid]; if (!m) return;

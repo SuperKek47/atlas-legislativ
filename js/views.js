@@ -627,24 +627,6 @@ A.route('antrenament', async (view, [mode, scope]) => {
     return A.quiz.run(view, opt);
   }
   A.go('#/harta'); setTimeout(() => A.arena.playMenu(), 250); return;
-  const due = A.game.dueKeys().length;
-  const opts = [['citite', 'Articolele citite'], ['tot', 'Toată legislația'], ...A.raioane.filter(r => A.raionActs(r).length).map(r => ['raion:' + r.unit, `${r.name} · ${A.disc[r.disc].name}`]), ...Object.entries(A.index).map(([id, a]) => ['act:' + id, a.name])];
-  const sel = A.S.settings.scope || 'citite';
-  const modes = [
-    ['repetare', 'Repetare', 'Articolele scadente, la intervale tot mai mari.', due, 'M4 12a8 8 0 1 1 3 6.2M4 18v-4h4', '#2E7D5B'],
-    ['grila', 'Grilă rapidă', '10 întrebări din domeniul ales.', '', 'M5 6h14M5 12h14M5 18h9', '#2B5C8A'],
-    ['urmarire', 'Urmărire', 'Trei vieți, presiune crescândă, notorietate.', A.S.quiz.survivalBest ? 'record ' + A.S.quiz.survivalBest : '', 'M12 3v4M12 17v4M3 12h4M17 12h4M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0', '#B23A2E'],
-    ['termene', 'Sprint de termene', '60 de secunde, doar termene.', Object.keys(A.S.album).length + ' în album', 'M12 7v5l3 3M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18', '#B98A12'],
-    ['definitii', 'Definiții', 'Noțiunile din articolele de definiții.', '', 'M5 4h10l4 4v12H5zM9 12h6M9 16h6', '#5A3F8F'],
-    ['taxa', 'Taxa de stat', 'Calculezi taxa după anexa nr. 1.', A.S.quiz.taxOk ? A.S.quiz.taxOk + ' corecte' : '', 'M6 4h12v16H6zM9 8h6M9 12h6M9 16h3', '#1F7A74'],
-    ['calculator', 'Calculator taxă de stat', 'Calculează taxa pentru orice cerere, după anexa nr. 1.', '', 'M6 3h12v18H6zM9 7h6M9 12h2M13 12h2M9 16h2M13 16h2', '#1F7A74'],
-    ['spete', 'Spețe', 'Spețele deblocate și cele rezolvate.', Object.values(A.S.spete || {}).filter(x => x.ok).length + ' rezolvate', 'M7 3h8l4 4v14H7zM10 12h6M10 16h6', '#8A4B2A'],
-  ];
-  view.innerHTML = `<div class="train"><div class="head"><div><h1>Antrenament</h1><p class="muted" style="margin:6px 0 0">Fiecare răspuns corect aduce XP și onorarii; combo-urile le înmulțesc.</p></div>
-    <label class="scope"><span class="muted">Din</span><select id="scope">${opts.map(([v, l]) => `<option value="${v}" ${v === sel ? 'selected' : ''}>${A.esc(l)}</option>`).join('')}</select></label></div>
-    <div class="modes">${modes.map(([id, n, d, cnt, icon, col]) => `<a class="mode" data-m="${id}" href="#/antrenament/${id}/${sel}"><span class="ico" style="background:${col}1f;color:${col}"><svg viewBox="0 0 24 24"><path d="${icon}"/></svg></span><span><b>${n}</b><small>${d}</small></span><span class="cnt">${cnt}</span></a>`).join('')}</div>
-    <p style="margin-top:22px"><a class="btn" href="#/cariera">Lista neagră: dueluri cu rivalii</a></p></div>`;
-  A.$('#scope', view).onchange = e => { A.S.settings.scope = e.target.value; A.store.save(); A.$$('.mode', view).forEach(a => a.href = `#/antrenament/${a.dataset.m}/${e.target.value}`); };
 });
 
 /* ======================= ȘTAMPILE / PROFIL ======================= */
