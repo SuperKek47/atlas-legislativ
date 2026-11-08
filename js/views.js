@@ -655,6 +655,11 @@ A.route('profil', async view => {
 
 /* ======================= UPDATE (istoricul modificărilor) ======================= */
 A.CHANGELOG = [
+  { v: '8 noiembrie 2026 · Stilul nou „Legalia”', items: [
+    'Aspect nou, luminos: fundal lavandă, violet electric, carduri albe din sticlă, hartă pe tot ecranul sub butonul PLAY.',
+    'Siglă, iconiță, monede, pictograme și dosare-cufăr redesenate în același stil.',
+    'Stilul anterior se păstrează: Setări → Stil aplicație → Clasic.',
+  ] },
   { v: '3 noiembrie 2026 · Teste de bloc, meniu PLAY, carduri de echipă', items: [
     'Rezumatul de 100 de caractere a dispărut. La fiecare 5 articole citite dintr-o micro-secțiune apare un buton galben „Testează-ți cunoștințele”: 5 grile, câte una pe articol.',
     '5 din 5 corecte: blocul e înțeles (steaua întreagă), cu fanfară și confeti. 3–4 corecte: primești puncte-grilă, dar blocul rămâne nerezolvat și reiei testul cu toate articolele. Sub 3: nu primești nimic.',
@@ -737,6 +742,7 @@ A.route('setari', async view => {
     <div class="row"><div><b>Volum</b><small>Cât de tare sunt sunetele jocului.</small></div><select id="vol">${[[.3, 'Mic'], [.6, 'Mediu'], [.8, 'Normal'], [1, 'Maxim']].map(([v, n]) => `<option value="${v}" ${Math.abs((st.volume == null ? .8 : st.volume) - v) < .05 ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
     <div class="row"><div><b>Efecte vizuale</b><small>Confetti, monede și cartonașe care zboară spre bara de sus. „Reduse” le oprește.</small></div><select id="fxs"><option value="1" ${st.fx !== false ? 'selected' : ''}>Complete</option><option value="0" ${st.fx === false ? 'selected' : ''}>Reduse</option></select></div>
     <div class="row"><div><b>Vibrații</b><small>Vibrație scurtă la dosare, victorii și nivel nou, pe telefoanele care o permit. iPhone nu permite vibrații aplicațiilor web.</small></div><select id="vib"><option value="1" ${st.vib !== false ? 'selected' : ''}>Pornite</option><option value="0" ${st.vib === false ? 'selected' : ''}>Oprite</option></select></div>
+    <div class="row"><div><b>Stil aplicație</b><small>Legalia (nou, luminos) sau Clasic (stilul anterior). Se poate schimba oricând.</small></div><select id="skin"><option value="lav">Legalia</option><option value="classic">Clasic</option></select></div>
     <div class="row"><div><b>Temă</b><small>Luminoasă, întunecată sau după sistem.</small></div><select id="theme"><option value="auto">După sistem</option><option value="light">Luminoasă</option><option value="dark">Întunecată</option></select></div>
     <div class="row"><div><b>Mesaje recente</b><small>Ultimele 30 de mesaje de pe ecran, ca să recitești ce ai ratat.</small></div><button class="btn" id="notifs">Vezi</button></div>
     <div class="row"><div><b>Update</b><small>Ce s-a adăugat și ce s-a schimbat în aplicație, pe versiuni.</small></div><a class="btn" href="#/update">Vezi</a></div>
@@ -747,7 +753,7 @@ A.route('setari', async view => {
     <div class="row" id="quitrow" hidden><div><b>Ieșire din joc</b><small>Închide fereastra. Progresul este deja salvat.</small></div><button class="btn" id="quitapp">Ieșire</button></div>
     <div class="row danger"><div><b>Șterge tot progresul</b><small>Articolele citite, rezumatele, XP-ul, ștampilele, raioanele cucerite, trofeele, biroul și însemnele. Nu se poate anula.</small></div><button class="btn ghost" id="reset">Șterge tot</button></div>
     <p class="faint" style="font-size:12px;margin-top:24px">Textele actelor provin din fișierele proiectului tău (versiunile la zi indicate în fiecare act). ${A.esc(MD_MAP.credit)}.</p></div>`;
-  A.$('#theme', view).value = st.theme;
+  A.$('#theme', view).value = st.theme; A.$('#skin', view).value = st.skin === 'classic' ? 'classic' : 'lav';
   if (A.desktop()) {
     A.$('#menurow', view).hidden = false; A.$('#quitrow', view).hidden = false;
     A.$('#tomenu', view).onclick = async () => { await A.store.flush(); location.href = 'menu.html'; };
@@ -762,6 +768,7 @@ A.route('setari', async view => {
   A.$('#vol', view).onchange = e => { st.volume = +e.target.value; A.store.save(); A.sound('claim'); };
   A.$('#fxs', view).onchange = e => { st.fx = e.target.value === '1'; A.store.save(); if (st.fx) A.fx.confetti('small'); };
   A.$('#vib', view).onchange = e => { st.vib = e.target.value === '1'; A.store.save(); A.buzz(30); };
+  A.$('#skin', view).onchange = e => { st.skin = e.target.value; A.applyTheme(); A.store.save(); setTimeout(() => location.reload(), 150); };
   A.$('#theme', view).onchange = e => { st.theme = e.target.value; A.applyTheme(); A.store.save(); };
   A.$('#exp', view).onclick = () => { const b = new Blob([JSON.stringify(A.S, null, 1)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `atlas-progres-${A.today()}.json`; a.click(); };
   A.$('#imp', view).onchange = async e => { const f = e.target.files[0]; if (!f) return; try { const d = JSON.parse(await f.text()); if (!d.v) throw 0; A.store.data = Object.assign(A.defaultState(), d); A.eco.init(); await A.store.flush(); A.toast('Progres importat.'); A.render(); } catch (x) { A.toast('Fișierul nu este un export valid.'); } };

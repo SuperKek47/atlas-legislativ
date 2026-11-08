@@ -484,12 +484,15 @@ A.applyTheme = () => {
   const t = A.S.settings.theme;
   const dark = t === 'dark' || (t === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  const skin = A.S.settings.skin === 'classic' ? 'classic' : 'lav', lk = document.getElementById('skin-css');
+  document.documentElement.dataset.skin = skin; if (lk) lk.disabled = skin === 'classic';
+  const tc = document.querySelector('meta[name=theme-color]'); if (tc) tc.content = skin === 'lav' ? '#ECDDFD' : '#10213B';
 };
 
 /* ---------------- pornire ---------------- */
 A.boot = async () => {
   await A.store.load();
-  A.applyTheme();
+  A.applyTheme(); A.skin && A.skin.apply();
   await A.loadRegistry();
   A.study && await A.study.load();
   A.game && A.game.init();
