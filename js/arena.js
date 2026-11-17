@@ -10,7 +10,7 @@ const st = () => { const s = A.S; s.arena = s.arena || {}; const a = s.arena;
   return a; };
 
 /* ---------- vibrație scurtă (unde telefonul o permite) ---------- */
-A.buzz = p => { try { if (A.S && A.S.settings.vib !== false && navigator.vibrate) navigator.vibrate(p); } catch (e) { } };
+A.buzz = p => { try { if (A.S && A.S.settings.vib !== false && navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(p); } catch (e) { } };
 
 /* ---------- stratul pe tot ecranul ---------- */
 R.layer = (cls, html) => {
