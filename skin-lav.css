@@ -215,6 +215,9 @@ table.staff .av { border: 2px solid #dad0f1; }
 .tcard .tc-st.bad { color: #291b50; }
 .cdet .cd-img { background: #ede7f8; box-shadow: 0 4px 0 color-mix(in srgb, var(--c) 45%, #dad0f1); }
 .cdet .cd-rar { color: #291b50; }
+.zchip { background: rgba(235,228,247,0.78); }
+.md path.u.z-centru.res, .md path.u.z-centru.plain { fill: rgba(52,9,179,0.1); }
+.md path.u.z-nord.res { fill: rgba(140,35,61,0.2) !important; }
 /* ===== retușuri manuale Legalia ===== */
 :root, :root[data-theme] { --v1: #5B2CF0; --v2: #4318CC; --v3: #2B0F8F; --ink-l: #231552; --mut: #7A72A3;
   --card: rgba(255,255,255,.78); --card-edge: rgba(105,70,215,.14); --card-sh: 0 1px 0 rgba(255,255,255,.9) inset, 0 8px 24px rgba(88,52,200,.12);
@@ -308,3 +311,13 @@ button.playbig b::before { content: ""; width: 14px; height: 16px; background: #
 .cs.empty small, .cs small { color: var(--mut) !important; } .cs.empty .ph { border-color: rgba(91,44,240,.35) !important; }
 .rail a span { text-shadow: none !important; -webkit-text-stroke: 0 !important; color: inherit !important; font-family: "Inter", sans-serif !important; font-weight: 700 !important; font-size: 11px !important; }
 .rail a .nb { background: #FF5A7A !important; border: 2px solid #fff !important; color: #fff !important; text-shadow: none !important; }
+
+/* zone */
+.zonebar { top: 10px !important; }
+.zchip { background: var(--card) !important; border: 1px solid var(--card-edge) !important; box-shadow: var(--card-sh) !important; color: var(--ink-l) !important; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.zchip b { color: var(--ink-l) !important; } .zchip small { color: var(--mut) !important; opacity: 1; }
+.zchip.on { border-color: var(--zc) !important; box-shadow: 0 0 0 1.5px var(--zc) inset, var(--card-sh) !important; }
+.md path.u.z-sud.res { fill: rgba(31,158,143,.20) !important; } .md path.u.z-nord.res { fill: rgba(210,72,107,.17) !important; }
+.md path.u.z-centru.res, .md path.u.z-centru.plain { fill: rgba(106,59,245,.10) !important; }
+.md path.u.z-sud.lockd { fill: rgba(190,236,229,.62) !important; } .md path.u.z-nord.lockd { fill: rgba(255,214,225,.62) !important; }
+.legend { top: 66px !important; } .mapzoom { top: 10px !important; }

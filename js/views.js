@@ -24,14 +24,16 @@ A.route('harta', async view => {
   const raionByUnit = Object.fromEntries(A.raioane.map(r => [r.unit, r]));
   const resByUnit = Object.fromEntries(A.reserved.map(r => [r.unit, r]));
   let paths = '', labels = '', marks = '', curOut = '';
+  A.zonex.tick();
+  const actZone = A.study.activeZone();
   for (const [id, name, d] of MD_MAP.units) {
-    const r = raionByUnit[id], res = resByUnit[id], lab = MD_MAP.labels[id];
+    const r = raionByUnit[id], res = resByUnit[id], lab = MD_MAP.labels[id], zo = A.study.zoneOf(id), zcl = ` z-${zo.id}${zo.id === actZone.id ? ' zact' : ''}`;
     if (r) {
       const st = A.raionStats(id), col = A.disc[r.disc].color, lock = A.locked(id), big = lab[2] > 24;
       const cur = id === A.study.current(), firmCol = eco && eco.started ? eco.firm.color : '#5A3F8F';
-      paths += lock ? `<path class="u on lockd" data-u="${id}" d="${d}" fill="url(#hatch-${r.disc})"/>`
-        : A.conquered(id) ? `<path class="u on conq" data-u="${id}" d="${d}" fill="${firmCol}" fill-opacity=".88"/>`
-        : `<path class="u on${cur ? ' cur' : ''}" data-u="${id}" d="${d}" fill="${col}" fill-opacity="${r.n ? (0.34 + 0.4 * A.conqPct(id)).toFixed(2) : .2}"${cur ? ` style="--pc:${A.conqColor(A.conqPct(id))}"` : ''}/>`;
+      paths += lock ? `<path class="u on lockd${zcl}" data-u="${id}" d="${d}" fill="url(#hatch-${r.disc})"/>`
+        : A.conquered(id) ? `<path class="u on conq${zcl}" data-u="${id}" d="${d}" fill="${firmCol}" fill-opacity=".88"/>`
+        : `<path class="u on${zcl}${cur ? ' cur' : ''}" data-u="${id}" d="${d}" fill="${col}" fill-opacity="${r.n ? (0.34 + 0.4 * A.conqPct(id)).toFixed(2) : .2}"${cur ? ` style="--pc:${A.conqColor(A.conqPct(id))}"` : ''}/>`;
       if (cur && !lock && !A.conquered(id)) curOut = `<path class="curline" d="${d}" style="--pc:${A.conqColor(A.conqPct(id))}"/><path class="curline glow" d="${d}" style="--pc:${A.conqColor(A.conqPct(id))}"/>`;
       const sub = lock ? 'blocat' : A.conquered(id) ? `${A.esc(r.short)} · cucerit` : `${A.esc(r.short)} · ${A.study.beatenCount(id)}/9`;
       labels += big ? `<text class="lab on${lock ? ' dim' : ''}" x="${lab[0]}" y="${lab[1] - 4}">${A.esc(name)}</text><text class="lab on sub${lock ? ' dim' : ''}" x="${lab[0]}" y="${lab[1] + 13}">${sub}</text>`
@@ -41,7 +43,7 @@ A.route('harta', async view => {
       else if (A.conquered(id)) marks += pin(ICON.flag, eco && eco.firm ? eco.firm.color : '#5A3F8F');
       else if (A.bossReady(id)) marks += `<g class="pin boss" transform="translate(${lab[0]},${lab[1] - (big ? 36 : 26)})"><g class="pi"><circle r="14" fill="#B23A2E" stroke="#fff" stroke-width="2.5"/>${ICON.swords}</g></g>`;
     } else if (res) {
-      paths += `<path class="u res" data-u="${id}" d="${d}" fill="${(A.disc[res.disc] || {}).color || '#999'}" fill-opacity=".16"/>`;
+      paths += `<path class="u res${zcl}" data-u="${id}" d="${d}" fill="${(A.disc[res.disc] || {}).color || '#999'}" fill-opacity=".16"/>`;
       labels += `<text class="lab res" x="${lab[0]}" y="${lab[1]}">${A.esc(name)}</text>`;
     } else {
       paths += `<path class="u plain" data-u="${id}" d="${d}"/>`;
@@ -67,6 +69,7 @@ A.route('harta', async view => {
   view.innerHTML = `
   <div class="mappage">
     <div class="mapwrap">
+      <div class="zonebar">${A.zonex.barHTML()}</div>
       <span class="coord tl">48°29′ N · 26°37′ E</span><span class="coord br">45°28′ N · 30°10′ E</span>
       <svg class="md" viewBox="-10 -10 1020 1270" role="img" aria-label="Harta Republicii Moldova cu raioanele-discipline">
         <defs><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="var(--paper-2)"/><rect width="3" height="8" fill="var(--rule)"/></pattern>${hatches}</defs>
@@ -100,6 +103,7 @@ A.route('harta', async view => {
       ${ready.length ? `<section class="bossready"><h3>Bossul te așteaptă</h3>${ready.map(r => `<a class="btn boss" href="#/cariera/duel/${r.unit}">${A.esc(r.boss)} · ${A.esc(r.name)}</a>`).join('')}</section>` : ''}
     </aside>
   </div>`;
+  A.zonex.bindBar(view, () => A.render());
   const tip = document.createElement('div'); tip.className = 'maptip'; tip.hidden = true; view.appendChild(tip);
   /* PLAY: sclipire, apoi jocul apare din estompare */
   A.$('#play', view).onclick = e => { const b = e.currentTarget; b.classList.add('go'); setTimeout(() => b.classList.remove('go'), 600); A.buzz([20, 40]); A.sound('click'); A.arena.playMenu(); };
@@ -655,6 +659,11 @@ A.route('profil', async view => {
 
 /* ======================= UPDATE (istoricul modificărilor) ======================= */
 A.CHANGELOG = [
+  { v: '17 noiembrie 2026 · Harta pe zone: Centru, Sud, Nord', items: [
+    'Harta e împărțită în trei zone. Începi cu Centrul; după ce îl cucerești, alegi liber Sud sau Nord. În zonă raioanele se deschid pe rând.',
+    'Zona cucerită îți aduce venit pasiv, dar controlul ei scade în fiecare zi: o aperi cu un test de 5 grile.',
+    'Fiecare zonă are un boss care aduce titlul zonei, un dosar legendar și +50% venit. Decanul apare după toate cele trei zone.',
+  ] },
   { v: '8 noiembrie 2026 · Stilul nou „Legalia”', items: [
     'Aspect nou, luminos: fundal lavandă, violet electric, carduri albe din sticlă, hartă pe tot ecranul sub butonul PLAY.',
     'Siglă, iconiță, monede, pictograme și dosare-cufăr redesenate în același stil.',

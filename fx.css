@@ -179,3 +179,30 @@ table.staff .av img { width: 100%; height: 100%; object-fit: cover; object-posit
 .cdet .btn.big { width: 100%; padding: 14px 16px; font-size: 16px; margin-top: 4px; }
 .cdet .tin { width: 100%; margin-bottom: 8px; }
 .cdet .cd-sec { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 12px; }
+
+/* ===== zone: bara de pe hartă, fereastra zonei, tente pe hartă ===== */
+.zonebar { position: absolute; z-index: 5; top: 8px; left: 10px; right: 64px; display: flex; gap: 6px; }
+.zchip { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 6px 10px 7px; border-radius: 16px; border: 1px solid rgba(255,255,255,.14); background: rgba(16,33,59,.78); color: var(--ink); text-align: left; position: relative;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.zchip i { position: absolute; top: 9px; right: 9px; width: 8px; height: 8px; border-radius: 50%; background: var(--zc); box-shadow: 0 0 0 3px color-mix(in srgb, var(--zc) 26%, transparent); }
+.zchip b { font-size: 13px; font-weight: 800; letter-spacing: .01em; }
+.zchip small { font-size: 11px; opacity: .7; font-weight: 600; }
+.zchip.on { border-color: var(--zc); box-shadow: 0 0 0 1.5px var(--zc) inset; }
+.zchip.lock { opacity: .55; } .zchip.lock i { background: #8A8FA3; box-shadow: none; }
+.zchip.done small::after { content: " ✓"; color: var(--zc); font-weight: 800; }
+.zchip.alert i { background: #E0475F; animation: zpulse 1.2s ease-in-out infinite; }
+@keyframes zpulse { 50% { transform: scale(1.5); } }
+.md path.u.z-centru.res, .md path.u.z-centru.plain { fill: rgba(106,59,245,.10); }
+.md path.u.z-sud.res { fill: rgba(31,158,143,.22) !important; fill-opacity: 1 !important; } .md path.u.z-nord.res { fill: rgba(210,72,107,.20) !important; fill-opacity: 1 !important; }
+.md path.u.z-sud:not(.zact) , .md path.u.z-nord:not(.zact) { stroke-dasharray: 5 4; }
+.md path.u.zact { stroke-width: 1.4 !important; }
+.zpanel h2 { margin: 0 0 2px; } .zpanel .zprog { margin: 10px 0 6px; } .zpanel .zprog span { font-size: 13px; color: var(--ink-3); }
+.zpanel .zprog .bar i, .zpanel .zctl .bar i { background: var(--zc); }
+.zctl { margin: 10px 0; padding: 12px; border-radius: 16px; border: 1px solid var(--rule); background: var(--paper-2); }
+.zrow { display: flex; justify-content: space-between; align-items: center; margin: 4px 0; font-size: 14px; }
+.zlist { list-style: none; margin: 10px 0; padding: 0; display: flex; flex-direction: column; gap: 6px; max-height: 38vh; overflow: auto; }
+.zr { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--rule-2); }
+.zr .zdot { width: 10px; height: 10px; border-radius: 50%; background: var(--rule); flex: none; }
+.zr.won .zdot { background: var(--forest); } .zr.cur { border-color: var(--zc); } .zr.cur .zdot { background: var(--zc); }
+.zr div { flex: 1; min-width: 0; } .zr b { display: block; font-size: 14px; } .zr small { color: var(--ink-3); font-size: 12px; } .zr em { font-size: 12px; font-style: normal; color: var(--ink-3); }
+.zr.soon { opacity: .55; } .ztitle { text-align: center; margin: 8px 0 2px; }

@@ -9,7 +9,10 @@ ST.load = async () => {
   try { ST.bank = await A.json('data/studiu.json'); } catch (e) { ST.bank = { grile: [], spete: [] }; }
   ST.bank.grile = ST.bank.grile || []; ST.bank.spete = ST.bank.spete || [];
   // ordinea: schema, apoi raioanele din pachete
-  ST.order = (ST.schema.order || []).filter(u => A.raion(u));
+  /* ordinea: zonele în ordine, în fiecare zonă raioanele în ordinea zonei (centrul urmează schema) */
+  const sch = (ST.schema.order || []).filter(u => A.raion(u));
+  ST.order = [];
+  for (const z of A.zones) { const us = z.id === A.zones[0].id ? [...sch.filter(u => z.units.includes(u)), ...z.units.filter(u => !sch.includes(u))] : z.units; z.units = us; for (const u of us) if (A.raion(u) && !ST.order.includes(u)) ST.order.push(u); }
   for (const r of A.raioane) if (!ST.order.includes(r.unit)) ST.order.push(r.unit);
   // index articol -> micro-secțiune
   ST.where = {}; ST.microById = {}; ST.chapById = {};
@@ -34,7 +37,20 @@ ST.load = async () => {
 };
 
 ST.chapters = unit => (ST.schema.raioane[unit] || { chapters: [] }).chapters;
-ST.current = () => ST.order.find(u => !A.conquered(u)) || null;
+/* zone: Centru → (Sud | Nord); în zonă, raioanele se deschid pe rând */
+ST.zone = id => A.zones.find(z => z.id === id) || null;
+ST.zoneOf = unit => A.zones.find(z => z.units.includes(unit)) || A.zones[0];
+ST.zoneDone = id => { const z = ST.zone(id); return !!z && z.units.length > 0 && z.units.every(u => A.conquered(u)); };
+ST.zoneOpen = id => { const z = ST.zone(id); return !!z && (!z.requires || ST.zoneDone(z.requires)); };
+ST.zoneStat = id => { const z = ST.zone(id), n = z.units.length, k = z.units.filter(u => A.conquered(u)).length, avail = z.units.filter(u => A.raion(u)).length; return { n, k, avail, soon: n - avail }; };
+ST.activeZone = () => {
+  const want = A.S.study && A.S.study.zone, w = want && ST.zone(want);
+  if (w && ST.zoneOpen(w.id) && !ST.zoneDone(w.id)) return w;
+  return A.zones.find(z => ST.zoneOpen(z.id) && !ST.zoneDone(z.id)) || A.zones[A.zones.length - 1];
+};
+ST.setZone = id => { if (!ST.zone(id) || !ST.zoneOpen(id)) return false; A.S.study.zone = id; A.store.save(); return true; };
+ST.allZonesDone = () => A.zones.every(z => ST.zoneDone(z.id));
+ST.current = () => { const z = ST.activeZone(), u = z.units.find(x => !A.conquered(x)); return u && A.raion(u) ? u : null; };
 ST.unitOpen = unit => A.conquered(unit) || unit === ST.current();
 ST.beaten = cid => !!(A.S.study.chapters || {})[cid];
 ST.chapterOpen = c => A.conquered(c.unit) || (c.unit === ST.current() && (c.ci === 0 || ST.beaten(ST.chapters(c.unit)[c.ci - 1].id)));

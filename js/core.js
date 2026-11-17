@@ -55,6 +55,7 @@ A.defaultState = () => ({
   quiz: { answered: 0, correct: 0, bestCombo: 0, survivalBest: 0, taxOk: 0, sessions: 0, refsOpened: 0, crits: {} },
   chaptersDone: {},  // "CF:n7": date
   conq: {},          // raioane cucerite: unit -> date
+  zones: {},         // zone: id -> {ctrl, day, acc, boss, capt}
   last: null,
   settings: { goal: 60, sound: true, theme: 'dark' },
   eco: null,
@@ -145,6 +146,8 @@ A.loadRegistry = async () => {
     }
   }
   A.finalBoss = atlas.finalBoss || null;
+  A.zones = (atlas.zones && atlas.zones.length ? atlas.zones : [{ id: 'centru', name: 'Centru', sub: '', color: '#6A3BF5', units: A.raioane.map(r => r.unit), requires: null, boss: 'Magistrul', title: 'Stăpânul hărții' }]).map(z => Object.assign({}, z));
+  for (const r of A.raioane) if (!A.zones.some(z => z.units.includes(r.unit))) A.zones[0].units.push(r.unit);
   A.aliasMap = {};
   for (const [id, a] of Object.entries(index)) for (const al of (a.aliases || [])) A.aliasMap[al] = id;
   for (const [id, a] of Object.entries(atlas.pendingActs || {})) if (!index[id]) for (const al of a.aliases) A.aliasMap[al] = A.aliasMap[al] || ('?' + id);

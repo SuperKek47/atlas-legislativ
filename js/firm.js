@@ -561,9 +561,10 @@ function miniDuel(view, c) {
 }
 
 function duel(view, unit) {
+  if (/^zona-/.test(unit)) return A.zonex.duel(view, unit.slice(5));
   const s = E.s(), decan = unit === 'decan', r = decan ? null : A.raion(unit);
   if (!decan && !r) return A.go('#/cariera');
-  const all = E.conqCount() === A.raioane.length;
+  const all = A.zonex.allBossed();
   if (decan && (!all || (s.notoriety || 0) < E.DECAN.notoriety)) return A.go('#/cariera');
   if (!decan && !A.conquered(unit) && !ST.bossReady(unit)) return A.go('#/raion/' + unit);
   const name = decan ? A.finalBoss.name : r.boss, rematch = !decan && A.conquered(unit);
@@ -581,13 +582,14 @@ function duel(view, unit) {
       if (decan) A.S.conq.__decan = A.today(); else A.S.conq[unit] = A.today();
       const prize = E.earn(decan ? 500000 : Math.round(r.n * 150 * (1 + 0.2 * k) * (score >= .95 ? 1.25 : 1)));
       if (!decan && s.started && !s.branches.includes(unit)) s.branches.push(unit);
+      const zc = decan ? null : A.zonex.afterConquer(unit);
       A.game.addXP(decan ? 1000 : 250); A.S.points.spete += 5;
       const lg = s.started ? E.grantChest('decan', decan ? 'Decanul' : 'Raion cucerit') : false; A.fx.celebrate('raion', decan ? 'Decanul a căzut!' : 'Raion cucerit!', '');
       A.store.save(); A.game.checkStamps();
-      const next = decan ? null : A.raion(ST.current());
+      const next = decan || zc ? null : A.raion(ST.current());
       const marks = E.MARKERS(Math.min(14, k)); let picked = 0;
       host.innerHTML = `<div class="stampwrap slam" style="color:var(--seal)">${A.stampSVG('cucerit', decan ? 'decanul' : r.name, '✓', 'var(--seal)', -10)}</div>
-        <p>${decan ? 'Toată harta este a ta.' : `${A.esc(r.name)} este cucerit${s.started ? ' și ai o filială acolo' : ''}.`} +${A.lei(prize)} · +${decan ? 1000 : 250} XP · +5 puncte-speță${lg ? ' · un dosar legendar' : ''}.${next ? ` S-a deschis ${A.esc(next.name)}.` : ''}</p>
+        <p>${decan ? 'Toată harta este a ta.' : `${A.esc(r.name)} este cucerit${s.started ? ' și ai o filială acolo' : ''}.`} +${A.lei(prize)} · +${decan ? 1000 : 250} XP · +5 puncte-speță${lg ? ' · un dosar legendar' : ''}.${next ? ` S-a deschis ${A.esc(next.name)}.` : ''}${zc ? ` Zona ${A.esc(zc.zone.name)} este cucerită: primești venit pasiv, dar trebuie să o aperi.` : ''}</p>
         ${s.started ? `<p class="muted">Alege două dintre cele șase plicuri sigilate.</p><div class="markers">${marks.map((m, x) => `<button class="marker" data-i="${x}"><span>?</span></button>`).join('')}</div>` : ''}
         <div id="mk-done" ${s.started ? 'hidden' : ''} style="margin-top:16px"><a class="btn primary" href="#/harta">Harta</a>${next ? ` <a class="btn" href="#/raion/${next.unit}">Mergi la ${A.esc(next.name)}</a>` : ''}</div>`;
       A.$$('.marker', host).forEach(b => b.onclick = () => {
@@ -605,7 +607,7 @@ A.route('cariera', async (view, [mode, unit]) => {
   if (mode === 'mini') { const c = ST.chapById[unit]; if (!c) return A.go('#/cariera');
     if (!ST.beaten(c.id) && !ST.miniReady(c)) return A.go('#/raion/' + c.unit);
     return miniIntro(view, c); }
-  const cur = ST.current(), k = E.conqCount(), all = k === A.raioane.length, decanDone = !!A.S.conq.__decan;
+  const cur = ST.current(), k = E.conqCount(), all = A.zonex.allBossed(), decanDone = !!A.S.conq.__decan;
   const miniRow = c => { const st = ST.chapStats(c), b = ST.beaten(c.id), open = ST.chapterOpen(c), ready = ST.miniReady(c);
     return `<div class="mrow ${b ? 'won' : ready ? 'ready' : open ? '' : 'lock'}"><span class="mn">${c.ci + 1}</span><div><b>${A.esc(c.boss)}</b><small>${A.esc(c.name)} · ${st.und}/${st.n} articole înțelese</small></div>
       ${b ? '<span class="ok">învins</span>' : ready ? `<a class="btn small primary" href="#/cariera/mini/${c.id}">Provoacă</a>` : open ? `<span class="faint">${st.microDone}/${st.micro} micro-secțiuni</span>` : '<span class="faint">blocat</span>'}</div>`; };
@@ -621,8 +623,10 @@ A.route('cariera', async (view, [mode, unit]) => {
   view.innerHTML = `<div class="firm">${s.started ? head('Bossii', '') + tabs('cariera') : '<h1>Bossii</h1>'}
     ${curR ? `<section class="fsec"><div class="sh"><h2>${A.esc(curR.name)} · mini-boșii capitolelor</h2><span class="faint">Fiecare mini-boss apare după ce citești și înțelegi tot capitolul lui</span></div><div class="minis">${ST.chapters(cur).map(miniRow).join('')}</div>
       <div class="mrow big ${ST.bossReady(cur) ? 'ready' : 'lock'}"><span class="mn">★</span><div><b>${A.esc(curR.boss)}</b><small>Bossul raionului: duel de ${E.bossDuel(curR).n} grile, ${Math.round(E.bossDuel(curR).pass * 100)}% corecte</small></div>${ST.bossReady(cur) ? `<a class="btn primary" href="#/cariera/duel/${cur}">Provoacă</a>` : '<span class="faint">după cei 9 mini-boși</span>'}</div></section>` : ''}
-    <section class="fsec decan ${decanDone ? 'won' : all ? 'ready' : ''}"><div class="rv"><span class="rnum">${k}/${A.raioane.length}</span><div><h2>${A.esc(A.finalBoss ? A.finalBoss.name : 'Decanul')}</h2>
-      <small class="muted">${decanDone ? 'Învins. Harta este a ta.' : all ? 'Toți bossii au căzut. Decanul te așteaptă.' : 'Apare după ce cucerești toate raioanele.'}</small></div></div>
+    <section class="fsec"><div class="sh"><h2>Bossii de zonă</h2><span class="faint">Apar după ce cucerești toate raioanele zonei</span></div><div class="minis">${A.zones.map(z => { const d = ST.zoneDone(z.id), b = A.zonex.bossed(z.id), kk = ST.zoneStat(z.id);
+      return `<div class="mrow ${b ? 'won' : d ? 'ready' : 'lock'}"><span class="mn">★</span><div><b>${A.esc(z.boss)}</b><small>Zona ${A.esc(z.name)} · ${kk.k}/${kk.n} raioane cucerite</small></div>${b ? '<span class="ok">învins</span>' : d ? `<a class="btn small primary" href="#/cariera/duel/zona-${z.id}">Provoacă</a>` : '<span class="faint">blocat</span>'}</div>`; }).join('')}</div></section>
+    <section class="fsec decan ${decanDone ? 'won' : all ? 'ready' : ''}"><div class="rv"><span class="rnum">${A.zones.filter(z => A.zonex.bossed(z.id)).length}/${A.zones.length}</span><div><h2>${A.esc(A.finalBoss ? A.finalBoss.name : 'Decanul')}</h2>
+      <small class="muted">${decanDone ? 'Învins. Harta este a ta.' : all ? 'Toți bossii au căzut. Decanul te așteaptă.' : 'Apare după ce cucerești toate zonele și le învingi bossii.'}</small></div></div>
       ${all && !decanDone ? `<a class="btn primary" href="#/cariera/duel/decan">Provoacă Decanul</a>` : ''}</section>
     <div class="bgrid">${ST.order.map(u => A.raion(u)).filter(Boolean).map(card).join('')}</div></div>`;
 });

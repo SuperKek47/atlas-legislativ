@@ -349,6 +349,56 @@
  ],
  "reserved": [
   {
+   "unit": "cahul",
+   "disc": "administrativ",
+   "title": "Contencios administrativ"
+  },
+  {
+   "unit": "gagauzia",
+   "disc": "fiscal",
+   "title": "Drept fiscal I"
+  },
+  {
+   "unit": "bender",
+   "disc": "fiscal",
+   "title": "Drept fiscal II"
+  },
+  {
+   "unit": "cantemir",
+   "disc": "vamal",
+   "title": "Drept vamal I"
+  },
+  {
+   "unit": "taraclia",
+   "disc": "vamal",
+   "title": "Drept vamal II"
+  },
+  {
+   "unit": "ungheni",
+   "disc": "afaceri",
+   "title": "Dreptul afacerilor"
+  },
+  {
+   "unit": "cimislia",
+   "disc": "insolventa",
+   "title": "Insolvența"
+  },
+  {
+   "unit": "basarabeasca",
+   "disc": "urbanism",
+   "title": "Urbanism"
+  },
+  {
+   "unit": "dubasari",
+   "disc": "mediu",
+   "title": "Dreptul mediului"
+  },
+  {
+   "unit": "stanga-nistrului",
+   "disc": "cedo",
+   "title": "CEDO"
+  },
+  {
    "unit": "balti",
    "disc": "penal",
    "title": "Codul penal I"
@@ -412,61 +462,83 @@
    "unit": "soldanesti",
    "disc": "muncii",
    "title": "Dreptul muncii II"
-  },
-  {
-   "unit": "cantemir",
-   "disc": "vamal",
-   "title": "Drept vamal I"
-  },
-  {
-   "unit": "taraclia",
-   "disc": "vamal",
-   "title": "Drept vamal II"
-  },
-  {
-   "unit": "cahul",
-   "disc": "administrativ",
-   "title": "Contencios administrativ"
-  },
-  {
-   "unit": "basarabeasca",
-   "disc": "urbanism",
-   "title": "Urbanism"
-  },
-  {
-   "unit": "dubasari",
-   "disc": "mediu",
-   "title": "Dreptul mediului"
-  },
-  {
-   "unit": "cimislia",
-   "disc": "insolventa",
-   "title": "Insolvența"
-  },
-  {
-   "unit": "ungheni",
-   "disc": "afaceri",
-   "title": "Dreptul afacerilor"
-  },
-  {
-   "unit": "gagauzia",
-   "disc": "fiscal",
-   "title": "Drept fiscal I"
-  },
-  {
-   "unit": "bender",
-   "disc": "fiscal",
-   "title": "Drept fiscal II"
-  },
-  {
-   "unit": "stanga-nistrului",
-   "disc": "cedo",
-   "title": "CEDO"
   }
  ],
  "pendingActs": {},
  "finalBoss": {
   "name": "Decanul",
   "unit": "chisinau"
- }
+ },
+ "zones": [
+  {
+   "id": "centru",
+   "name": "Centru",
+   "sub": "Dreptul privat și procesul civil",
+   "color": "#6A3BF5",
+   "units": [
+    "chisinau",
+    "ialoveni",
+    "straseni",
+    "criuleni",
+    "orhei",
+    "telenesti",
+    "rezina",
+    "hincesti",
+    "leova",
+    "calarasi",
+    "anenii-noi",
+    "causeni",
+    "nisporeni",
+    "stefan-voda"
+   ],
+   "requires": null,
+   "boss": "Magistrul Centrului",
+   "title": "Stăpânul Centrului"
+  },
+  {
+   "id": "sud",
+   "name": "Sud",
+   "sub": "Administrativ, fiscal, vamal și afaceri",
+   "color": "#1F9E8F",
+   "units": [
+    "cahul",
+    "gagauzia",
+    "bender",
+    "cantemir",
+    "taraclia",
+    "ungheni",
+    "cimislia",
+    "basarabeasca",
+    "dubasari",
+    "stanga-nistrului"
+   ],
+   "requires": "centru",
+   "boss": "Contenciosul Sudului",
+   "title": "Stăpânul Sudului"
+  },
+  {
+   "id": "nord",
+   "name": "Nord",
+   "sub": "Penal, contravențional, constituțional și muncii",
+   "color": "#D2486B",
+   "units": [
+    "balti",
+    "falesti",
+    "singerei",
+    "glodeni",
+    "riscani",
+    "edinet",
+    "briceni",
+    "ocnita",
+    "soroca",
+    "donduseni",
+    "drochia",
+    "floresti",
+    "soldanesti"
+   ],
+   "requires": "centru",
+   "boss": "Procurorul Nordului",
+   "title": "Stăpânul Nordului"
+  }
+ ]
 };
