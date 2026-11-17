@@ -659,6 +659,10 @@ A.route('profil', async view => {
 
 /* ======================= UPDATE (istoricul modificărilor) ======================= */
 A.CHANGELOG = [
+  { v: '17 noiembrie 2026 · Codul penal: trei raioane noi', items: [
+    'Codul penal (566 de articole) este împărțit în trei raioane: Bălți (Partea generală), Fălești (Partea specială I–X) și Șingerei (Partea specială XI–XVIII).',
+    'Fiecare raion are capitole și micro-secțiuni, cu grile și spețe pe articole. Raioanele se deschid din zona Nord, pe rând.',
+  ] },
   { v: '17 noiembrie 2026 · Dosare: doar jocul rapid are cronometru', items: [
     'Dosarele din jocul rapid (PLAY) merg în bara de jos și se deblochează în timp. Toate celelalte (magazin, mini-boși, nivel nou, misiuni, serii, bossi) se deschid imediat, pe ecran.',
     'Recompensele dosarelor cresc proporțional: dosarul legendar dă acum 5 clienți și 5 nitro, cel magic 3 nitro.',

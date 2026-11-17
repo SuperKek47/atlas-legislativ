@@ -345,6 +345,56 @@
    ],
    "short": "Executarea",
    "requires": "nisporeni"
+  },
+  {
+   "unit": "balti",
+   "disc": "penal",
+   "title": "Partea generală",
+   "about": "Codul penal, Partea generală (art. 1–134²⁷): principiile, infracțiunea, pedeapsa, liberarea și termenii cuvintelor din cod.",
+   "boss": "Domnul Vinovăției",
+   "places": [
+    {
+     "act": "CP",
+     "role": "capital",
+     "from": "1",
+     "to": "134_27"
+    }
+   ],
+   "short": "Penal I"
+  },
+  {
+   "unit": "falesti",
+   "disc": "penal",
+   "title": "Partea specială I",
+   "about": "Codul penal, Partea specială, cap. I–X (art. 135–258): infracțiuni contra persoanei, patrimoniului, familiei, mediului și a economiei.",
+   "boss": "Stăpânul Patrimoniului",
+   "places": [
+    {
+     "act": "CP",
+     "role": "capital",
+     "from": "135",
+     "to": "258"
+    }
+   ],
+   "short": "Penal II",
+   "requires": "balti"
+  },
+  {
+   "unit": "singerei",
+   "disc": "penal",
+   "title": "Partea specială II",
+   "about": "Codul penal, Partea specială, cap. XI–XVIII (art. 259–388): infracțiuni informatice, în transporturi, contra justiției, a statului și militare.",
+   "boss": "Procurorul Final",
+   "places": [
+    {
+     "act": "CP",
+     "role": "capital",
+     "from": "259",
+     "to": "388"
+    }
+   ],
+   "short": "Penal III",
+   "requires": "falesti"
   }
  ],
  "reserved": [
