@@ -781,7 +781,7 @@ A.route('setari', async view => {
   A.$('#vol', view).onchange = e => { st.volume = +e.target.value; A.store.save(); A.sound('claim'); };
   A.$('#fxs', view).onchange = e => { st.fx = e.target.value === '1'; A.store.save(); if (st.fx) A.fx.confetti('small'); };
   A.$('#vib', view).onchange = e => { st.vib = e.target.value === '1'; A.store.save(); A.buzz(30); };
-  A.$('#skin', view).onchange = e => { st.skin = e.target.value; A.applyTheme(); A.store.save(); setTimeout(() => location.reload(), 150); };
+  A.$('#skin', view).onchange = e => { st.skin = e.target.value; A.applyTheme(); A.store.save(); Promise.resolve(A.store.flush()).catch(() => {}).then(() => setTimeout(() => location.reload(), 100)); };
   A.$('#theme', view).onchange = e => { st.theme = e.target.value; A.applyTheme(); A.store.save(); };
   A.$('#exp', view).onclick = () => { const b = new Blob([JSON.stringify(A.S, null, 1)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `atlas-progres-${A.today()}.json`; a.click(); };
   A.$('#imp', view).onchange = async e => { const f = e.target.files[0]; if (!f) return; try { const d = JSON.parse(await f.text()); if (!d.v) throw 0; A.store.data = Object.assign(A.defaultState(), d); A.eco.init(); await A.store.flush(); A.toast('Progres importat.'); A.render(); } catch (x) { A.toast('Fișierul nu este un export valid.'); } };
