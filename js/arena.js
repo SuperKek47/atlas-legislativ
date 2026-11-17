@@ -260,7 +260,6 @@ R.buy = id => {
   if (o.gr && (A.S.points.grile || 0) < o.gr) { A.toast(`Îți trebuie ${o.gr} puncte-grilă. Ai ${A.S.points.grile || 0}.`); A.sound('warn'); return; }
   if (o.sp && (A.S.points.spete || 0) < o.sp) { A.toast(`Îți trebuie ${o.sp} puncte-speță. Ai ${A.S.points.spete || 0}.`); A.sound('warn'); return; }
   if (o.lei && E().s().money < o.lei) return A.noMoney();
-  if (['argint', 'aur', 'magic', 'legendar'].includes(o.id) && !E().s().slots.some(x => !x)) { A.toast('Sloturile de dosare sunt pline.'); A.sound('warn'); return; }
   if (o.lei) E().s().money -= o.lei; if (o.gr) A.S.points.grile -= o.gr; if (o.sp) A.S.points.spete -= o.sp;
   o.give(); a.shop.bought.push(id); A.store.save(); A.sound('coin'); A.buzz(20); A.toast(`Ai cumpărat: ${A.esc(o.t)}.`); A.hud(); A.render();
 };
@@ -372,6 +371,14 @@ R.init = () => {
     const reveal = mult => { const loot = Eo.scaleLoot(Eo.rollChest(type), mult); Eo.applyLoot(loot);
       R.lootShow(type, (free ? Eo.FREE_NAME : Eo.CHESTS[type].name) + (mult > 1 ? ' · dublat' : ''), R.lootItems(loot, mult), () => A.render()); };
     if (type === 'aur') Eo.goldenBonus(reveal); else reveal(1);
+  };
+  /* doar dosarele din jocul rapid (PLAY) intră în sloturile cu cronometru; toate celelalte se deschid pe loc */
+  const gc = Eo.grantChest;
+  Eo.grantChest = (type, src) => {
+    if (src === 'Joc rapid') return gc(type, src);
+    const s = Eo.s(); if (!s || !s.started) return false;
+    A.whenFree(() => Eo.openChest(null, false, type));
+    return true;
   };
   /* nivel nou pe tot ecranul */
   const G = A.game;

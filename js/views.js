@@ -659,6 +659,10 @@ A.route('profil', async view => {
 
 /* ======================= UPDATE (istoricul modificărilor) ======================= */
 A.CHANGELOG = [
+  { v: '17 noiembrie 2026 · Dosare: doar jocul rapid are cronometru', items: [
+    'Dosarele din jocul rapid (PLAY) merg în bara de jos și se deblochează în timp. Toate celelalte (magazin, mini-boși, nivel nou, misiuni, serii, bossi) se deschid imediat, pe ecran.',
+    'Recompensele dosarelor cresc proporțional: dosarul legendar dă acum 5 clienți și 5 nitro, cel magic 3 nitro.',
+  ] },
   { v: '17 noiembrie 2026 · Harta pe zone: Centru, Sud, Nord', items: [
     'Harta e împărțită în trei zone. Începi cu Centrul; după ce îl cucerești, alegi liber Sud sau Nord. În zonă raioanele se deschid pe rând.',
     'Zona cucerită îți aduce venit pasiv, dar controlul ei scade în fiecare zi: o aperi cu un test de 5 grile.',

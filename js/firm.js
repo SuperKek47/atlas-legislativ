@@ -181,7 +181,7 @@ A.route('firma', async (view, [sub]) => {
   const n = Date.now(), unlocking = E.unlocking();
   const chestLock = E.chestsLocked();
   const slot = (c, i) => {
-    if (!c) return `<div class="slot empty"><div class="ph">Slot liber</div><small>Dosarele vin din jocul rapid (butonul PLAY), mini-boși, misiuni și serii de zile.</small></div>`;
+    if (!c) return `<div class="slot empty"><div class="ph">Slot liber</div><small>Aici vin dosarele din jocul rapid (PLAY); celelalte se deschid pe loc.</small></div>`;
     const C = E.CHESTS[c.type];
     const head = `<div class="chestbox">${E.chestSVG(c.type)}</div><b>${C.name}</b>`;
     if (c.unlockEnd && c.unlockEnd <= n)
@@ -457,7 +457,7 @@ E.MARKERS = k => {
   const list = [
     { t: 'Onorariu', d: A.lei(Math.round(3000 * (k + 1))), f: () => E.earn(3000 * (k + 1)) },
     { t: 'Nitro', d: '2 încărcături', f: () => E.addNitro(2) },
-    { t: k >= 7 ? 'Dosar de aur' : 'Dosar de argint', d: 'în primul slot liber', f: () => E.grantChest(k >= 7 ? 'aur' : 'argint', 'Boss învins') },
+    { t: k >= 7 ? 'Dosar de aur' : 'Dosar de argint', d: 'se deschide pe loc', f: () => E.grantChest(k >= 7 ? 'aur' : 'argint', 'Boss învins') },
     { t: 'Cartonașe', d: '5 cartonașe la întâmplare', f: () => { for (let i = 0; i < 5; i++) { const r = A.pick(['jurist', 'avocat', 'senior', 'stagiar']); s.cards[r] = (s.cards[r] || 0) + 1; } } },
     paints.length ? { t: 'Vopsea', d: paints[0][0], f: () => s.owned.paints.push(paints[0][1]) } : { t: 'Onorariu', d: A.lei(5000 * (k + 1)), f: () => E.earn(5000 * (k + 1)) },
     { t: 'Grile', d: '+20 puncte-grilă', f: () => { A.S.points.grile += 20; } },

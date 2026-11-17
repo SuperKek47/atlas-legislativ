@@ -37,8 +37,8 @@ E.CHESTS = {
   simplu: { name: 'Dosar simplu', sp: 1, ms: 60 * 60e3, color: '#8A6A3C', money: [300, 900], clients: [1, 1], cards: [1, 2], roles: ['stagiar', 'jurist', 'secretar'], buff: .2, cosm: .1, nitro: .25 },
   argint: { name: 'Dosar de argint', sp: 2, ms: 3 * 60 * 60e3, color: '#8E9AA6', money: [1200, 3500], clients: [2, 2], cards: [3, 5], roles: ['stagiar', 'jurist', 'avocat', 'secretar'], buff: .4, cosm: .25, nitro: 1 },
   aur: { name: 'Dosar de aur', sp: 3, ms: 8 * 60 * 60e3, color: '#C99A1E', money: [5000, 14000], clients: [3, 3], cards: [6, 10], roles: ['jurist', 'avocat', 'senior'], buff: .7, cosm: .45, nitro: 2 },
-  magic: { name: 'Dosar magic', sp: 4, ms: 14 * 60 * 60e3, color: '#7B4BD6', money: [12000, 32000], clients: [4, 4], cards: [9, 15], roles: ['jurist', 'avocat', 'senior'], buff: .85, cosm: .6, nitro: 2 },
-  decan: { name: 'Dosar legendar', sp: 5, ms: 24 * 60 * 60e3, color: '#E4572E', money: [25000, 70000], clients: [4, 4], cards: [12, 20], roles: ['avocat', 'senior', 'partener'], buff: 1, cosm: .75, nitro: 3 },
+  magic: { name: 'Dosar magic', sp: 4, ms: 14 * 60 * 60e3, color: '#7B4BD6', money: [12000, 32000], clients: [4, 4], cards: [9, 15], roles: ['jurist', 'avocat', 'senior'], buff: .85, cosm: .6, nitro: 3 },
+  decan: { name: 'Dosar legendar', sp: 5, ms: 24 * 60 * 60e3, color: '#E4572E', money: [25000, 70000], clients: [5, 5], cards: [12, 20], roles: ['avocat', 'senior', 'partener'], buff: 1, cosm: .75, nitro: 5 },
 };
 E.FREE_NAME = 'Dosar de la CNAJGS';
 /* romb auriu = punct-speță; deschiderea unui dosar costă E.CHESTS[tip].sp puncte-speță (dosarul gratuit de la CNAJGS nu costă) */
@@ -493,7 +493,7 @@ E.dockKey = () => { const s = E.s(); if (!s || !s.started) return '-'; const n =
 E.dockTimers = root => A.$$('[data-t]', root).forEach(el => { el.textContent = E.shortDur(+el.dataset.t - Date.now()); });
 E.dockTap = i => {
   const s = E.s(), c = s && s.slots[i]; if (!s) return;
-  if (!c) { A.toast('Slot liber. Dosarele vin din jocul rapid (butonul PLAY), mini-boși, misiuni și serii de zile.'); return; }
+  if (!c) { A.toast('Slot liber. Dosarele din jocul rapid (butonul PLAY) vin aici și se deblochează în timp; restul se deschid pe loc.'); return; }
   const lock = E.chestsLocked(); if (lock) { A.toast(`Dosarele se deschid după etapa de începător: mai citește ${lock} ${lock === 1 ? 'articol' : 'articole'}.`); A.sound('warn'); return; }
   if (c.unlockEnd && c.unlockEnd <= Date.now()) return E.openChest(i);
   const C = E.CHESTS[c.type], sp = C.sp || 0, running = !!c.unlockEnd, have = A.S.points.spete || 0;
