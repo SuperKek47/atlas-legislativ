@@ -659,6 +659,10 @@ A.route('profil', async view => {
 
 /* ======================= UPDATE (istoricul modificărilor) ======================= */
 A.CHANGELOG = [
+  { v: '18 noiembrie 2026 · Codul contravențional: patru raioane noi', items: [
+    'Codul contravențional (740 de articole, abrogările excluse) este împărțit în patru raioane: Glodeni (Partea generală), Rîșcani (Partea specială I), Edineț (Partea specială II) și Briceni (Procesul contravențional).',
+    'Fiecare raion are capitole și micro-secțiuni, cu grile și spețe pe articole. Raioanele se deschid din zona Nord, după Codul penal.',
+  ] },
   { v: '17 noiembrie 2026 · Codul penal: trei raioane noi', items: [
     'Codul penal (566 de articole) este împărțit în trei raioane: Bălți (Partea generală), Fălești (Partea specială I–X) și Șingerei (Partea specială XI–XVIII).',
     'Fiecare raion are capitole și micro-secțiuni, cu grile și spețe pe articole. Raioanele se deschid din zona Nord, pe rând.',

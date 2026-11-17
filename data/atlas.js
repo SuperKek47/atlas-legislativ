@@ -395,6 +395,74 @@
    ],
    "short": "Penal III",
    "requires": "falesti"
+  },
+  {
+   "unit": "glodeni",
+   "disc": "contrav",
+   "title": "Partea generală",
+   "about": "Codul contravențional, Partea generală (art. 1–46³): principiile, contravenția, sancțiunile, aplicarea lor și termenii din cod.",
+   "boss": "Judecătorul Sancțiunii",
+   "places": [
+    {
+     "act": "CCONT",
+     "role": "capital",
+     "from": "1",
+     "to": "46_3"
+    }
+   ],
+   "short": "Contrav. I",
+   "requires": "singerei"
+  },
+  {
+   "unit": "riscani",
+   "disc": "contrav",
+   "title": "Partea specială I",
+   "about": "Codul contravențional, Partea specială, cap. VI–XII (art. 47–227): contravenții contra drepturilor, sănătății, mediului, economiei, agriculturii și transporturilor.",
+   "boss": "Stăpânul Ordinii",
+   "places": [
+    {
+     "act": "CCONT",
+     "role": "capital",
+     "from": "47",
+     "to": "227"
+    }
+   ],
+   "short": "Contrav. II",
+   "requires": "glodeni"
+  },
+  {
+   "unit": "edinet",
+   "disc": "contrav",
+   "title": "Partea specială II",
+   "about": "Codul contravențional, Partea specială, cap. XIII–XX (art. 228–373³): circulația rutieră, comunicațiile, activitatea economică, administrația, frontiera, ordinea publică și evidența militară.",
+   "boss": "Șeful Circulației",
+   "places": [
+    {
+     "act": "CCONT",
+     "role": "capital",
+     "from": "228",
+     "to": "373_3"
+    }
+   ],
+   "short": "Contrav. III",
+   "requires": "riscani"
+  },
+  {
+   "unit": "briceni",
+   "disc": "contrav",
+   "title": "Procesul contravențional",
+   "about": "Codul contravențional, Cartea a doua (art. 374–484): constatarea faptei, judecata, căile de atac, executarea sancțiunii și dispozițiile finale.",
+   "boss": "Procurorul Contravențional",
+   "places": [
+    {
+     "act": "CCONT",
+     "role": "capital",
+     "from": "374",
+     "to": "484"
+    }
+   ],
+   "short": "Contrav. IV",
+   "requires": "edinet"
   }
  ],
  "reserved": [
