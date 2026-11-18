@@ -659,6 +659,10 @@ A.route('profil', async view => {
 
 /* ======================= UPDATE (istoricul modificărilor) ======================= */
 A.CHANGELOG = [
+  { v: '18 noiembrie 2026 · Codul muncii: raioanele Cahul și Cantemir', items: [
+    'Codul muncii nr. 154/2003 este împărțit în două raioane: Cahul (Dreptul muncii I, 6 capitole) și Cantemir (Dreptul muncii II, 8 capitole).',
+    'Cahul are 13 micro-secțiuni, iar Cantemir 15; fiecare are grile și spețe pe articole.',
+  ] },
   { v: '18 noiembrie 2026 · Legea insolvabilității: raionul Cimișlia', items: [
     'Legea insolvabilității nr. 149/2012 (271 de articole, 16 capitole) este integrată în raionul Cimișlia (Insolvență), cu 25 de micro-secțiuni.',
     'Fiecare micro-secțiune are grile și spețe pe articole: 77 de grile și 23 de spețe în total.',

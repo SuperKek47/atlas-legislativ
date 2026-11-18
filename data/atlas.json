@@ -581,6 +581,38 @@
     }
    ],
    "short": "Insolvență"
+  },
+  {
+   "unit": "cahul",
+   "disc": "muncii",
+   "title": "Dreptul muncii I",
+   "about": "Codul muncii nr. 154/2003 (titlurile I–VI): dispoziții generale, parteneriatul social, contractul individual, timpul de muncă, salarizarea, garanțiile și compensațiile.",
+   "boss": "Patronul Contractului",
+   "places": [
+    {
+     "act": "CM",
+     "role": "capital",
+     "from": "1",
+     "to": "1972"
+    }
+   ],
+   "short": "Muncii I"
+  },
+  {
+   "unit": "cantemir",
+   "disc": "muncii",
+   "title": "Dreptul muncii II",
+   "about": "Codul muncii nr. 154/2003 (titlurile VII–XIV): regulamentul intern, formarea profesională, securitatea și sănătatea în muncă, particularitățile, răspunderea materială, jurisdicția muncii, supravegherea.",
+   "boss": "Inspectorul Muncii",
+   "places": [
+    {
+     "act": "CM",
+     "role": "capital",
+     "from": "198",
+     "to": "392"
+    }
+   ],
+   "short": "Muncii II"
   }
  ],
  "reserved": [
