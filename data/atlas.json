@@ -463,6 +463,108 @@
    ],
    "short": "Contrav. IV",
    "requires": "edinet"
+  },
+  {
+   "unit": "drochia",
+   "disc": "penal",
+   "title": "Procesul penal I",
+   "about": "Codul de procedură penală, Titlurile I–III (art. 1–92): principiile, instanțele, competența, părțile și participanții.",
+   "boss": "Judecătorul de Instrucție",
+   "places": [
+    {
+     "act": "CPP",
+     "role": "capital",
+     "from": "1",
+     "to": "92"
+    }
+   ],
+   "short": "Penal IV",
+   "requires": "singerei"
+  },
+  {
+   "unit": "floresti",
+   "disc": "penal",
+   "title": "Procesul penal II",
+   "about": "Codul de procedură penală, Titlurile IV–V (art. 93–210¹): probatoriul, mijloacele de probă, reținerea și măsurile preventive.",
+   "boss": "Stăpânul Probelor",
+   "places": [
+    {
+     "act": "CPP",
+     "role": "capital",
+     "from": "93",
+     "to": "210_1"
+    }
+   ],
+   "short": "Penal V",
+   "requires": "drochia"
+  },
+  {
+   "unit": "soldanesti",
+   "disc": "penal",
+   "title": "Procesul penal III",
+   "about": "Codul de procedură penală, Titlurile VI–VIII (art. 211–251²): confidențialitatea, acțiunea civilă, cheltuielile, termenele și nulitățile.",
+   "boss": "Păzitorul Confidențialității",
+   "places": [
+    {
+     "act": "CPP",
+     "role": "capital",
+     "from": "211",
+     "to": "251_2"
+    }
+   ],
+   "short": "Penal VI",
+   "requires": "floresti"
+  },
+  {
+   "unit": "ocnita",
+   "disc": "penal",
+   "title": "Partea specială I",
+   "about": "Codul de procedură penală, Partea specială, Titlul I (art. 252–313): urmărirea penală, de la sesizare până la trimiterea cauzei în instanță.",
+   "boss": "Urmăritorul Penal",
+   "places": [
+    {
+     "act": "CPP",
+     "role": "capital",
+     "from": "252",
+     "to": "313"
+    }
+   ],
+   "short": "Penal VII",
+   "requires": "soldanesti"
+  },
+  {
+   "unit": "soroca",
+   "disc": "penal",
+   "title": "Partea specială II",
+   "about": "Codul de procedură penală, Partea specială, Titlul II (art. 314–473⁴): judecata în primă instanță, căile de atac și punerea în executare.",
+   "boss": "Președintele Completului",
+   "places": [
+    {
+     "act": "CPP",
+     "role": "capital",
+     "from": "314",
+     "to": "473_4"
+    }
+   ],
+   "short": "Penal VIII",
+   "requires": "ocnita"
+  },
+  {
+   "unit": "donduseni",
+   "disc": "penal",
+   "title": "Partea specială III",
+   "about": "Codul de procedură penală, Partea specială, Titlul III (art. 474–562): proceduri speciale și cooperarea juridică internațională.",
+   "boss": "Judecătorul Final",
+   "places": [
+    {
+     "act": "CPP",
+     "role": "capital",
+     "from": "474",
+     "to": "562"
+    }
+   ],
+   "short": "Penal IX",
+   "requires": "soroca"
   }
  ],
  "reserved": [
@@ -550,21 +652,6 @@
    "unit": "briceni",
    "disc": "contrav",
    "title": "Contravențional II"
-  },
-  {
-   "unit": "ocnita",
-   "disc": "politie",
-   "title": "Poliția și metodele speciale"
-  },
-  {
-   "unit": "soroca",
-   "disc": "constitutional",
-   "title": "Constituția"
-  },
-  {
-   "unit": "donduseni",
-   "disc": "constitutional",
-   "title": "Parlamentul și Guvernul"
   },
   {
    "unit": "drochia",

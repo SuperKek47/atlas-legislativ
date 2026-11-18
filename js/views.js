@@ -659,6 +659,10 @@ A.route('profil', async view => {
 
 /* ======================= UPDATE (istoricul modificărilor) ======================= */
 A.CHANGELOG = [
+  { v: '18 noiembrie 2026 · Codul de procedură penală: șase raioane noi', items: [
+    'Codul de procedură penală (nr. 122/2003) este împărțit în șase raioane din zona Bălți: Drochia (Penal IV), Florești (Penal V), Soldănești (Penal VI), Ocnița (Penal VII), Soroca (Penal VIII) și Dondușeni (Penal IX).',
+    'Fiecare raion are capitole și micro-secțiuni, cu grile și spețe pe articole.',
+  ] },
   { v: '18 noiembrie 2026 · Codul contravențional: patru raioane noi', items: [
     'Codul contravențional (740 de articole, abrogările excluse) este împărțit în patru raioane: Glodeni (Partea generală), Rîșcani (Partea specială I), Edineț (Partea specială II) și Briceni (Procesul contravențional).',
     'Fiecare raion are capitole și micro-secțiuni, cu grile și spețe pe articole. Raioanele se deschid din zona Nord, după Codul penal.',
