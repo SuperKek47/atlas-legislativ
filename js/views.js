@@ -659,6 +659,10 @@ A.route('profil', async view => {
 
 /* ======================= UPDATE (istoricul modificărilor) ======================= */
 A.CHANGELOG = [
+  { v: '18 noiembrie 2026 · Legea insolvabilității: raionul Cimișlia', items: [
+    'Legea insolvabilității nr. 149/2012 (271 de articole, 16 capitole) este integrată în raionul Cimișlia (Insolvență), cu 25 de micro-secțiuni.',
+    'Fiecare micro-secțiune are grile și spețe pe articole: 77 de grile și 23 de spețe în total.',
+  ] },
   { v: '18 noiembrie 2026 · Codul de procedură penală: șase raioane noi', items: [
     'Codul de procedură penală (nr. 122/2003) este împărțit în șase raioane din zona Bălți: Drochia (Penal IV), Florești (Penal V), Soldănești (Penal VI), Ocnița (Penal VII), Soroca (Penal VIII) și Dondușeni (Penal IX).',
     'Fiecare raion are capitole și micro-secțiuni, cu grile și spețe pe articole.',

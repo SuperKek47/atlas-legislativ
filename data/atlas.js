@@ -565,6 +565,22 @@
    ],
    "short": "Penal IX",
    "requires": "soroca"
+  },
+  {
+   "unit": "cimislia",
+   "disc": "insolventa",
+   "title": "Insolvența",
+   "about": "Legea insolvabilității nr. 149/2012 (art. 1–254): intentarea procesului, falimentul și restructurarea, distribuirea creanțelor, descalificarea și particularitățile unor categorii de debitori.",
+   "boss": "Administratorul Falimentului",
+   "places": [
+    {
+     "act": "L149",
+     "role": "capital",
+     "from": "1",
+     "to": "254"
+    }
+   ],
+   "short": "Insolvență"
   }
  ],
  "reserved": [
